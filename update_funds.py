@@ -25,6 +25,7 @@ import sys
 import tempfile
 import time
 import uuid
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -154,6 +155,12 @@ TAIWAN_ETFS = [
 ]
 
 MEGABANK_BASE_URL = "https://fund.megabank.com.tw"
+FUBON_FUND_SEARCH_URL = "https://www.fubon.com/Fubon_Portal/banking/Personal/fund_trust/fund_search/fund_search.jsp"
+FUBON_FUND_SEARCH_REFERER = "https://www.fubon.com/banking/personal/fund_trust/fund_search/fund_search.htm"
+FUBON_PLUS_BUY_URL = "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode={fund_code}"
+FUNDRICH_FUND_TABLE_URL = "https://apis.fundrich.com.tw/FRSDataCenter/FundTableInfo"
+FUNDRICH_DETAIL_URL = "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/{fund_id}"
+FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
 
 
 def load_config(path: Path) -> dict[str, Any]:
@@ -192,6 +199,66 @@ def fetch_text(url: str, encoding: str = "utf-8") -> str:
     with urlopen(request, timeout=30) as response:
         raw = response.read()
     return raw.decode(encoding, "replace")
+
+
+def post_fubon_fund_search() -> str:
+    fields = {
+        "pageSwitch": "2",
+        "radioButtonSelect": "0",
+        "sortSelectOption": "3",
+        "searchKeyword": "",
+    }
+    for name in [
+        "checkbox2",
+        "checkbox1",
+        "checkbox3",
+        "checkbox4",
+        "checkbox5",
+        "checkbox2_mo",
+        "checkbox1_mo",
+        "checkbox3_mo",
+        "checkbox4_mo",
+        "checkbox5_mo",
+    ]:
+        fields[name] = "false"
+    for index in range(11):
+        fields[f"selectBox{index}"] = "0"
+
+    body = urlencode(fields).encode("utf-8")
+    request = Request(
+        FUBON_FUND_SEARCH_URL,
+        data=body,
+        headers={
+            "User-Agent": "Mozilla/5.0 TaiwanFundRadar/1.0",
+            "Accept": "application/xml,text/xml,*/*",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Referer": FUBON_FUND_SEARCH_REFERER,
+            "Origin": "https://www.fubon.com",
+        },
+        method="POST",
+    )
+    with urlopen(request, timeout=45) as response:
+        charset = response.headers.get_content_charset() or "utf-8"
+        return response.read().decode(charset, "replace")
+
+
+def post_json(url: str, payload: dict[str, Any], referer: str) -> Any:
+    body = json.dumps(payload).encode("utf-8")
+    request = Request(
+        url,
+        data=body,
+        headers={
+            "User-Agent": "Mozilla/5.0 TaiwanFundRadar/1.0",
+            "Accept": "application/json,text/plain,*/*",
+            "Content-Type": "application/json",
+            "Origin": "https://www.fundrich.com.tw",
+            "Referer": referer,
+        },
+        method="POST",
+    )
+    with urlopen(request, timeout=45) as response:
+        charset = response.headers.get_content_charset() or "utf-8"
+        return json.loads(response.read().decode(charset, "replace"))
 
 
 def fetch_yahoo_chart(symbol: str) -> dict[str, Any]:
@@ -424,6 +491,42 @@ def clean_megabank_name(value: str) -> tuple[str, str]:
     return match.group(1), match.group(2).strip()
 
 
+def canonical_fund_name(value: str) -> str:
+    text = html.unescape(value)
+    text = re.sub(r"[\(（].*?本金.*?[\)）]", "", text)
+    text = re.sub(r"[\(（].*?[\)）]", "", text)
+    replacements = [
+        "證券投資信託基金",
+        "投資信託基金",
+        "基金",
+        "股份有限公司",
+        "證券投資信託",
+        "投信",
+        "台幣",
+        "新台幣",
+        "類型",
+        "級別",
+        "累積型",
+        "配息型",
+        "不配息",
+    ]
+    for replacement in replacements:
+        text = text.replace(replacement, "")
+    return re.sub(r"[\s　\-_－—/／、:：\.．]+", "", text).lower()
+
+
+def find_channel_match(name: str, channel_items: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    key = canonical_fund_name(name)
+    if not key:
+        return None
+    if key in channel_items:
+        return channel_items[key]
+    for candidate_key, item in channel_items.items():
+        if len(key) >= 5 and (key in candidate_key or candidate_key in key):
+            return item
+    return None
+
+
 def map_megabank_type(fund_type: str, name: str) -> str:
     text = f"{fund_type} {name}"
     if "貨幣" in text:
@@ -518,6 +621,7 @@ def normalize_megabank_fund(
         "dividend": "配息" if any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型",
         "minRsp": 1000,
         "tags": tags,
+        "moneyDjUrl": f"{MEGABANK_BASE_URL}/w/wr/wr01_{fund_code}.djhtm",
     }
 
 
@@ -547,6 +651,211 @@ def build_megabank_tw_funds_payload() -> dict[str, Any]:
     if warnings:
         payload["warnings"] = warnings
     return payload
+
+
+def fubon_text(item: ET.Element, tag: str) -> str:
+    return html.unescape(item.findtext(tag) or "").replace("\u3000", " ").strip()
+
+
+def map_fubon_type(target: str, name: str) -> str:
+    text = f"{target} {name}"
+    if "貨幣" in text:
+        return "貨幣"
+    if "ETF連結" in text:
+        return "ETF連結"
+    if "ETF" in text or "指數" in text:
+        return "ETF"
+    if "債" in text:
+        return "債券"
+    if "平衡" in text or "多重資產" in text or "組合" in text:
+        return "平衡"
+    if "國內" in text or "台灣" in text:
+        return "台股"
+    if "股票" in text or "股" in text:
+        return "全球股票"
+    return "基金"
+
+
+def map_fubon_region(target: str, area: str, name: str) -> str:
+    text = f"{target} {area} {name}"
+    if "國內" in target or "台灣" in text:
+        return "台灣"
+    if any(keyword in text for keyword in ["美國", "北美", "NASDAQ", "那斯達克", "S&P", "費城半導體"]):
+        return "美國"
+    if any(keyword in text for keyword in ["亞洲", "中國", "大中華", "日本", "印度", "越南", "東協", "印尼", "韓國"]):
+        return "亞洲"
+    return "全球"
+
+
+def normalize_fubon_fund(item: ET.Element) -> dict[str, Any] | None:
+    fund_code = fubon_text(item, "FUND_CODE")
+    name = fubon_text(item, "FUND_NAME")
+    if not fund_code or not name:
+        return None
+
+    approve_flag = fubon_text(item, "APPROVE_FLAG")
+    purchase_flag = fubon_text(item, "PURCHASE_FLAG")
+    if approve_flag == "Y" or purchase_flag == "Y":
+        return None
+
+    target = fubon_text(item, "INVEST_TARGET_CHINESE")
+    org_name = fubon_text(item, "ORG_FUND_NAME") or "富邦銀行上架基金"
+    currency = fubon_text(item, "CURRENCY_CODE")
+    area = fubon_text(item, "AREA")
+    risk = parse_rr(fubon_text(item, "RAM_TYPE"), fallback=4)
+    three_year = optional_number(fubon_text(item, "YEAR_VALUE_3")) or 0.0
+    return3y_annualized = ((1 + three_year / 100) ** (1 / 3) - 1) * 100 if three_year > -100 else three_year
+    volatility = optional_number(fubon_text(item, "ANNUALIZED"))
+    if volatility is None:
+        volatility = {1: 3.0, 2: 6.0, 3: 11.0, 4: 17.0, 5: 25.0}.get(risk, 17.0)
+    sharpe = optional_number(fubon_text(item, "SHARPE"))
+    if sharpe is None:
+        sharpe = sharpe_like(return3y_annualized, volatility)
+
+    fund_kind = fubon_text(item, "FUND_KIND")
+    purchase_types = {
+        "1": ["單筆申購"],
+        "2": ["定期定額"],
+        "3": ["單筆申購", "定期定額"],
+    }.get(fund_kind, ["申購"])
+    interest_rate = optional_number(fubon_text(item, "WITH_INTEREST_RATE"))
+    dividend = "配息" if (interest_rate is not None and interest_rate > -900) or any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型"
+
+    tags = [
+        "富邦銀行可買",
+        target,
+        currency,
+        f"風險P{risk}",
+        "、".join(purchase_types),
+    ]
+    three_month = optional_number(fubon_text(item, "MONTH_VALUE_3"))
+    one_year = optional_number(fubon_text(item, "YEAR_VALUE_1"))
+    if three_month is not None:
+        tags.append(f"3月 {three_month:.2f}%")
+    if one_year is not None:
+        tags.append(f"1年 {one_year:.2f}%")
+    tags = [tag for tag in tags if tag]
+
+    return {
+        "fundId": fund_code,
+        "ticker": fund_code,
+        "name": name,
+        "company": org_name,
+        "type": map_fubon_type(target, name),
+        "region": map_fubon_region(target, area, name),
+        "risk": risk,
+        "return3y": round(return3y_annualized, 2),
+        "return3yCumulative": round(three_year, 2),
+        "return1y": round(optional_number(fubon_text(item, "YEAR_VALUE_1")) or 0.0, 2),
+        "return6m": round(optional_number(fubon_text(item, "MONTH_VALUE_6")) or 0.0, 2),
+        "fee": 0.0,
+        "feeUnavailable": True,
+        "volatility": round(volatility, 2),
+        "sharpe": round(sharpe, 2),
+        "aum": 0.0,
+        "nav": round(optional_number(fubon_text(item, "NET_VAULE")) or 0.0, 4),
+        "navDate": fubon_text(item, "DATA_DATE"),
+        "dividend": dividend,
+        "minRsp": 1000,
+        "tags": tags,
+        "channel": "台北富邦銀行",
+        "sourceDetail": "台北富邦銀行基金搜尋",
+        "fubonBuyUrl": FUBON_PLUS_BUY_URL.format(fund_code=fund_code),
+        "fubonPurchaseTypes": purchase_types,
+    }
+
+
+def build_fubon_bank_funds_payload() -> dict[str, Any]:
+    xml_text = post_fubon_fund_search()
+    root = ET.fromstring(xml_text)
+    funds = [fund for fund in (normalize_fubon_fund(item) for item in root.findall(".//item")) if fund]
+    if not funds:
+        raise RuntimeError("Fubon fund search returned no buyable funds")
+    funds.sort(key=lambda fund: fund["return3y"], reverse=True)
+    return {
+        "source": "台北富邦銀行官方基金搜尋資料",
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "funds": funds,
+    }
+
+
+def build_fubon_lookup() -> dict[str, dict[str, Any]]:
+    xml_text = post_fubon_fund_search()
+    root = ET.fromstring(xml_text)
+    lookup: dict[str, dict[str, Any]] = {}
+    for item in root.findall(".//item"):
+        fund = normalize_fubon_fund(item)
+        if fund:
+            lookup[canonical_fund_name(fund["name"])] = fund
+    return lookup
+
+
+def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
+    lookup: dict[str, dict[str, Any]] = {}
+    page = 1
+    total = None
+    while total is None or len(lookup) < total:
+        payload = post_json(
+            FUNDRICH_FUND_TABLE_URL,
+            {"data": {"currentPage": page}},
+            "https://www.fundrich.com.tw/fundCenter/fundOverview",
+        )
+        if payload.get("status") != 0:
+            raise RuntimeError(f"FundRich FundTableInfo failed: {payload.get('msg')}")
+        data = (payload.get("data") or [{}])[0]
+        total = int(data.get("resultCount") or 0)
+        tablebox = data.get("tablebox") or []
+        if not tablebox:
+            break
+        for row in tablebox:
+            fund_id = str(row.get("fundId") or "").strip()
+            name = str(row.get("name") or "").strip()
+            state = row.get("state")
+            if not fund_id or not name or state not in {0, "0"}:
+                continue
+            lookup[canonical_fund_name(name)] = {
+                "fundrichFundId": fund_id,
+                "fundrichName": name,
+                "fundrichUrl": FUNDRICH_DETAIL_URL.format(fund_id=fund_id),
+                "fundrichAppUrl": FUNDRICH_APP_BUY_URL.format(fund_id=fund_id),
+            }
+        page += 1
+        if page > 300:
+            break
+    if not lookup:
+        raise RuntimeError("FundRich returned no buyable funds")
+    return lookup
+
+
+def enrich_channel_links(fund: dict[str, Any], fubon_lookup: dict[str, dict[str, Any]], fundrich_lookup: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    tags = list(fund.get("tags") or [])
+    fubon = find_channel_match(fund["name"], fubon_lookup)
+    if fubon:
+        fund["channel"] = "台北富邦銀行"
+        fund["fubonFundId"] = fubon.get("fundId")
+        fund["fubonBuyUrl"] = fubon.get("fubonBuyUrl")
+        fund["fubonPurchaseTypes"] = fubon.get("fubonPurchaseTypes", [])
+        tags.append("富邦銀行可買")
+    else:
+        fundrich = find_channel_match(fund["name"], fundrich_lookup)
+        if fundrich:
+            fund.update(fundrich)
+            fund["channel"] = "基富通"
+            tags.append("基富通可買")
+    fund["tags"] = list(dict.fromkeys(tag for tag in tags if tag))
+    return fund
+
+
+def build_combined_tw_funds_payload() -> dict[str, Any]:
+    base = build_megabank_tw_funds_payload()
+    fubon_lookup = build_fubon_lookup()
+    fundrich_lookup = build_fundrich_lookup()
+    funds = [enrich_channel_links(fund, fubon_lookup, fundrich_lookup) for fund in base["funds"]]
+    return {
+        "source": "兆豐基金/MoneyDJ 國內基金公開資料 + 富邦銀行/基富通可買連結",
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "funds": funds,
+    }
 
 
 def build_yahoo_etf_payload() -> dict[str, Any]:
@@ -654,6 +963,21 @@ def normalize_fund(item: dict[str, Any]) -> dict[str, Any]:
         normalized["averageVolume"] = int(number(item["averageVolume"], "averageVolume"))
     if item.get("feeUnavailable") is not None:
         normalized["feeUnavailable"] = bool(item["feeUnavailable"])
+    for key in [
+        "moneyDjUrl",
+        "channel",
+        "sourceDetail",
+        "fubonFundId",
+        "fubonBuyUrl",
+        "fundrichFundId",
+        "fundrichName",
+        "fundrichUrl",
+        "fundrichAppUrl",
+    ]:
+        if item.get(key):
+            normalized[key] = str(item[key])
+    if item.get("fubonPurchaseTypes") is not None:
+        normalized["fubonPurchaseTypes"] = [str(value) for value in item["fubonPurchaseTypes"]]
 
     return normalized
 
@@ -717,6 +1041,20 @@ def update_megabank_tw_funds_once(root: Path, output_path: str = "data/funds.jso
     print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(normalized['funds'])} Taiwan funds)")
 
 
+def update_fubon_bank_funds_once(root: Path, output_path: str = "data/funds.json") -> None:
+    normalized = normalize_payload(build_fubon_bank_funds_payload(), "台北富邦銀行官方基金搜尋資料")
+    target = root / output_path
+    atomic_write_json(target, normalized)
+    print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(normalized['funds'])} Fubon funds)")
+
+
+def update_combined_tw_funds_once(root: Path, output_path: str = "data/funds.json") -> None:
+    normalized = normalize_payload(build_combined_tw_funds_payload(), "台灣基金與通路連結")
+    target = root / output_path
+    atomic_write_json(target, normalized)
+    print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(normalized['funds'])} Taiwan funds)")
+
+
 def watch(config: dict[str, Any] | None, root: Path, provider: str) -> None:
     interval_hours = float(config.get("intervalHours", 3)) if config else 3
     interval_seconds = int(interval_hours * 60 * 60) or DEFAULT_INTERVAL_SECONDS
@@ -729,6 +1067,10 @@ def watch(config: dict[str, Any] | None, root: Path, provider: str) -> None:
                 update_yuanta_funds_once(root)
             elif provider == "megabank-tw-funds":
                 update_megabank_tw_funds_once(root)
+            elif provider == "fubon-bank-funds":
+                update_fubon_bank_funds_once(root)
+            elif provider == "combined-tw-funds":
+                update_combined_tw_funds_once(root)
             else:
                 if config is None:
                     raise ValueError("config is required for JSON provider")
@@ -743,7 +1085,7 @@ def main() -> int:
     parser.add_argument("--config", default="config/source.json", help="Path to source config JSON.")
     parser.add_argument(
         "--provider",
-        choices=["json", "yahoo-tw-etf", "yuanta-funds", "megabank-tw-funds"],
+        choices=["json", "yahoo-tw-etf", "yuanta-funds", "megabank-tw-funds", "fubon-bank-funds", "combined-tw-funds"],
         default="json",
         help="Data provider to use.",
     )
@@ -762,6 +1104,10 @@ def main() -> int:
         update_yuanta_funds_once(root)
     elif args.provider == "megabank-tw-funds":
         update_megabank_tw_funds_once(root)
+    elif args.provider == "fubon-bank-funds":
+        update_fubon_bank_funds_once(root)
+    elif args.provider == "combined-tw-funds":
+        update_combined_tw_funds_once(root)
     else:
         if config is None:
             raise ValueError("config is required for JSON provider")

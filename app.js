@@ -247,6 +247,24 @@ function riskClass(risk) {
   return risk >= 4 ? "risk-high" : "risk-low";
 }
 
+function renderFundName(fund) {
+  const name = escapeHtml(fund.name);
+  if (!fund.moneyDjUrl) {
+    return name;
+  }
+  return `<a class="fund-name-link" href="${escapeHtml(fund.moneyDjUrl)}" target="_blank" rel="noreferrer">${name}</a>`;
+}
+
+function renderBuyLink(fund) {
+  if (fund.fubonBuyUrl) {
+    return `<a class="buy-link" href="${escapeHtml(fund.fubonBuyUrl)}" target="_blank" rel="noreferrer">富邦 App 申購</a>`;
+  }
+  if (fund.fundrichAppUrl) {
+    return `<a class="buy-link secondary" href="${escapeHtml(fund.fundrichAppUrl)}">基富通 App 申購</a>`;
+  }
+  return "";
+}
+
 function renderMetrics(list) {
   const total = list.length;
   const avgReturn = total ? list.reduce((sum, fund) => sum + fund.return3y, 0) / total : 0;
@@ -294,7 +312,7 @@ function renderFunds() {
         <article class="fund-card${selectedClass}">
           <div class="fund-head">
             <div>
-              <h3>${escapeHtml(fund.name)}</h3>
+              <h3>${renderFundName(fund)}</h3>
               <p>${escapeHtml(fund.ticker || fund.company)} / ${escapeHtml(fund.type)} / ${escapeHtml(fund.region)}</p>
             </div>
             <div class="score" title="${scoreTitle()}">${fund.score}</div>
@@ -311,6 +329,7 @@ function renderFunds() {
           </div>
           <div class="card-actions">
             <span>定期定額 ${fund.minRsp.toLocaleString("zh-TW")} 元起</span>
+            ${renderBuyLink(fund)}
             <label class="choice">
               <input type="checkbox" data-fund="${escapeHtml(fund.name)}" ${checked}>
               比較

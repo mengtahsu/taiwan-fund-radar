@@ -352,6 +352,13 @@ legend {
   font-size: 18px;
 }
 
+.fund-name-link {
+  color: var(--accent-dark);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
 .fund-head p {
   margin: 0;
   color: var(--muted);
@@ -415,6 +422,24 @@ legend {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.buy-link {
+  display: inline-grid;
+  min-height: 36px;
+  place-items: center;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.buy-link.secondary {
+  background: var(--gold);
+  color: #23190a;
 }
 
 .risk-low {
