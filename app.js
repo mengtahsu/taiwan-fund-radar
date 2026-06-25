@@ -424,7 +424,7 @@ function resetFilters() {
   els.query.value = "";
   els.type.value = "all";
   els.region.value = "all";
-  els.risk.value = 4;
+  els.risk.value = 5;
   els.return.value = 0;
   els.sort.value = "score";
   document.querySelector("input[name='goal'][value='growth']").checked = true;
