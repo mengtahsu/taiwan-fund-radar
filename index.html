@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>台灣基金雷達</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Taiwan Fund Finder</p>
+        <h1>台灣基金雷達</h1>
+      </div>
+      <nav aria-label="主要連結">
+        <a href="#finder">篩選</a>
+        <a href="#compare">比較</a>
+        <a href="#data">資料</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="kicker">用風險、費用、績效和投資區域快速縮小候選清單。</p>
+          <h2>先建立規則，再挑適合你的基金。</h2>
+          <p>
+            這個原型使用示範資料，適合接上台灣公開基金資料後做個人化篩選。
+            任何結果都不是投資建議，下單前仍需閱讀公開說明書與最新淨值。
+          </p>
+        </div>
+        <div class="market-panel" aria-label="市場概覽">
+          <div class="market-row">
+            <span>候選基金</span>
+            <strong id="metricTotal">0</strong>
+          </div>
+          <div class="market-row">
+            <span>平均年化報酬</span>
+            <strong id="metricReturn">0%</strong>
+          </div>
+          <div class="market-row">
+            <span>平均總費用率</span>
+            <strong id="metricFee">0%</strong>
+          </div>
+          <div class="market-row compact">
+            <span>資料狀態</span>
+            <strong id="dataStatus">示範資料</strong>
+          </div>
+          <div class="bars" aria-hidden="true">
+            <span style="height: 42%"></span>
+            <span style="height: 62%"></span>
+            <span style="height: 35%"></span>
+            <span style="height: 76%"></span>
+            <span style="height: 54%"></span>
+            <span style="height: 88%"></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="finder" class="workspace">
+        <aside class="filters" aria-label="基金篩選條件">
+          <div class="filter-header">
+            <h2>條件</h2>
+            <button id="resetBtn" type="button" title="重設條件">Reset</button>
+          </div>
+          <button id="highReturnBtn" class="wide-action" type="button">高報酬篩選</button>
+          <p class="filter-note">高報酬通常伴隨較高波動，請同時檢查 RR、費用率、規模與投資區域。</p>
+
+          <label>
+            關鍵字
+            <input id="queryInput" type="search" placeholder="基金名稱、公司、標籤">
+          </label>
+
+          <label>
+            基金類型
+            <select id="typeSelect">
+              <option value="all">全部</option>
+              <option value="台股">台股</option>
+              <option value="平衡">平衡</option>
+              <option value="債券">債券</option>
+              <option value="全球股票">全球股票</option>
+              <option value="ETF連結">ETF連結</option>
+            </select>
+          </label>
+
+          <label>
+            投資區域
+            <select id="regionSelect">
+              <option value="all">全部</option>
+              <option value="台灣">台灣</option>
+              <option value="全球">全球</option>
+              <option value="美國">美國</option>
+              <option value="亞洲">亞洲</option>
+            </select>
+          </label>
+
+          <fieldset>
+            <legend>你的目標</legend>
+            <label class="choice"><input name="goal" type="radio" value="growth" checked> 成長</label>
+            <label class="choice"><input name="goal" type="radio" value="income"> 配息</label>
+            <label class="choice"><input name="goal" type="radio" value="stability"> 穩健</label>
+          </fieldset>
+
+          <label>
+            可接受風險
+            <input id="riskInput" type="range" min="1" max="5" value="4">
+            <span class="range-value">RR <strong id="riskValue">4</strong> 以下</span>
+          </label>
+
+          <label>
+            最高總費用率
+            <input id="feeInput" type="range" min="0.2" max="2.5" step="0.1" value="1.6">
+            <span class="range-value"><strong id="feeValue">1.6</strong>% 以下</span>
+          </label>
+
+          <label>
+            最低三年年化報酬
+            <input id="returnInput" type="range" min="-5" max="18" step="0.5" value="0">
+            <span class="range-value"><strong id="returnValue">0</strong>% 以上</span>
+          </label>
+        </aside>
+
+        <section class="results" aria-live="polite">
+          <div class="results-toolbar">
+            <div>
+              <h2>基金清單</h2>
+              <p id="resultCount">0 檔符合</p>
+            </div>
+            <label>
+              排序
+              <select id="sortSelect">
+                <option value="score">匹配分數</option>
+                <option value="return3y">三年年化報酬</option>
+                <option value="fee">總費用率</option>
+                <option value="volatility">波動度</option>
+                <option value="aum">規模</option>
+              </select>
+            </label>
+          </div>
+          <div id="fundGrid" class="fund-grid"></div>
+        </section>
+      </section>
+
+      <section id="compare" class="compare-section">
+        <div>
+          <h2>比較清單</h2>
+          <p>勾選最多三檔基金，確認費用、風險、規模與績效是否符合你的規則。</p>
+        </div>
+        <div id="compareTable" class="compare-table"></div>
+      </section>
+
+      <section id="data" class="data-section">
+        <div>
+          <h2>資料匯入</h2>
+          <p>
+            網站會優先讀取 data/funds.json。也可貼上 JSON 陣列暫時覆蓋畫面資料。
+            欄位需包含 name、company、type、region、risk、
+            return3y、fee、volatility、sharpe、aum、dividend、minRsp、tags。
+          </p>
+        </div>
+        <textarea id="dataInput" spellcheck="false" placeholder='[{"name":"範例基金","company":"投信公司","type":"台股","region":"台灣","risk":4,"return3y":8.2,"fee":1.1,"volatility":14.8,"sharpe":0.62,"aum":320,"dividend":"累積型","minRsp":3000,"tags":["電子","大型股"]}]'></textarea>
+        <div class="data-actions">
+          <button id="loadDataBtn" type="button">載入資料</button>
+          <button id="sampleDataBtn" type="button">還原示範資料</button>
+        </div>
+        <p class="source-note">
+          自動更新由 update_funds.py 負責；設定資料來源後可每 3 小時更新一次。這個網站不自動下單，也不保證資料即時性。
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <span>僅供研究與篩選流程使用，不構成買賣建議。</span>
+      <a href="https://www.sitca.org.tw/" rel="noreferrer">投信投顧公會</a>
+      <a href="https://announce.fundclear.com.tw/MOPSFundWeb/" rel="noreferrer">基金資訊觀測站</a>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

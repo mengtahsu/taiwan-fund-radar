@@ -1,0 +1,74 @@
+name: Update data and deploy Pages
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */3 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      FUND_SOURCE_URL: ${{ secrets.FUND_SOURCE_URL || vars.FUND_SOURCE_URL }}
+      FUND_SOURCE_NAME: ${{ vars.FUND_SOURCE_NAME || '基金資料來源' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Check data source
+        run: |
+          if [ -z "$FUND_SOURCE_URL" ]; then
+            echo "Set FUND_SOURCE_URL as a repository secret or variable."
+            exit 1
+          fi
+
+      - name: Create source config
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          Path("config").mkdir(exist_ok=True)
+          Path("config/source.json").write_text(
+              json.dumps(
+                  {
+                      "sourceName": os.environ["FUND_SOURCE_NAME"],
+                      "sourceUrl": os.environ["FUND_SOURCE_URL"],
+                      "outputPath": "data/funds.json",
+                      "intervalHours": 3,
+                  },
+                  ensure_ascii=False,
+                  indent=2,
+              )
+              + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Update fund data
+        run: python3 update_funds.py --config config/source.json --once
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

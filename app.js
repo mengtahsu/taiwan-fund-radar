@@ -1,0 +1,482 @@
+const sampleFunds = [
+  {
+    name: "台灣核心成長示範基金",
+    company: "範例投信",
+    type: "台股",
+    region: "台灣",
+    risk: 4,
+    return3y: 10.8,
+    fee: 1.28,
+    volatility: 18.6,
+    sharpe: 0.66,
+    aum: 428,
+    dividend: "累積型",
+    minRsp: 3000,
+    tags: ["大型股", "電子", "成長"]
+  },
+  {
+    name: "台灣高股息收益示範基金",
+    company: "範例資產管理",
+    type: "台股",
+    region: "台灣",
+    risk: 4,
+    return3y: 7.4,
+    fee: 1.05,
+    volatility: 14.2,
+    sharpe: 0.58,
+    aum: 980,
+    dividend: "月配",
+    minRsp: 1000,
+    tags: ["高股息", "價值", "收益"]
+  },
+  {
+    name: "台灣中小精選示範基金",
+    company: "示範投信",
+    type: "台股",
+    region: "台灣",
+    risk: 5,
+    return3y: 13.2,
+    fee: 1.62,
+    volatility: 24.5,
+    sharpe: 0.54,
+    aum: 156,
+    dividend: "累積型",
+    minRsp: 3000,
+    tags: ["中小型", "主動", "高波動"]
+  },
+  {
+    name: "台灣平衡配置示範基金",
+    company: "範例投信",
+    type: "平衡",
+    region: "台灣",
+    risk: 3,
+    return3y: 5.6,
+    fee: 0.92,
+    volatility: 8.1,
+    sharpe: 0.61,
+    aum: 342,
+    dividend: "季配",
+    minRsp: 1000,
+    tags: ["股債平衡", "穩健", "配置"]
+  },
+  {
+    name: "投資級債券示範基金",
+    company: "示範投信",
+    type: "債券",
+    region: "全球",
+    risk: 2,
+    return3y: 3.1,
+    fee: 0.68,
+    volatility: 5.2,
+    sharpe: 0.42,
+    aum: 760,
+    dividend: "月配",
+    minRsp: 1000,
+    tags: ["投資級", "低波動", "收益"]
+  },
+  {
+    name: "美國科技連結示範基金",
+    company: "範例資產管理",
+    type: "ETF連結",
+    region: "美國",
+    risk: 5,
+    return3y: 15.4,
+    fee: 0.78,
+    volatility: 22.4,
+    sharpe: 0.71,
+    aum: 512,
+    dividend: "累積型",
+    minRsp: 3000,
+    tags: ["科技", "ETF", "成長"]
+  },
+  {
+    name: "全球永續股票示範基金",
+    company: "示範投信",
+    type: "全球股票",
+    region: "全球",
+    risk: 4,
+    return3y: 8.9,
+    fee: 1.16,
+    volatility: 16.3,
+    sharpe: 0.63,
+    aum: 298,
+    dividend: "累積型",
+    minRsp: 3000,
+    tags: ["ESG", "全球", "成長"]
+  },
+  {
+    name: "亞洲收益平衡示範基金",
+    company: "範例投信",
+    type: "平衡",
+    region: "亞洲",
+    risk: 3,
+    return3y: 4.8,
+    fee: 1.08,
+    volatility: 9.5,
+    sharpe: 0.49,
+    aum: 226,
+    dividend: "季配",
+    minRsp: 1000,
+    tags: ["亞洲", "收益", "配置"]
+  }
+];
+
+let funds = [...sampleFunds];
+let selected = new Set();
+let sourceMeta = {
+  source: "示範資料",
+  updatedAt: null
+};
+
+const els = {
+  query: document.querySelector("#queryInput"),
+  type: document.querySelector("#typeSelect"),
+  region: document.querySelector("#regionSelect"),
+  risk: document.querySelector("#riskInput"),
+  fee: document.querySelector("#feeInput"),
+  return: document.querySelector("#returnInput"),
+  riskValue: document.querySelector("#riskValue"),
+  feeValue: document.querySelector("#feeValue"),
+  returnValue: document.querySelector("#returnValue"),
+  sort: document.querySelector("#sortSelect"),
+  grid: document.querySelector("#fundGrid"),
+  count: document.querySelector("#resultCount"),
+  compare: document.querySelector("#compareTable"),
+  metricTotal: document.querySelector("#metricTotal"),
+  metricReturn: document.querySelector("#metricReturn"),
+  metricFee: document.querySelector("#metricFee"),
+  dataStatus: document.querySelector("#dataStatus"),
+  reset: document.querySelector("#resetBtn"),
+  highReturn: document.querySelector("#highReturnBtn"),
+  dataInput: document.querySelector("#dataInput"),
+  loadData: document.querySelector("#loadDataBtn"),
+  sampleData: document.querySelector("#sampleDataBtn")
+};
+
+function goal() {
+  return document.querySelector("input[name='goal']:checked").value;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function scoreFund(fund) {
+  const currentGoal = goal();
+  const riskFit = 1 - Math.max(0, fund.risk - Number(els.risk.value)) / 4;
+  const feeScore = 1 - clamp(fund.fee / 2.5, 0, 1);
+  const returnScore = clamp((fund.return3y + 5) / 23, 0, 1);
+  const stabilityScore = 1 - clamp(fund.volatility / 28, 0, 1);
+  const incomeScore = fund.dividend.includes("配") ? 1 : 0.35;
+
+  const weights = {
+    growth: [returnScore, feeScore, riskFit, fund.sharpe],
+    income: [incomeScore, feeScore, stabilityScore, riskFit],
+    stability: [stabilityScore, feeScore, riskFit, fund.sharpe]
+  }[currentGoal];
+
+  return Math.round((weights[0] * 0.38 + weights[1] * 0.2 + weights[2] * 0.22 + weights[3] * 0.2) * 100);
+}
+
+function filteredFunds() {
+  const q = els.query.value.trim().toLowerCase();
+  const maxRisk = Number(els.risk.value);
+  const maxFee = Number(els.fee.value);
+  const minReturn = Number(els.return.value);
+
+  return funds
+    .filter((fund) => {
+      const haystack = [fund.name, fund.company, fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
+      return (
+        (!q || haystack.includes(q)) &&
+        (els.type.value === "all" || fund.type === els.type.value) &&
+        (els.region.value === "all" || fund.region === els.region.value) &&
+        fund.risk <= maxRisk &&
+        fund.fee <= maxFee &&
+        fund.return3y >= minReturn
+      );
+    })
+    .map((fund) => ({ ...fund, score: scoreFund(fund) }))
+    .sort((a, b) => {
+      if (els.sort.value === "fee" || els.sort.value === "volatility") {
+        return a[els.sort.value] - b[els.sort.value];
+      }
+      return b[els.sort.value] - a[els.sort.value];
+    });
+}
+
+function formatMoney(value) {
+  return `${value.toLocaleString("zh-TW")} 億`;
+}
+
+function riskClass(risk) {
+  return risk >= 4 ? "risk-high" : "risk-low";
+}
+
+function renderMetrics(list) {
+  const total = list.length;
+  const avgReturn = total ? list.reduce((sum, fund) => sum + fund.return3y, 0) / total : 0;
+  const avgFee = total ? list.reduce((sum, fund) => sum + fund.fee, 0) / total : 0;
+
+  els.metricTotal.textContent = total;
+  els.metricReturn.textContent = `${avgReturn.toFixed(1)}%`;
+  els.metricFee.textContent = `${avgFee.toFixed(2)}%`;
+}
+
+function renderDataStatus() {
+  if (!sourceMeta.updatedAt) {
+    els.dataStatus.textContent = sourceMeta.source;
+    return;
+  }
+
+  const updated = new Date(sourceMeta.updatedAt);
+  const label = Number.isNaN(updated.getTime())
+    ? sourceMeta.updatedAt
+    : updated.toLocaleString("zh-TW", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+  els.dataStatus.textContent = `${sourceMeta.source} ${label}`;
+}
+
+function renderFunds() {
+  const list = filteredFunds();
+  els.count.textContent = `${list.length} 檔符合`;
+  renderMetrics(list);
+  renderDataStatus();
+
+  if (!list.length) {
+    els.grid.innerHTML = '<div class="empty">沒有符合條件的基金，放寬風險、費用或報酬門檻再試一次。</div>';
+    renderCompare();
+    return;
+  }
+
+  els.grid.innerHTML = list
+    .map((fund) => {
+      const checked = selected.has(fund.name) ? "checked" : "";
+      const selectedClass = selected.has(fund.name) ? " selected" : "";
+      return `
+        <article class="fund-card${selectedClass}">
+          <div class="fund-head">
+            <div>
+              <h3>${escapeHtml(fund.name)}</h3>
+              <p>${escapeHtml(fund.company)} / ${escapeHtml(fund.type)} / ${escapeHtml(fund.region)}</p>
+            </div>
+            <div class="score" title="匹配分數">${fund.score}</div>
+          </div>
+          <div class="pill-row">
+            <span class="pill ${riskClass(fund.risk)}">RR ${fund.risk}</span>
+            <span class="pill">${escapeHtml(fund.dividend)}</span>
+            ${fund.tags.map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}
+          </div>
+          <div class="stats">
+            <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
+            <div class="stat"><span>總費用率</span><strong>${fund.fee.toFixed(2)}%</strong></div>
+            <div class="stat"><span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong></div>
+            <div class="stat"><span>基金規模</span><strong>${formatMoney(fund.aum)}</strong></div>
+          </div>
+          <div class="card-actions">
+            <span>定期定額 ${fund.minRsp.toLocaleString("zh-TW")} 元起</span>
+            <label class="choice">
+              <input type="checkbox" data-fund="${escapeHtml(fund.name)}" ${checked}>
+              比較
+            </label>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  document.querySelectorAll("[data-fund]").forEach((input) => {
+    input.addEventListener("change", () => {
+      if (input.checked && selected.size >= 3) {
+        input.checked = false;
+        return;
+      }
+      input.checked ? selected.add(input.dataset.fund) : selected.delete(input.dataset.fund);
+      renderFunds();
+      renderCompare();
+    });
+  });
+
+  renderCompare();
+}
+
+function renderCompare() {
+  const list = funds.filter((fund) => selected.has(fund.name)).map((fund) => ({ ...fund, score: scoreFund(fund) }));
+  if (!list.length) {
+    els.compare.innerHTML = '<div class="empty">尚未選擇基金。</div>';
+    return;
+  }
+
+  els.compare.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>基金</th>
+          <th>分數</th>
+          <th>RR</th>
+          <th>三年年化</th>
+          <th>費用率</th>
+          <th>波動度</th>
+          <th>Sharpe</th>
+          <th>規模</th>
+          <th>配息</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list
+          .map(
+            (fund) => `
+              <tr>
+                <td>${escapeHtml(fund.name)}</td>
+                <td>${fund.score}</td>
+                <td>RR ${fund.risk}</td>
+                <td>${fund.return3y.toFixed(1)}%</td>
+                <td>${fund.fee.toFixed(2)}%</td>
+                <td>${fund.volatility.toFixed(1)}%</td>
+                <td>${fund.sharpe.toFixed(2)}</td>
+                <td>${formatMoney(fund.aum)}</td>
+                <td>${escapeHtml(fund.dividend)}</td>
+              </tr>
+            `
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function syncLabels() {
+  els.riskValue.textContent = els.risk.value;
+  els.feeValue.textContent = Number(els.fee.value).toFixed(1);
+  els.returnValue.textContent = Number(els.return.value).toFixed(1);
+}
+
+function validateFund(item) {
+  const required = ["name", "company", "type", "region", "risk", "return3y", "fee", "volatility", "sharpe", "aum", "dividend", "minRsp", "tags"];
+  return required.every((key) => key in item) && Array.isArray(item.tags);
+}
+
+function normalizePayload(payload) {
+  if (Array.isArray(payload)) {
+    return {
+      funds: payload,
+      meta: {
+        source: "匯入資料",
+        updatedAt: null
+      }
+    };
+  }
+
+  if (payload && Array.isArray(payload.funds)) {
+    return {
+      funds: payload.funds,
+      meta: {
+        source: payload.source || "自動更新資料",
+        updatedAt: payload.updatedAt || null
+      }
+    };
+  }
+
+  throw new Error("資料格式不符合欄位需求。");
+}
+
+function loadCustomData() {
+  try {
+    const parsed = normalizePayload(JSON.parse(els.dataInput.value));
+    if (!parsed.funds.every(validateFund)) {
+      throw new Error("資料格式不符合欄位需求。");
+    }
+    funds = parsed.funds;
+    sourceMeta = parsed.meta;
+    selected = new Set();
+    renderFunds();
+  } catch (error) {
+    alert(error.message || "無法讀取 JSON。");
+  }
+}
+
+function resetFilters() {
+  els.query.value = "";
+  els.type.value = "all";
+  els.region.value = "all";
+  els.risk.value = 4;
+  els.fee.value = 1.6;
+  els.return.value = 0;
+  els.sort.value = "score";
+  document.querySelector("input[name='goal'][value='growth']").checked = true;
+  syncLabels();
+  renderFunds();
+}
+
+function applyHighReturnPreset() {
+  els.query.value = "";
+  els.type.value = "all";
+  els.region.value = "all";
+  els.risk.value = 5;
+  els.fee.value = 2.5;
+  els.return.value = 8;
+  els.sort.value = "return3y";
+  document.querySelector("input[name='goal'][value='growth']").checked = true;
+  syncLabels();
+  renderFunds();
+}
+
+[els.query, els.type, els.region, els.risk, els.fee, els.return, els.sort].forEach((el) => {
+  el.addEventListener("input", () => {
+    syncLabels();
+    renderFunds();
+  });
+});
+
+document.querySelectorAll("input[name='goal']").forEach((input) => input.addEventListener("change", renderFunds));
+els.reset.addEventListener("click", resetFilters);
+els.highReturn.addEventListener("click", applyHighReturnPreset);
+els.loadData.addEventListener("click", loadCustomData);
+els.sampleData.addEventListener("click", () => {
+  funds = [...sampleFunds];
+  sourceMeta = {
+    source: "示範資料",
+    updatedAt: null
+  };
+  selected = new Set();
+  els.dataInput.value = "";
+  renderFunds();
+});
+
+async function loadLatestData() {
+  try {
+    const response = await fetch("data/funds.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("找不到更新資料。");
+    }
+    const parsed = normalizePayload(await response.json());
+    if (!parsed.funds.every(validateFund)) {
+      throw new Error("更新資料格式不符合欄位需求。");
+    }
+    funds = parsed.funds;
+    sourceMeta = parsed.meta;
+  } catch (error) {
+    sourceMeta = {
+      source: "示範資料",
+      updatedAt: null
+    };
+  } finally {
+    syncLabels();
+    renderFunds();
+  }
+}
+
+loadLatestData();

@@ -1,0 +1,6 @@
+{
+  "sourceName": "基金資料供應商",
+  "sourceUrl": "https://example.com/funds.json",
+  "outputPath": "data/funds.json",
+  "intervalHours": 3
+}
