@@ -62,9 +62,9 @@ jobs:
         if: env.FUND_SOURCE_URL != ''
         run: python3 update_funds.py --config config/source.json --once
 
-      - name: Use bundled sample data
+      - name: Update Taiwan ETF market data
         if: env.FUND_SOURCE_URL == ''
-        run: echo "FUND_SOURCE_URL is not set. Deploying the bundled data/funds.json."
+        run: python3 update_funds.py --provider yahoo-tw-etf --once
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

@@ -195,7 +195,7 @@ function filteredFunds() {
 
   return funds
     .filter((fund) => {
-      const haystack = [fund.name, fund.company, fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
+      const haystack = [fund.name, fund.company, fund.ticker || "", fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
       return (
         (!q || haystack.includes(q)) &&
         (els.type.value === "all" || fund.type === els.type.value) &&
@@ -216,6 +216,20 @@ function filteredFunds() {
 
 function formatMoney(value) {
   return `${value.toLocaleString("zh-TW")} 億`;
+}
+
+function formatPrice(fund) {
+  if (typeof fund.price === "number" && fund.price > 0) {
+    return `NT$ ${fund.price.toLocaleString("zh-TW", { maximumFractionDigits: 2 })}`;
+  }
+  return formatMoney(fund.aum);
+}
+
+function liquidityLabel(fund) {
+  if (typeof fund.averageVolume === "number" && fund.averageVolume > 0) {
+    return `${fund.averageVolume.toLocaleString("zh-TW")} 股`;
+  }
+  return formatMoney(fund.aum);
 }
 
 function riskClass(risk) {
@@ -271,7 +285,7 @@ function renderFunds() {
           <div class="fund-head">
             <div>
               <h3>${escapeHtml(fund.name)}</h3>
-              <p>${escapeHtml(fund.company)} / ${escapeHtml(fund.type)} / ${escapeHtml(fund.region)}</p>
+              <p>${escapeHtml(fund.ticker || fund.company)} / ${escapeHtml(fund.type)} / ${escapeHtml(fund.region)}</p>
             </div>
             <div class="score" title="匹配分數">${fund.score}</div>
           </div>
@@ -284,7 +298,7 @@ function renderFunds() {
             <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
             <div class="stat"><span>總費用率</span><strong>${fund.fee.toFixed(2)}%</strong></div>
             <div class="stat"><span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong></div>
-            <div class="stat"><span>基金規模</span><strong>${formatMoney(fund.aum)}</strong></div>
+            <div class="stat"><span>${fund.price ? "最新價格" : "基金規模"}</span><strong>${formatPrice(fund)}</strong></div>
           </div>
           <div class="card-actions">
             <span>定期定額 ${fund.minRsp.toLocaleString("zh-TW")} 元起</span>
@@ -331,7 +345,7 @@ function renderCompare() {
           <th>費用率</th>
           <th>波動度</th>
           <th>Sharpe</th>
-          <th>規模</th>
+          <th>價格/流動性</th>
           <th>配息</th>
         </tr>
       </thead>
@@ -347,7 +361,7 @@ function renderCompare() {
                 <td>${fund.fee.toFixed(2)}%</td>
                 <td>${fund.volatility.toFixed(1)}%</td>
                 <td>${fund.sharpe.toFixed(2)}</td>
-                <td>${formatMoney(fund.aum)}</td>
+                <td>${fund.price ? `${formatPrice(fund)} / ${liquidityLabel(fund)}` : formatMoney(fund.aum)}</td>
                 <td>${escapeHtml(fund.dividend)}</td>
               </tr>
             `

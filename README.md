@@ -20,11 +20,13 @@ python3 -m http.server 8000
 
 建議部署到 GitHub Pages。網站是靜態檔案，Python 更新器會由 GitHub Actions 在 GitHub 雲端執行，不需要你的 MacBook 開著。
 
+預設資料來源是 Yahoo Finance 的台灣上市 ETF 市場資料。更新器會抓取價格歷史，計算三年年化報酬、年化波動度和 Sharpe-like 指標，然後寫入 `data/funds.json`。
+
 流程：
 
 1. 建立一個 GitHub repository，將本專案推上去。
 2. 到 repository 的 `Settings` -> `Pages`，把 `Build and deployment` 的 source 設成 `GitHub Actions`。
-3. 到 `Settings` -> `Secrets and variables` -> `Actions` 設定資料來源：
+3. 如要使用自訂資料來源，到 `Settings` -> `Secrets and variables` -> `Actions` 設定：
    - `FUND_SOURCE_URL`: 真實基金資料 JSON/API URL。可用 secret 或 variable。
    - `FUND_SOURCE_NAME`: 顯示在網站上的資料來源名稱。可用 variable。
 4. 到 `Actions` 手動執行 `Update data and deploy Pages` 一次。
@@ -38,7 +40,7 @@ schedule:
 
 GitHub Actions 的 cron 使用 UTC。若用台灣時間看，這個設定仍然是每 3 小時一次，只是執行時間會對應到 UTC。
 
-如果你還沒有真實基金資料 URL，workflow 會先部署內建的 `data/funds.json`。設定 `FUND_SOURCE_URL` 之後，才會在每次排程時抓最新資料再部署。
+如果沒有設定 `FUND_SOURCE_URL`，workflow 會改抓 Yahoo Finance 的台灣 ETF 市場資料。設定 `FUND_SOURCE_URL` 之後，才會改用你的自訂 JSON/API 來源。
 
 先建立設定檔：
 
@@ -58,6 +60,12 @@ python3 update_funds.py --config config/source.json --once
 
 ```sh
 python3 update_funds.py --config config/source.json --watch
+```
+
+使用預設台灣 ETF 市場資料更新一次：
+
+```sh
+python3 update_funds.py --provider yahoo-tw-etf --once
 ```
 
 正式部署時建議用系統排程執行 `--once`，例如 cron：
