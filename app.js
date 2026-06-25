@@ -172,7 +172,7 @@ function escapeHtml(value) {
 function scoreFund(fund) {
   const currentGoal = goal();
   const riskFit = 1 - Math.max(0, fund.risk - Number(els.risk.value)) / 4;
-  const returnScore = clamp((fund.return3y + 5) / 23, 0, 1);
+  const returnScore = clamp(fund.return3y / 80, 0, 1);
   const stabilityScore = 1 - clamp(fund.volatility / 28, 0, 1);
   const incomeScore = fund.dividend.includes("配") ? 1 : 0.35;
   const sharpeScore = clamp(fund.sharpe / 2, 0, 1);
@@ -184,6 +184,14 @@ function scoreFund(fund) {
   }[currentGoal];
 
   return Math.round((weights[0] * 0.45 + weights[1] * 0.25 + weights[2] * 0.3) * 100);
+}
+
+function scoreTitle() {
+  return {
+    growth: "自訂綜合分數：三年年化 45%、風險符合度 25%、Sharpe 30%",
+    income: "自訂綜合分數：配息型態 45%、低波動 25%、風險符合度 30%",
+    stability: "自訂綜合分數：低波動 45%、風險符合度 25%、Sharpe 30%"
+  }[goal()];
 }
 
 function filteredFunds() {
@@ -289,7 +297,7 @@ function renderFunds() {
               <h3>${escapeHtml(fund.name)}</h3>
               <p>${escapeHtml(fund.ticker || fund.company)} / ${escapeHtml(fund.type)} / ${escapeHtml(fund.region)}</p>
             </div>
-            <div class="score" title="匹配分數">${fund.score}</div>
+            <div class="score" title="${scoreTitle()}">${fund.score}</div>
           </div>
           <div class="pill-row">
             <span class="pill ${riskClass(fund.risk)}">RR ${fund.risk}</span>
@@ -373,7 +381,7 @@ function renderCompare() {
 
 function syncLabels() {
   els.riskValue.textContent = els.risk.value;
-  els.returnValue.textContent = Number(els.return.value).toFixed(1);
+  els.returnValue.textContent = Number(els.return.value).toLocaleString("zh-TW", { maximumFractionDigits: 1 });
 }
 
 function validateFund(item) {
@@ -425,7 +433,7 @@ function resetFilters() {
   els.type.value = "all";
   els.region.value = "all";
   els.risk.value = 5;
-  els.return.value = 0;
+  els.return.value = 20;
   els.sort.value = "score";
   document.querySelector("input[name='goal'][value='growth']").checked = true;
   syncLabels();
