@@ -133,10 +133,8 @@ const els = {
   type: document.querySelector("#typeSelect"),
   region: document.querySelector("#regionSelect"),
   risk: document.querySelector("#riskInput"),
-  fee: document.querySelector("#feeInput"),
   return: document.querySelector("#returnInput"),
   riskValue: document.querySelector("#riskValue"),
-  feeValue: document.querySelector("#feeValue"),
   returnValue: document.querySelector("#returnValue"),
   sort: document.querySelector("#sortSelect"),
   grid: document.querySelector("#fundGrid"),
@@ -144,7 +142,6 @@ const els = {
   compare: document.querySelector("#compareTable"),
   metricTotal: document.querySelector("#metricTotal"),
   metricReturn: document.querySelector("#metricReturn"),
-  metricFee: document.querySelector("#metricFee"),
   dataStatus: document.querySelector("#dataStatus"),
   reset: document.querySelector("#resetBtn"),
   highReturn: document.querySelector("#highReturnBtn"),
@@ -173,25 +170,23 @@ function escapeHtml(value) {
 function scoreFund(fund) {
   const currentGoal = goal();
   const riskFit = 1 - Math.max(0, fund.risk - Number(els.risk.value)) / 4;
-  const feeScore = fund.feeUnavailable ? 0.6 : 1 - clamp(fund.fee / 2.5, 0, 1);
   const returnScore = clamp((fund.return3y + 5) / 23, 0, 1);
   const stabilityScore = 1 - clamp(fund.volatility / 28, 0, 1);
   const incomeScore = fund.dividend.includes("配") ? 1 : 0.35;
   const sharpeScore = clamp(fund.sharpe / 2, 0, 1);
 
   const weights = {
-    growth: [returnScore, feeScore, riskFit, sharpeScore],
-    income: [incomeScore, feeScore, stabilityScore, riskFit],
-    stability: [stabilityScore, feeScore, riskFit, sharpeScore]
+    growth: [returnScore, riskFit, sharpeScore],
+    income: [incomeScore, stabilityScore, riskFit],
+    stability: [stabilityScore, riskFit, sharpeScore]
   }[currentGoal];
 
-  return Math.round((weights[0] * 0.38 + weights[1] * 0.2 + weights[2] * 0.22 + weights[3] * 0.2) * 100);
+  return Math.round((weights[0] * 0.45 + weights[1] * 0.25 + weights[2] * 0.3) * 100);
 }
 
 function filteredFunds() {
   const q = els.query.value.trim().toLowerCase();
   const maxRisk = Number(els.risk.value);
-  const maxFee = Number(els.fee.value);
   const minReturn = Number(els.return.value);
 
   return funds
@@ -202,13 +197,12 @@ function filteredFunds() {
         (els.type.value === "all" || fund.type === els.type.value) &&
         (els.region.value === "all" || fund.region === els.region.value) &&
         fund.risk <= maxRisk &&
-        (fund.feeUnavailable || fund.fee <= maxFee) &&
         fund.return3y >= minReturn
       );
     })
     .map((fund) => ({ ...fund, score: scoreFund(fund) }))
     .sort((a, b) => {
-      if (els.sort.value === "fee" || els.sort.value === "volatility") {
+      if (els.sort.value === "volatility") {
         return a[els.sort.value] - b[els.sort.value];
       }
       return b[els.sort.value] - a[els.sort.value];
@@ -229,13 +223,6 @@ function formatPrice(fund) {
   return formatMoney(fund.aum);
 }
 
-function formatFee(fund) {
-  if (fund.feeUnavailable) {
-    return "需查說明書";
-  }
-  return `${fund.fee.toFixed(2)}%`;
-}
-
 function liquidityLabel(fund) {
   if (fund.navDate) {
     return fund.navDate;
@@ -253,12 +240,9 @@ function riskClass(risk) {
 function renderMetrics(list) {
   const total = list.length;
   const avgReturn = total ? list.reduce((sum, fund) => sum + fund.return3y, 0) / total : 0;
-  const knownFeeFunds = list.filter((fund) => !fund.feeUnavailable);
-  const avgFee = knownFeeFunds.length ? knownFeeFunds.reduce((sum, fund) => sum + fund.fee, 0) / knownFeeFunds.length : null;
 
   els.metricTotal.textContent = total;
   els.metricReturn.textContent = `${avgReturn.toFixed(1)}%`;
-  els.metricFee.textContent = avgFee === null ? "未提供" : `${avgFee.toFixed(2)}%`;
 }
 
 function renderDataStatus() {
@@ -286,7 +270,7 @@ function renderFunds() {
   renderDataStatus();
 
   if (!list.length) {
-    els.grid.innerHTML = '<div class="empty">沒有符合條件的基金，放寬風險、費用或報酬門檻再試一次。</div>';
+    els.grid.innerHTML = '<div class="empty">沒有符合條件的基金，放寬風險或報酬門檻再試一次。</div>';
     renderCompare();
     return;
   }
@@ -311,7 +295,6 @@ function renderFunds() {
           </div>
           <div class="stats">
             <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
-            <div class="stat"><span>費用資料</span><strong>${formatFee(fund)}</strong></div>
             <div class="stat"><span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong></div>
             <div class="stat"><span>${fund.nav ? "最新淨值" : fund.price ? "最新價格" : "基金規模"}</span><strong>${formatPrice(fund)}</strong></div>
           </div>
@@ -357,7 +340,6 @@ function renderCompare() {
           <th>分數</th>
           <th>RR</th>
           <th>三年年化</th>
-          <th>費用資料</th>
           <th>波動度</th>
           <th>Sharpe</th>
           <th>淨值/日期</th>
@@ -373,7 +355,6 @@ function renderCompare() {
                 <td>${fund.score}</td>
                 <td>RR ${fund.risk}</td>
                 <td>${fund.return3y.toFixed(1)}%</td>
-                <td>${formatFee(fund)}</td>
                 <td>${fund.volatility.toFixed(1)}%</td>
                 <td>${fund.sharpe.toFixed(2)}</td>
                 <td>${fund.nav || fund.price ? `${formatPrice(fund)} / ${liquidityLabel(fund)}` : formatMoney(fund.aum)}</td>
@@ -389,12 +370,11 @@ function renderCompare() {
 
 function syncLabels() {
   els.riskValue.textContent = els.risk.value;
-  els.feeValue.textContent = Number(els.fee.value).toFixed(1);
   els.returnValue.textContent = Number(els.return.value).toFixed(1);
 }
 
 function validateFund(item) {
-  const required = ["name", "company", "type", "region", "risk", "return3y", "fee", "volatility", "sharpe", "aum", "dividend", "minRsp", "tags"];
+  const required = ["name", "company", "type", "region", "risk", "return3y", "volatility", "sharpe", "aum", "dividend", "minRsp", "tags"];
   return required.every((key) => key in item) && Array.isArray(item.tags);
 }
 
@@ -442,7 +422,6 @@ function resetFilters() {
   els.type.value = "all";
   els.region.value = "all";
   els.risk.value = 4;
-  els.fee.value = 1.6;
   els.return.value = 0;
   els.sort.value = "score";
   document.querySelector("input[name='goal'][value='growth']").checked = true;
@@ -455,7 +434,6 @@ function applyHighReturnPreset() {
   els.type.value = "all";
   els.region.value = "all";
   els.risk.value = 5;
-  els.fee.value = 2.5;
   els.return.value = 8;
   els.sort.value = "return3y";
   document.querySelector("input[name='goal'][value='growth']").checked = true;
@@ -463,7 +441,7 @@ function applyHighReturnPreset() {
   renderFunds();
 }
 
-[els.query, els.type, els.region, els.risk, els.fee, els.return, els.sort].forEach((el) => {
+[els.query, els.type, els.region, els.risk, els.return, els.sort].forEach((el) => {
   el.addEventListener("input", () => {
     syncLabels();
     renderFunds();

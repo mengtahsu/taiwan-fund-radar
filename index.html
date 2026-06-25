@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>台灣基金雷達</title>
-    <link rel="stylesheet" href="styles.css?v=tw-funds-1">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-2">
   </head>
   <body>
     <header class="topbar">
@@ -22,7 +22,7 @@
     <main>
       <section class="hero">
         <div class="hero-copy">
-          <p class="kicker">用風險、費用、績效和投資區域快速縮小候選清單。</p>
+          <p class="kicker">用風險、績效和投資區域快速縮小候選清單。</p>
           <h2>先建立規則，再挑適合你的基金。</h2>
           <p>
             網站會抓取兆豐基金/MoneyDJ 國內基金公開資料，整理各投信基金的報酬、風險、規模與 RR 等級。
@@ -37,10 +37,6 @@
           <div class="market-row">
             <span>平均年化報酬</span>
             <strong id="metricReturn">0%</strong>
-          </div>
-          <div class="market-row">
-            <span>費用資料</span>
-            <strong id="metricFee">0%</strong>
           </div>
           <div class="market-row compact">
             <span>資料狀態</span>
@@ -64,7 +60,7 @@
             <button id="resetBtn" type="button" title="重設條件">Reset</button>
           </div>
           <button id="highReturnBtn" class="wide-action" type="button">高報酬篩選</button>
-          <p class="filter-note">高報酬通常伴隨較高波動，請同時檢查 RR、費用率、規模與投資區域。</p>
+          <p class="filter-note">高報酬通常伴隨較高波動，請同時檢查 RR、規模與投資區域。</p>
 
           <label>
             關鍵字
@@ -111,12 +107,6 @@
           </label>
 
           <label>
-            最高費用率
-            <input id="feeInput" type="range" min="0.2" max="2.5" step="0.1" value="1.6">
-            <span class="range-value"><strong id="feeValue">1.6</strong>% 以下，未知者保留</span>
-          </label>
-
-          <label>
             最低三年年化報酬
             <input id="returnInput" type="range" min="-5" max="18" step="0.5" value="0">
             <span class="range-value"><strong id="returnValue">0</strong>% 以上</span>
@@ -134,7 +124,6 @@
               <select id="sortSelect">
                 <option value="score">匹配分數</option>
                 <option value="return3y">三年年化報酬</option>
-                <option value="fee">總費用率</option>
                 <option value="volatility">波動度</option>
                 <option value="aum">規模</option>
               </select>
@@ -147,7 +136,7 @@
       <section id="compare" class="compare-section">
         <div>
           <h2>比較清單</h2>
-          <p>勾選最多三檔基金，確認費用、風險、規模與績效是否符合你的規則。</p>
+          <p>勾選最多三檔基金，確認風險、規模與績效是否符合你的規則。</p>
         </div>
         <div id="compareTable" class="compare-table"></div>
       </section>
@@ -158,16 +147,16 @@
           <p>
             網站會優先讀取 data/funds.json。也可貼上 JSON 陣列暫時覆蓋畫面資料。
             欄位需包含 name、company、type、region、risk、
-            return3y、fee、volatility、sharpe、aum、dividend、minRsp、tags。
+            return3y、volatility、sharpe、aum、dividend、minRsp、tags。
           </p>
         </div>
-        <textarea id="dataInput" spellcheck="false" placeholder='[{"name":"範例基金","company":"投信公司","type":"台股","region":"台灣","risk":4,"return3y":8.2,"fee":1.1,"volatility":14.8,"sharpe":0.62,"aum":320,"dividend":"累積型","minRsp":3000,"tags":["電子","大型股"]}]'></textarea>
+        <textarea id="dataInput" spellcheck="false" placeholder='[{"name":"範例基金","company":"投信公司","type":"台股","region":"台灣","risk":4,"return3y":8.2,"volatility":14.8,"sharpe":0.62,"aum":320,"dividend":"累積型","minRsp":3000,"tags":["電子","大型股"]}]'></textarea>
         <div class="data-actions">
           <button id="loadDataBtn" type="button">載入資料</button>
           <button id="sampleDataBtn" type="button">還原示範資料</button>
         </div>
         <p class="source-note">
-          自動更新由 update_funds.py 負責；預設每 3 小時更新一次，也就是每天 8 次。費用欄位若來源未提供，請以公開說明書為準。
+          自動更新由 update_funds.py 負責；預設每 3 小時更新一次，也就是每天 8 次。
         </p>
       </section>
     </main>
@@ -178,6 +167,6 @@
       <a href="https://announce.fundclear.com.tw/MOPSFundWeb/" rel="noreferrer">基金資訊觀測站</a>
     </footer>
 
-    <script src="app.js?v=tw-funds-1"></script>
+    <script src="app.js?v=tw-funds-2"></script>
   </body>
 </html>
