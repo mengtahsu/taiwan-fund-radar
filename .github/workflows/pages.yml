@@ -62,9 +62,9 @@ jobs:
         if: env.FUND_SOURCE_URL != ''
         run: python3 update_funds.py --config config/source.json --once
 
-      - name: Update Taiwan ETF market data
+      - name: Update Taiwan domestic mutual fund data
         if: env.FUND_SOURCE_URL == ''
-        run: python3 update_funds.py --provider yahoo-tw-etf --once
+        run: python3 update_funds.py --provider megabank-tw-funds --once
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

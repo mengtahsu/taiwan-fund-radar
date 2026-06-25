@@ -173,15 +173,16 @@ function escapeHtml(value) {
 function scoreFund(fund) {
   const currentGoal = goal();
   const riskFit = 1 - Math.max(0, fund.risk - Number(els.risk.value)) / 4;
-  const feeScore = 1 - clamp(fund.fee / 2.5, 0, 1);
+  const feeScore = fund.feeUnavailable ? 0.6 : 1 - clamp(fund.fee / 2.5, 0, 1);
   const returnScore = clamp((fund.return3y + 5) / 23, 0, 1);
   const stabilityScore = 1 - clamp(fund.volatility / 28, 0, 1);
   const incomeScore = fund.dividend.includes("配") ? 1 : 0.35;
+  const sharpeScore = clamp(fund.sharpe / 2, 0, 1);
 
   const weights = {
-    growth: [returnScore, feeScore, riskFit, fund.sharpe],
+    growth: [returnScore, feeScore, riskFit, sharpeScore],
     income: [incomeScore, feeScore, stabilityScore, riskFit],
-    stability: [stabilityScore, feeScore, riskFit, fund.sharpe]
+    stability: [stabilityScore, feeScore, riskFit, sharpeScore]
   }[currentGoal];
 
   return Math.round((weights[0] * 0.38 + weights[1] * 0.2 + weights[2] * 0.22 + weights[3] * 0.2) * 100);
@@ -195,13 +196,13 @@ function filteredFunds() {
 
   return funds
     .filter((fund) => {
-      const haystack = [fund.name, fund.company, fund.ticker || "", fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
+      const haystack = [fund.name, fund.company, fund.ticker || "", fund.fundId || "", fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
       return (
         (!q || haystack.includes(q)) &&
         (els.type.value === "all" || fund.type === els.type.value) &&
         (els.region.value === "all" || fund.region === els.region.value) &&
         fund.risk <= maxRisk &&
-        fund.fee <= maxFee &&
+        (fund.feeUnavailable || fund.fee <= maxFee) &&
         fund.return3y >= minReturn
       );
     })
@@ -219,13 +220,26 @@ function formatMoney(value) {
 }
 
 function formatPrice(fund) {
+  if (typeof fund.nav === "number" && fund.nav > 0) {
+    return `${fund.nav.toLocaleString("zh-TW", { maximumFractionDigits: 4 })}`;
+  }
   if (typeof fund.price === "number" && fund.price > 0) {
     return `NT$ ${fund.price.toLocaleString("zh-TW", { maximumFractionDigits: 2 })}`;
   }
   return formatMoney(fund.aum);
 }
 
+function formatFee(fund) {
+  if (fund.feeUnavailable) {
+    return "需查說明書";
+  }
+  return `${fund.fee.toFixed(2)}%`;
+}
+
 function liquidityLabel(fund) {
+  if (fund.navDate) {
+    return fund.navDate;
+  }
   if (typeof fund.averageVolume === "number" && fund.averageVolume > 0) {
     return `${fund.averageVolume.toLocaleString("zh-TW")} 股`;
   }
@@ -239,11 +253,12 @@ function riskClass(risk) {
 function renderMetrics(list) {
   const total = list.length;
   const avgReturn = total ? list.reduce((sum, fund) => sum + fund.return3y, 0) / total : 0;
-  const avgFee = total ? list.reduce((sum, fund) => sum + fund.fee, 0) / total : 0;
+  const knownFeeFunds = list.filter((fund) => !fund.feeUnavailable);
+  const avgFee = knownFeeFunds.length ? knownFeeFunds.reduce((sum, fund) => sum + fund.fee, 0) / knownFeeFunds.length : null;
 
   els.metricTotal.textContent = total;
   els.metricReturn.textContent = `${avgReturn.toFixed(1)}%`;
-  els.metricFee.textContent = `${avgFee.toFixed(2)}%`;
+  els.metricFee.textContent = avgFee === null ? "未提供" : `${avgFee.toFixed(2)}%`;
 }
 
 function renderDataStatus() {
@@ -296,9 +311,9 @@ function renderFunds() {
           </div>
           <div class="stats">
             <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
-            <div class="stat"><span>總費用率</span><strong>${fund.fee.toFixed(2)}%</strong></div>
+            <div class="stat"><span>費用資料</span><strong>${formatFee(fund)}</strong></div>
             <div class="stat"><span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong></div>
-            <div class="stat"><span>${fund.price ? "最新價格" : "基金規模"}</span><strong>${formatPrice(fund)}</strong></div>
+            <div class="stat"><span>${fund.nav ? "最新淨值" : fund.price ? "最新價格" : "基金規模"}</span><strong>${formatPrice(fund)}</strong></div>
           </div>
           <div class="card-actions">
             <span>定期定額 ${fund.minRsp.toLocaleString("zh-TW")} 元起</span>
@@ -342,10 +357,10 @@ function renderCompare() {
           <th>分數</th>
           <th>RR</th>
           <th>三年年化</th>
-          <th>費用率</th>
+          <th>費用資料</th>
           <th>波動度</th>
           <th>Sharpe</th>
-          <th>價格/流動性</th>
+          <th>淨值/日期</th>
           <th>配息</th>
         </tr>
       </thead>
@@ -358,10 +373,10 @@ function renderCompare() {
                 <td>${fund.score}</td>
                 <td>RR ${fund.risk}</td>
                 <td>${fund.return3y.toFixed(1)}%</td>
-                <td>${fund.fee.toFixed(2)}%</td>
+                <td>${formatFee(fund)}</td>
                 <td>${fund.volatility.toFixed(1)}%</td>
                 <td>${fund.sharpe.toFixed(2)}</td>
-                <td>${fund.price ? `${formatPrice(fund)} / ${liquidityLabel(fund)}` : formatMoney(fund.aum)}</td>
+                <td>${fund.nav || fund.price ? `${formatPrice(fund)} / ${liquidityLabel(fund)}` : formatMoney(fund.aum)}</td>
                 <td>${escapeHtml(fund.dividend)}</td>
               </tr>
             `

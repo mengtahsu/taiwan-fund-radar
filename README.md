@@ -20,7 +20,7 @@ python3 -m http.server 8000
 
 建議部署到 GitHub Pages。網站是靜態檔案，Python 更新器會由 GitHub Actions 在 GitHub 雲端執行，不需要你的 MacBook 開著。
 
-預設資料來源是 Yahoo Finance 的台灣上市 ETF 市場資料。更新器會抓取價格歷史，計算三年年化報酬、年化波動度和 Sharpe-like 指標，然後寫入 `data/funds.json`。
+預設資料來源是兆豐基金/MoneyDJ 國內基金公開資料，涵蓋多家台灣投信的境內基金。更新器會抓取報酬率、年化標準差、Sharpe、基金規模與 RR 等級，然後寫入 `data/funds.json`。
 
 流程：
 
@@ -40,7 +40,7 @@ schedule:
 
 GitHub Actions 的 cron 使用 UTC。若用台灣時間看，這個設定仍然是每 3 小時一次，只是執行時間會對應到 UTC。
 
-如果沒有設定 `FUND_SOURCE_URL`，workflow 會改抓 Yahoo Finance 的台灣 ETF 市場資料。設定 `FUND_SOURCE_URL` 之後，才會改用你的自訂 JSON/API 來源。
+如果沒有設定 `FUND_SOURCE_URL`，workflow 會改抓兆豐基金/MoneyDJ 國內基金公開資料。設定 `FUND_SOURCE_URL` 之後，才會改用你的自訂 JSON/API 來源。
 
 先建立設定檔：
 
@@ -62,7 +62,19 @@ python3 update_funds.py --config config/source.json --once
 python3 update_funds.py --config config/source.json --watch
 ```
 
-使用預設台灣 ETF 市場資料更新一次：
+使用預設國內基金資料更新一次：
+
+```sh
+python3 update_funds.py --provider megabank-tw-funds --once
+```
+
+使用元大基金資料更新一次：
+
+```sh
+python3 update_funds.py --provider yuanta-funds --once
+```
+
+使用 Yahoo Finance 台灣 ETF 市場資料更新一次：
 
 ```sh
 python3 update_funds.py --provider yahoo-tw-etf --once
