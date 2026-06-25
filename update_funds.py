@@ -793,8 +793,8 @@ def build_fubon_lookup() -> dict[str, dict[str, Any]]:
 def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
     lookup: dict[str, dict[str, Any]] = {}
     page = 1
-    total = None
-    while total is None or len(lookup) < total:
+    max_page = None
+    while max_page is None or page <= max_page:
         payload = post_json(
             FUNDRICH_FUND_TABLE_URL,
             {"data": {"currentPage": page}},
@@ -805,6 +805,8 @@ def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
         data = (payload.get("data") or [{}])[0]
         total = int(data.get("resultCount") or 0)
         tablebox = data.get("tablebox") or []
+        if max_page is None and tablebox:
+            max_page = min(300, (total + len(tablebox) - 1) // len(tablebox))
         if not tablebox:
             break
         for row in tablebox:
@@ -820,8 +822,6 @@ def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
                 "fundrichAppUrl": FUNDRICH_APP_BUY_URL.format(fund_id=fund_id),
             }
         page += 1
-        if page > 300:
-            break
     if not lookup:
         raise RuntimeError("FundRich returned no buyable funds")
     return lookup

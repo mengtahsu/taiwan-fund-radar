@@ -15,7 +15,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   update-and-deploy:
@@ -64,7 +64,7 @@ jobs:
 
       - name: Update Taiwan fund data with channel links
         if: env.FUND_SOURCE_URL == ''
-        run: python3 update_funds.py --provider combined-tw-funds --once
+        run: timeout 6m python3 update_funds.py --provider combined-tw-funds --once || echo "Fund update timed out or failed; deploying committed data/funds.json"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
