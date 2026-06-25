@@ -128,6 +128,8 @@ let sourceMeta = {
   updatedAt: null
 };
 
+const DISPLAY_LIMIT = 50;
+
 const els = {
   query: document.querySelector("#queryInput"),
   type: document.querySelector("#typeSelect"),
@@ -265,17 +267,18 @@ function renderDataStatus() {
 
 function renderFunds() {
   const list = filteredFunds();
-  els.count.textContent = `${list.length} 檔符合`;
+  const visibleList = list.slice(0, DISPLAY_LIMIT);
+  els.count.textContent = list.length > DISPLAY_LIMIT ? `${list.length} 檔符合，顯示前 ${DISPLAY_LIMIT} 檔` : `${list.length} 檔符合`;
   renderMetrics(list);
   renderDataStatus();
 
-  if (!list.length) {
+  if (!visibleList.length) {
     els.grid.innerHTML = '<div class="empty">沒有符合條件的基金，放寬風險或報酬門檻再試一次。</div>';
     renderCompare();
     return;
   }
 
-  els.grid.innerHTML = list
+  els.grid.innerHTML = visibleList
     .map((fund) => {
       const checked = selected.has(fund.name) ? "checked" : "";
       const selectedClass = selected.has(fund.name) ? " selected" : "";
