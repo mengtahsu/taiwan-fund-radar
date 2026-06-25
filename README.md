@@ -38,7 +38,7 @@ schedule:
 
 GitHub Actions 的 cron 使用 UTC。若用台灣時間看，這個設定仍然是每 3 小時一次，只是執行時間會對應到 UTC。
 
-如果你還沒有真實基金資料 URL，workflow 會失敗並提醒設定 `FUND_SOURCE_URL`。這是刻意的，避免網站假裝已更新但其實仍是示範資料。
+如果你還沒有真實基金資料 URL，workflow 會先部署內建的 `data/funds.json`。設定 `FUND_SOURCE_URL` 之後，才會在每次排程時抓最新資料再部署。
 
 先建立設定檔：
 
