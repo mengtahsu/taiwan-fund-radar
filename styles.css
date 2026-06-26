@@ -501,9 +501,9 @@ legend {
 .benchmark strong {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
-  font-size: 20px;
+  font-size: 17px;
 }
 
 .benchmark strong small {
@@ -771,8 +771,7 @@ footer a {
     font-size: 22px;
   }
 
-  .detail-grid,
-  .stats {
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 }
