@@ -171,7 +171,7 @@ FUNDRICH_DETAIL_URL = "https://www.fundrich.com.tw/fundCenter/fundOverview/fundC
 FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
 TAIFEX_QUOTE_URL = "https://mis.taifex.com.tw/futures/api/getQuoteList"
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-TAIFEX_LIVE_QUOTE_URL = "https://mis.taifex.com.tw/futures/"
+TAIFEX_LIVE_QUOTE_URL = "https://tw.tradingview.com/symbols/TAIFEX-TXF1!/"
 YAHOO_FINANCE_QUOTE_URL = "https://finance.yahoo.com/quote/{symbol}"
 
 MARKET_SYMBOLS = [
