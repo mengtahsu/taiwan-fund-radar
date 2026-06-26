@@ -161,6 +161,15 @@ FUBON_PLUS_BUY_URL = "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId
 FUNDRICH_FUND_TABLE_URL = "https://apis.fundrich.com.tw/FRSDataCenter/FundTableInfo"
 FUNDRICH_DETAIL_URL = "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/{fund_id}"
 FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
+TAIFEX_QUOTE_URL = "https://mis.taifex.com.tw/futures/api/getQuoteList"
+YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+
+MARKET_SYMBOLS = [
+    {"id": "twii", "label": "台股大盤", "symbol": "^TWII", "benchmark": True},
+    {"id": "sp500", "label": "S&P 500", "symbol": "^GSPC", "benchmark": True},
+    {"id": "nasdaq", "label": "Nasdaq", "symbol": "^IXIC", "benchmark": True},
+    {"id": "nasdaqFuture", "label": "Nasdaq 期貨", "symbol": "NQ=F", "benchmark": False},
+]
 
 
 def load_config(path: Path) -> dict[str, Any]:
@@ -261,6 +270,14 @@ def post_json(url: str, payload: dict[str, Any], referer: str) -> Any:
         return json.loads(response.read().decode(charset, "replace"))
 
 
+def post_json_with_headers(url: str, payload: dict[str, Any], headers: dict[str, str]) -> Any:
+    body = json.dumps(payload).encode("utf-8")
+    request = Request(url, data=body, headers=headers, method="POST")
+    with urlopen(request, timeout=30) as response:
+        charset = response.headers.get_content_charset() or "utf-8"
+        return json.loads(response.read().decode(charset, "replace"))
+
+
 def fetch_yahoo_chart(symbol: str) -> dict[str, Any]:
     now = datetime.now(timezone.utc)
     start = now - timedelta(days=365 * 3 + 14)
@@ -275,6 +292,126 @@ def fetch_yahoo_chart(symbol: str) -> dict[str, Any]:
     )
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?{query}"
     return fetch_json(url)
+
+
+def fetch_yahoo_chart_range(symbol: str, days: int = 120) -> dict[str, Any]:
+    now = datetime.now(timezone.utc)
+    start = now - timedelta(days=days)
+    query = urlencode(
+        {
+            "period1": int(start.timestamp()),
+            "period2": int(now.timestamp()),
+            "interval": "1d",
+            "events": "history",
+            "includeAdjustedClose": "true",
+        }
+    )
+    url = YAHOO_CHART_URL.format(symbol=symbol) + f"?{query}"
+    return fetch_json(url)
+
+
+def chart_prices(data: dict[str, Any]) -> list[float]:
+    result = (data.get("chart") or {}).get("result") or []
+    if not result:
+        return []
+    quote = ((result[0].get("indicators") or {}).get("quote") or [{}])[0]
+    closes = quote.get("close") or []
+    return clean_series(closes)
+
+
+def total_return(prices: list[float]) -> float | None:
+    if len(prices) < 2:
+        return None
+    return ((prices[-1] / prices[0]) - 1) * 100
+
+
+def quote_from_prices(item: dict[str, Any], prices: list[float]) -> dict[str, Any] | None:
+    if len(prices) < 2:
+        return None
+    latest = prices[-1]
+    previous = prices[-2]
+    change = latest - previous
+    change_percent = (change / previous) * 100 if previous else 0.0
+    return {
+        "id": item["id"],
+        "label": item["label"],
+        "symbol": item["symbol"],
+        "price": round(latest, 2),
+        "change": round(change, 2),
+        "changePercent": round(change_percent, 2),
+        "return3m": round(total_return(prices) or 0.0, 2),
+    }
+
+
+def fetch_taifex_txf_quote() -> dict[str, Any] | None:
+    payload = {"MarketType": "0", "SymbolType": "F", "KindID": "1", "CID": "TXF"}
+    data = post_json_with_headers(
+        TAIFEX_QUOTE_URL,
+        payload,
+        {
+            "User-Agent": "Mozilla/5.0 TaiwanFundRadar/1.0",
+            "Accept": "application/json,text/plain,*/*",
+            "Content-Type": "application/json",
+            "Origin": "https://mis.taifex.com.tw",
+            "Referer": "https://mis.taifex.com.tw/futures/",
+        },
+    )
+    quotes = ((data.get("RtData") or {}).get("QuoteList") or [])
+    futures = [quote for quote in quotes if str(quote.get("SymbolID", "")).endswith("-F")]
+    active = next((quote for quote in futures if optional_number(quote.get("CLastPrice")) is not None), None)
+    if not active:
+        return None
+    date_text = str(active.get("CDate") or "")
+    time_text = str(active.get("CTime") or "")
+    return {
+        "id": "txf",
+        "label": "台指期",
+        "symbol": active.get("SymbolID") or "TXF",
+        "name": active.get("DispCName") or "臺指期",
+        "price": round(optional_number(active.get("CLastPrice")) or 0.0, 2),
+        "change": round(optional_number(active.get("CDiff")) or 0.0, 2),
+        "changePercent": round(optional_number(active.get("CDiffRate")) or 0.0, 2),
+        "volume": int(optional_number(active.get("CTotalVolume")) or 0),
+        "quoteTime": f"{date_text} {time_text}".strip(),
+    }
+
+
+def build_markets_payload() -> dict[str, Any]:
+    markets: list[dict[str, Any]] = []
+    benchmarks: dict[str, Any] = {}
+    warnings: list[str] = []
+
+    try:
+        txf_quote = fetch_taifex_txf_quote()
+        if txf_quote:
+            markets.append(txf_quote)
+    except Exception as exc:
+        warnings.append(f"TAIFEX TXF failed: {exc}")
+
+    for item in MARKET_SYMBOLS:
+        try:
+            prices = chart_prices(fetch_yahoo_chart_range(item["symbol"], days=120))
+            quote = quote_from_prices(item, prices)
+            if not quote:
+                raise RuntimeError("no usable chart prices")
+            markets.append(quote)
+            if item.get("benchmark"):
+                benchmarks[item["id"]] = {"label": item["label"], "return3m": quote["return3m"]}
+        except Exception as exc:
+            warnings.append(f"Yahoo {item['symbol']} failed: {exc}")
+
+    if not markets:
+        raise RuntimeError("No market quote source returned usable data")
+
+    payload = {
+        "source": "TAIFEX + Yahoo Finance market data",
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "markets": markets,
+        "benchmarks": benchmarks,
+    }
+    if warnings:
+        payload["warnings"] = warnings
+    return payload
 
 
 def fetch_yuanta_api(func_id: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -610,6 +747,7 @@ def normalize_megabank_fund(
         "risk": risk,
         "return3y": round(return3y_annualized, 2),
         "return3yCumulative": round(three_year or 0.0, 2),
+        "return3m": round(three_month or 0.0, 2),
         "return1y": round(one_year or 0.0, 2),
         "return6m": round(six_month or 0.0, 2),
         "returnYtd": round(year_to_date or 0.0, 2),
@@ -746,6 +884,7 @@ def normalize_fubon_fund(item: ET.Element) -> dict[str, Any] | None:
         "risk": risk,
         "return3y": round(return3y_annualized, 2),
         "return3yCumulative": round(three_year, 2),
+        "return3m": round(three_month or 0.0, 2),
         "return1y": round(optional_number(fubon_text(item, "YEAR_VALUE_1")) or 0.0, 2),
         "return6m": round(optional_number(fubon_text(item, "MONTH_VALUE_6")) or 0.0, 2),
         "fee": 0.0,
@@ -953,6 +1092,8 @@ def normalize_fund(item: dict[str, Any]) -> dict[str, Any]:
         normalized["navDate"] = str(item["navDate"])
     if item.get("return3yCumulative") is not None:
         normalized["return3yCumulative"] = number(item["return3yCumulative"], "return3yCumulative")
+    if item.get("return3m") is not None:
+        normalized["return3m"] = number(item["return3m"], "return3m")
     if item.get("return1y") is not None:
         normalized["return1y"] = number(item["return1y"], "return1y")
     if item.get("return6m") is not None:
@@ -1055,6 +1196,13 @@ def update_combined_tw_funds_once(root: Path, output_path: str = "data/funds.jso
     print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(normalized['funds'])} Taiwan funds)")
 
 
+def update_markets_once(root: Path, output_path: str = "data/markets.json") -> None:
+    target = root / output_path
+    payload = build_markets_payload()
+    atomic_write_json(target, payload)
+    print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(payload['markets'])} markets)")
+
+
 def watch(config: dict[str, Any] | None, root: Path, provider: str) -> None:
     interval_hours = float(config.get("intervalHours", 3)) if config else 3
     interval_seconds = int(interval_hours * 60 * 60) or DEFAULT_INTERVAL_SECONDS
@@ -1071,6 +1219,10 @@ def watch(config: dict[str, Any] | None, root: Path, provider: str) -> None:
                 update_fubon_bank_funds_once(root)
             elif provider == "combined-tw-funds":
                 update_combined_tw_funds_once(root)
+                try:
+                    update_markets_once(root)
+                except Exception as exc:
+                    print(f"{datetime.now().isoformat(timespec='seconds')} market update failed: {exc}", file=sys.stderr)
             else:
                 if config is None:
                     raise ValueError("config is required for JSON provider")
@@ -1085,7 +1237,7 @@ def main() -> int:
     parser.add_argument("--config", default="config/source.json", help="Path to source config JSON.")
     parser.add_argument(
         "--provider",
-        choices=["json", "yahoo-tw-etf", "yuanta-funds", "megabank-tw-funds", "fubon-bank-funds", "combined-tw-funds"],
+        choices=["json", "yahoo-tw-etf", "yuanta-funds", "megabank-tw-funds", "fubon-bank-funds", "combined-tw-funds", "markets"],
         default="json",
         help="Data provider to use.",
     )
@@ -1108,6 +1260,12 @@ def main() -> int:
         update_fubon_bank_funds_once(root)
     elif args.provider == "combined-tw-funds":
         update_combined_tw_funds_once(root)
+        try:
+            update_markets_once(root)
+        except Exception as exc:
+            print(f"{datetime.now().isoformat(timespec='seconds')} market update failed: {exc}", file=sys.stderr)
+    elif args.provider == "markets":
+        update_markets_once(root)
     else:
         if config is None:
             raise ValueError("config is required for JSON provider")

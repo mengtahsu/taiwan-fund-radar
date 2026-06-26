@@ -127,6 +127,12 @@ let sourceMeta = {
   source: "示範資料",
   updatedAt: null
 };
+let marketMeta = {
+  source: "市場資料未載入",
+  updatedAt: null,
+  markets: [],
+  benchmarks: {}
+};
 
 const DISPLAY_LIMIT = 50;
 
@@ -136,6 +142,7 @@ const els = {
   region: document.querySelector("#regionSelect"),
   risk: document.querySelector("#riskInput"),
   return: document.querySelector("#returnInput"),
+  beatBenchmark: document.querySelector("#beatBenchmarkInput"),
   riskValue: document.querySelector("#riskValue"),
   returnValue: document.querySelector("#returnValue"),
   sort: document.querySelector("#sortSelect"),
@@ -145,6 +152,7 @@ const els = {
   metricTotal: document.querySelector("#metricTotal"),
   metricReturn: document.querySelector("#metricReturn"),
   dataStatus: document.querySelector("#dataStatus"),
+  marketList: document.querySelector("#marketList"),
   reset: document.querySelector("#resetBtn"),
   highReturn: document.querySelector("#highReturnBtn"),
   dataInput: document.querySelector("#dataInput"),
@@ -198,19 +206,22 @@ function filteredFunds() {
   const q = els.query.value.trim().toLowerCase();
   const maxRisk = Number(els.risk.value);
   const minReturn = Number(els.return.value);
+  const beatOnly = els.beatBenchmark.checked;
 
   return funds
     .filter((fund) => {
       const haystack = [fund.name, fund.company, fund.ticker || "", fund.fundId || "", fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
+      const excess3m = excessReturn3m(fund);
       return (
         (!q || haystack.includes(q)) &&
         (els.type.value === "all" || fund.type === els.type.value) &&
         (els.region.value === "all" || fund.region === els.region.value) &&
         fund.risk <= maxRisk &&
-        fund.return3y >= minReturn
+        fund.return3y >= minReturn &&
+        (!beatOnly || (excess3m !== null && excess3m > 0))
       );
     })
-    .map((fund) => ({ ...fund, score: scoreFund(fund) }))
+    .map((fund) => ({ ...fund, score: scoreFund(fund), excess3m: excessReturn3m(fund) ?? -999 }))
     .sort((a, b) => {
       if (els.sort.value === "volatility") {
         return a[els.sort.value] - b[els.sort.value];
@@ -221,6 +232,57 @@ function filteredFunds() {
 
 function formatMoney(value) {
   return `${value.toLocaleString("zh-TW")} 億`;
+}
+
+function formatPercent(value) {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
+}
+
+function formatMarketPrice(value) {
+  return Number(value).toLocaleString("zh-TW", { maximumFractionDigits: 2 });
+}
+
+function benchmarkForFund(fund) {
+  if (fund.region === "台灣" || fund.type === "台股") {
+    return marketMeta.benchmarks.twii || null;
+  }
+  const text = [fund.name, fund.type, fund.region, ...(fund.tags || [])].join(" ");
+  if (fund.region === "美國" || /科技|Nasdaq|NASDAQ|那斯達克|5G|AI|半導體/.test(text)) {
+    return marketMeta.benchmarks.nasdaq || marketMeta.benchmarks.sp500 || null;
+  }
+  return marketMeta.benchmarks.sp500 || null;
+}
+
+function benchmarkStatus(fund) {
+  if (typeof fund.return3m !== "number") {
+    return "";
+  }
+  const benchmark = benchmarkForFund(fund);
+  if (!benchmark || typeof benchmark.return3m !== "number") {
+    return "";
+  }
+  const excess = fund.return3m - benchmark.return3m;
+  const statusClass = excess >= 0 ? "beat" : "lag";
+  const label = excess >= 0 ? "近 3 月贏基準" : "近 3 月輸基準";
+  return `
+    <div class="benchmark ${statusClass}">
+      <span>${label}</span>
+      <strong>${formatPercent(excess)}</strong>
+      <small>${fund.return3m.toFixed(2)}% vs ${escapeHtml(benchmark.label)} ${benchmark.return3m.toFixed(2)}%</small>
+    </div>
+  `;
+}
+
+function excessReturn3m(fund) {
+  if (typeof fund.return3m !== "number") {
+    return null;
+  }
+  const benchmark = benchmarkForFund(fund);
+  if (!benchmark || typeof benchmark.return3m !== "number") {
+    return null;
+  }
+  return fund.return3m - benchmark.return3m;
 }
 
 function formatPrice(fund) {
@@ -291,6 +353,32 @@ function renderDataStatus() {
   els.dataStatus.textContent = `${sourceMeta.source} ${label}`;
 }
 
+function renderMarkets() {
+  if (!els.marketList) {
+    return;
+  }
+  if (!marketMeta.markets.length) {
+    els.marketList.innerHTML = '<div class="market-empty">市場資料暫無法更新</div>';
+    return;
+  }
+  els.marketList.innerHTML = marketMeta.markets
+    .map((market) => {
+      const moveClass = market.changePercent >= 0 ? "up" : "down";
+      const time = market.quoteTime ? `<small>${escapeHtml(market.quoteTime)}</small>` : "";
+      return `
+        <div class="quote-row">
+          <div>
+            <span>${escapeHtml(market.label)}</span>
+            ${time}
+          </div>
+          <strong>${formatMarketPrice(market.price)}</strong>
+          <em class="${moveClass}">${formatPercent(market.changePercent)}</em>
+        </div>
+      `;
+    })
+    .join("");
+}
+
 function renderFunds() {
   const list = filteredFunds();
   const visibleList = list.slice(0, DISPLAY_LIMIT);
@@ -327,6 +415,7 @@ function renderFunds() {
             <div class="stat"><span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong></div>
             <div class="stat"><span>${fund.nav ? "最新淨值" : fund.price ? "最新價格" : "基金規模"}</span><strong>${formatPrice(fund)}</strong></div>
           </div>
+          ${benchmarkStatus(fund)}
           <div class="card-actions">
             <span>定期定額 ${fund.minRsp.toLocaleString("zh-TW")} 元起</span>
             ${renderBuyLink(fund)}
@@ -453,6 +542,7 @@ function resetFilters() {
   els.region.value = "all";
   els.risk.value = 5;
   els.return.value = 20;
+  els.beatBenchmark.checked = false;
   els.sort.value = "score";
   document.querySelector("input[name='goal'][value='growth']").checked = true;
   syncLabels();
@@ -465,13 +555,14 @@ function applyHighReturnPreset() {
   els.region.value = "all";
   els.risk.value = 5;
   els.return.value = 8;
-  els.sort.value = "return3y";
+  els.beatBenchmark.checked = true;
+  els.sort.value = "excess3m";
   document.querySelector("input[name='goal'][value='growth']").checked = true;
   syncLabels();
   renderFunds();
 }
 
-[els.query, els.type, els.region, els.risk, els.return, els.sort].forEach((el) => {
+[els.query, els.type, els.region, els.risk, els.return, els.beatBenchmark, els.sort].forEach((el) => {
   el.addEventListener("input", () => {
     syncLabels();
     renderFunds();
@@ -516,4 +607,30 @@ async function loadLatestData() {
   }
 }
 
-loadLatestData();
+async function loadMarketData() {
+  try {
+    const response = await fetch("data/markets.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("找不到市場資料。");
+    }
+    const payload = await response.json();
+    marketMeta = {
+      source: payload.source || "市場資料",
+      updatedAt: payload.updatedAt || null,
+      markets: Array.isArray(payload.markets) ? payload.markets : [],
+      benchmarks: payload.benchmarks || {}
+    };
+  } catch (error) {
+    marketMeta = {
+      source: "市場資料未載入",
+      updatedAt: null,
+      markets: [],
+      benchmarks: {}
+    };
+  } finally {
+    renderMarkets();
+    renderFunds();
+  }
+}
+
+Promise.all([loadLatestData(), loadMarketData()]);

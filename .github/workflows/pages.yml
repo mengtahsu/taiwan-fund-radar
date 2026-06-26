@@ -66,6 +66,9 @@ jobs:
         if: env.FUND_SOURCE_URL == ''
         run: timeout 6m python3 update_funds.py --provider combined-tw-funds --once || echo "Fund update timed out or failed; deploying committed data/funds.json"
 
+      - name: Update market data
+        run: timeout 1m python3 update_funds.py --provider markets --once || echo "Market update timed out or failed; deploying committed data/markets.json if present"
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:

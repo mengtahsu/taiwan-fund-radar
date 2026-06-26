@@ -194,6 +194,64 @@ main {
   text-align: right;
 }
 
+.market-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.quote-row {
+  display: grid;
+  grid-template-columns: minmax(86px, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.quote-row span,
+.quote-row small {
+  display: block;
+}
+
+.quote-row span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.quote-row small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.quote-row strong {
+  font-size: 16px;
+}
+
+.quote-row em {
+  min-width: 66px;
+  font-style: normal;
+  font-weight: 900;
+  text-align: right;
+}
+
+.quote-row .up {
+  color: var(--accent-dark);
+}
+
+.quote-row .down {
+  color: var(--danger);
+}
+
+.market-empty {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .bars {
   height: 120px;
   display: grid;
@@ -415,6 +473,34 @@ legend {
   display: block;
   margin-top: 2px;
   font-size: 17px;
+}
+
+.benchmark {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.benchmark span,
+.benchmark small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.benchmark strong {
+  font-size: 20px;
+}
+
+.benchmark.beat strong {
+  color: var(--accent-dark);
+}
+
+.benchmark.lag strong {
+  color: var(--danger);
 }
 
 .card-actions {
