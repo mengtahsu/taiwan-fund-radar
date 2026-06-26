@@ -417,7 +417,6 @@ function renderFunds() {
           </div>
           ${benchmarkStatus(fund)}
           <div class="card-actions">
-            <span>定期定額 ${fund.minRsp.toLocaleString("zh-TW")} 元起</span>
             ${renderBuyLink(fund)}
             <label class="choice">
               <input type="checkbox" data-fund="${escapeHtml(fund.name)}" ${checked}>
