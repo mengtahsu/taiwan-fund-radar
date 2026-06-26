@@ -348,6 +348,7 @@ legend {
 
 .choice {
   grid-template-columns: 18px 1fr;
+  column-gap: 12px;
   align-items: center;
   margin: 4px 0;
   color: var(--ink);
@@ -355,6 +356,7 @@ legend {
 
 .choice input {
   width: 18px;
+  height: 18px;
 }
 
 .range-value {
