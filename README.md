@@ -31,14 +31,14 @@ python3 -m http.server 8000
    - `FUND_SOURCE_NAME`: 顯示在網站上的資料來源名稱。可用 variable。
 4. 到 `Actions` 手動執行 `Update data and deploy Pages` 一次。
 
-之後 `.github/workflows/pages.yml` 會每 3 小時自動執行一次，一天 8 次：
+之後 `.github/workflows/pages.yml` 會在台灣時間每天 04:00、12:00、20:00 自動執行：
 
 ```yaml
 schedule:
-  - cron: "0 */3 * * *"
+  - cron: "0 20,4,12 * * *"
 ```
 
-GitHub Actions 的 cron 使用 UTC。若用台灣時間看，這個設定仍然是每 3 小時一次，只是執行時間會對應到 UTC。
+GitHub Actions 的 cron 使用 UTC。台灣時間比 UTC 快 8 小時，所以台灣時間 04:00、12:00、20:00 對應 UTC 20:00、04:00、12:00。
 
 如果沒有設定 `FUND_SOURCE_URL`，workflow 會改抓 MoneyDJ 台灣基金資料，並補上富邦銀行或基富通可買連結。設定 `FUND_SOURCE_URL` 之後，才會改用你的自訂 JSON/API 來源。
 
@@ -56,7 +56,7 @@ cp config/source.example.json config/source.json
 python3 update_funds.py --config config/source.json --once
 ```
 
-每 3 小時自動更新一次，一天 8 次：
+本機 watch 模式預設仍可依設定檔的 `intervalHours` 重複更新；線上 GitHub Pages 部署則使用上面的三個固定時間：
 
 ```sh
 python3 update_funds.py --config config/source.json --watch
@@ -80,10 +80,10 @@ python3 update_funds.py --provider yuanta-funds --once
 python3 update_funds.py --provider yahoo-tw-etf --once
 ```
 
-正式部署時建議用系統排程執行 `--once`，例如 cron：
+正式部署時建議用系統排程執行 `--once`，例如每天台灣時間 04:00、12:00、20:00 的 cron：
 
 ```cron
-0 */3 * * * cd /path/to/new-chat && python3 update_funds.py --config config/source.json --once
+0 4,12,20 * * * cd /path/to/new-chat && python3 update_funds.py --config config/source.json --once
 ```
 
 ## 資料欄位

@@ -6,7 +6,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 */3 * * *"
+    # GitHub cron uses UTC. This runs at 04:00, 12:00, and 20:00 Taiwan time.
+    - cron: "0 20,4,12 * * *"
 
 permissions:
   contents: read
@@ -48,7 +49,7 @@ jobs:
                       "sourceName": os.environ["FUND_SOURCE_NAME"],
                       "sourceUrl": os.environ["FUND_SOURCE_URL"],
                       "outputPath": "data/funds.json",
-                      "intervalHours": 3,
+                      "intervalHours": 8,
                   },
                   ensure_ascii=False,
                   indent=2,

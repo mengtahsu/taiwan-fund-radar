@@ -9,7 +9,7 @@ Expected source format:
 Run once:
   python3 update_funds.py --config config/source.json --once
 
-Run continuously, eight times per day by default:
+Run continuously with the interval configured in config/source.json:
   python3 update_funds.py --config config/source.json --watch
 """
 
@@ -1242,7 +1242,7 @@ def main() -> int:
         help="Data provider to use.",
     )
     parser.add_argument("--once", action="store_true", help="Run one update and exit.")
-    parser.add_argument("--watch", action="store_true", help="Update repeatedly. Default interval is every 3 hours.")
+    parser.add_argument("--watch", action="store_true", help="Update repeatedly. Default interval is read from config/source.json.")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parent
