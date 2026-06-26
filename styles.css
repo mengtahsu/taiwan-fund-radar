@@ -220,6 +220,15 @@ main {
   font-weight: 800;
 }
 
+.quote-link {
+  display: inline-block;
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .quote-row small {
   color: var(--muted);
   font-size: 11px;

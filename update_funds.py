@@ -171,12 +171,14 @@ FUNDRICH_DETAIL_URL = "https://www.fundrich.com.tw/fundCenter/fundOverview/fundC
 FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
 TAIFEX_QUOTE_URL = "https://mis.taifex.com.tw/futures/api/getQuoteList"
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+TAIFEX_LIVE_QUOTE_URL = "https://mis.taifex.com.tw/futures/"
+YAHOO_FINANCE_QUOTE_URL = "https://finance.yahoo.com/quote/{symbol}"
 
 MARKET_SYMBOLS = [
-    {"id": "twii", "label": "台股大盤", "symbol": "^TWII", "benchmark": True},
-    {"id": "sp500", "label": "S&P 500", "symbol": "^GSPC", "benchmark": True},
-    {"id": "nasdaq", "label": "Nasdaq", "symbol": "^IXIC", "benchmark": True},
-    {"id": "nasdaqFuture", "label": "Nasdaq 期貨", "symbol": "NQ=F", "benchmark": False},
+    {"id": "twii", "label": "台股大盤", "symbol": "^TWII", "benchmark": True, "urlSymbol": "%5ETWII"},
+    {"id": "sp500", "label": "S&P 500", "symbol": "^GSPC", "benchmark": True, "urlSymbol": "%5EGSPC"},
+    {"id": "nasdaq", "label": "Nasdaq", "symbol": "^IXIC", "benchmark": True, "urlSymbol": "%5EIXIC"},
+    {"id": "nasdaqFuture", "label": "Nasdaq 期貨", "symbol": "NQ=F", "benchmark": False, "urlSymbol": "NQ%3DF"},
 ]
 
 
@@ -402,6 +404,7 @@ def quote_from_prices(item: dict[str, Any], prices: list[float]) -> dict[str, An
         "id": item["id"],
         "label": item["label"],
         "symbol": item["symbol"],
+        "url": YAHOO_FINANCE_QUOTE_URL.format(symbol=item["urlSymbol"]),
         "price": round(latest, 2),
         "change": round(change, 2),
         "changePercent": round(change_percent, 2),
@@ -434,6 +437,7 @@ def fetch_taifex_txf_quote() -> dict[str, Any] | None:
         "id": "txf",
         "label": "台指期",
         "symbol": active.get("SymbolID") or "TXF",
+        "url": TAIFEX_LIVE_QUOTE_URL,
         "name": active.get("DispCName") or "臺指期",
         "price": round(optional_number(active.get("CLastPrice")) or 0.0, 2),
         "change": round(optional_number(active.get("CDiff")) or 0.0, 2),

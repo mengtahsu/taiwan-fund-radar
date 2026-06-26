@@ -406,10 +406,14 @@ function renderMarkets() {
     .map((market) => {
       const moveClass = market.changePercent >= 0 ? "up" : "down";
       const time = market.quoteTime ? `<small>${escapeHtml(market.quoteTime)}</small>` : "";
+      const url = market.url || marketUrl(market);
+      const label = url
+        ? `<a class="quote-link" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${escapeHtml(market.label)}</a>`
+        : `<span>${escapeHtml(market.label)}</span>`;
       return `
         <div class="quote-row">
           <div>
-            <span>${escapeHtml(market.label)}</span>
+            ${label}
             ${time}
           </div>
           <strong>${formatMarketPrice(market.price)}</strong>
@@ -418,6 +422,23 @@ function renderMarkets() {
       `;
     })
     .join("");
+}
+
+function marketUrl(market) {
+  const fixedUrls = {
+    txf: "https://mis.taifex.com.tw/futures/",
+    twii: "https://finance.yahoo.com/quote/%5ETWII",
+    sp500: "https://finance.yahoo.com/quote/%5EGSPC",
+    nasdaq: "https://finance.yahoo.com/quote/%5EIXIC",
+    nasdaqFuture: "https://finance.yahoo.com/quote/NQ%3DF"
+  };
+  if (fixedUrls[market.id]) {
+    return fixedUrls[market.id];
+  }
+  if (market.symbol) {
+    return `https://finance.yahoo.com/quote/${encodeURIComponent(market.symbol)}`;
+  }
+  return "";
 }
 
 function renderFunds() {
