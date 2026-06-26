@@ -279,13 +279,12 @@ function benchmarkStatus(fund) {
   }
   const excess = fund.return2w - benchmark.return2w;
   const statusClass = excess >= 0 ? "beat" : "lag";
-  const label = excess >= 0 ? "近 2 週贏基準" : "近 2 週輸基準";
-  const dateRange = fund.return2wStartDate && fund.return2wEndDate ? ` (${escapeHtml(fund.return2wStartDate)}-${escapeHtml(fund.return2wEndDate)})` : "";
+  const label = excess >= 0 ? "近 2 週贏" : "近 2 週輸";
   return `
     <div class="benchmark ${statusClass}">
       <span>${label}</span>
       <strong>${formatPercent(excess)}</strong>
-      <small>${fund.return2w.toFixed(2)}% vs ${escapeHtml(benchmark.label)} ${benchmark.return2w.toFixed(2)}%${dateRange}</small>
+      <small>對 ${escapeHtml(benchmark.label)}</small>
     </div>
   `;
 }
@@ -327,15 +326,13 @@ function riskClass(risk) {
 
 function renderFundName(fund) {
   const name = escapeHtml(fund.name);
-  if (!fund.moneyDjUrl) {
-    return name;
-  }
-  return `<a class="fund-name-link" href="${escapeHtml(fund.moneyDjUrl)}" target="_blank" rel="noreferrer">${name}</a>`;
+  const detailKey = encodeURIComponent(fund.fundId || fund.name);
+  return `<a class="fund-name-link" href="detail.html?id=${detailKey}">${name}</a>`;
 }
 
 function renderBuyLink(fund) {
   if (fund.fubonBuyUrl) {
-    return `<a class="buy-link" href="${escapeHtml(fund.fubonBuyUrl)}" target="_blank" rel="noreferrer">富邦 App 申購</a>`;
+    return `<a class="buy-link" href="${escapeHtml(fund.fubonBuyUrl)}">富邦 App 申購</a>`;
   }
   if (fund.fundrichAppUrl) {
     return `<a class="buy-link secondary" href="${escapeHtml(fund.fundrichAppUrl)}">基富通 App 申購</a>`;
@@ -557,7 +554,7 @@ function resetFilters() {
   els.type.value = "all";
   els.region.value = "all";
   els.risk.value = 5;
-  els.return.value = 20;
+  els.return.value = 50;
   els.beatBenchmark.checked = false;
   els.sort.value = "score";
   document.querySelector("input[name='goal'][value='growth']").checked = true;

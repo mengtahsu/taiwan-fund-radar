@@ -1,6 +1,6 @@
 {
   "source": "兆豐基金/MoneyDJ 國內基金公開資料 + 富邦銀行/基富通可買連結",
-  "updatedAt": "2026-06-26T03:11:35.412590+00:00",
+  "updatedAt": "2026-06-26T03:30:30.013017+00:00",
   "funds": [
     {
       "name": "安聯台灣科技基金",
@@ -11797,10 +11797,10 @@
       "feeUnavailable": true,
       "moneyDjUrl": "https://fund.megabank.com.tw/w/wr/wr01_ACJF119-5838.djhtm",
       "channel": "基富通",
-      "fundrichFundId": "JPM037",
-      "fundrichName": "摩根泛亞太股票入息基金－月配息型",
-      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM037",
-      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM037]"
+      "fundrichFundId": "JPM019",
+      "fundrichName": "摩根泛亞太股票入息基金－累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM019]"
     },
     {
       "name": "玉山策略成長ETF組合基金(台幣)",
@@ -12517,10 +12517,10 @@
       "feeUnavailable": true,
       "moneyDjUrl": "https://fund.megabank.com.tw/w/wr/wr01_ACJF120-8J01.djhtm",
       "channel": "基富通",
-      "fundrichFundId": "JPM037",
-      "fundrichName": "摩根泛亞太股票入息基金－月配息型",
-      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM037",
-      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM037]"
+      "fundrichFundId": "JPM019",
+      "fundrichName": "摩根泛亞太股票入息基金－累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM019]"
     },
     {
       "name": "復華奧林匹克全球優勢組合基金A不配息(台幣)(本基金有相當比重投資於持有非投資等級高風險債券之基金)",
@@ -14443,10 +14443,10 @@
       "feeUnavailable": true,
       "moneyDjUrl": "https://fund.megabank.com.tw/w/wr/wr01_ACJF121-8J04.djhtm",
       "channel": "基富通",
-      "fundrichFundId": "JPM037",
-      "fundrichName": "摩根泛亞太股票入息基金－月配息型",
-      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM037",
-      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM037]"
+      "fundrichFundId": "JPM019",
+      "fundrichName": "摩根泛亞太股票入息基金－累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM019]"
     },
     {
       "name": "第一金全球AI機器人及自動化產業基金(美元)",
@@ -35745,10 +35745,10 @@
       "feeUnavailable": true,
       "moneyDjUrl": "https://fund.megabank.com.tw/w/wr/wr01_ACAI177-4734.djhtm",
       "channel": "基富通",
-      "fundrichFundId": "PBI076",
-      "fundrichName": "柏瑞全球策略非投資等級債券證券投資信託基金-Bt類型",
-      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI076",
-      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI076]"
+      "fundrichFundId": "PBI003",
+      "fundrichName": "柏瑞全球策略非投資等級債券證券投資信託基金-B類型(澳幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI003]"
     },
     {
       "name": "柏瑞全球策略非投資等級債券基金N9不配息(台幣)",

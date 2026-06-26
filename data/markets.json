@@ -1,27 +1,27 @@
 {
   "source": "TAIFEX + Yahoo Finance market data",
-  "updatedAt": "2026-06-26T03:11:36.152627+00:00",
+  "updatedAt": "2026-06-26T03:30:30.717402+00:00",
   "markets": [
     {
       "id": "txf",
       "label": "台指期",
       "symbol": "TXFG6-F",
       "name": "臺指期076",
-      "price": 44647.0,
-      "change": -1880.0,
-      "changePercent": -4.04,
-      "volume": 55012,
-      "quoteTime": "20260626 111135"
+      "price": 44779.0,
+      "change": -1748.0,
+      "changePercent": -3.76,
+      "volume": 64284,
+      "quoteTime": "20260626 113030"
     },
     {
       "id": "twii",
       "label": "台股大盤",
       "symbol": "^TWII",
-      "price": 44966.8,
-      "change": -1288.46,
-      "changePercent": -2.79,
-      "return2w": 4.21,
-      "return3m": 26.97
+      "price": 44559.77,
+      "change": -1695.49,
+      "changePercent": -3.67,
+      "return2w": 3.27,
+      "return3m": 25.82
     },
     {
       "id": "sp500",
@@ -47,18 +47,18 @@
       "id": "nasdaqFuture",
       "label": "Nasdaq 期貨",
       "symbol": "NQ=F",
-      "price": 29240.5,
-      "change": -484.25,
-      "changePercent": -1.63,
-      "return2w": -0.76,
-      "return3m": 16.58
+      "price": 29255.0,
+      "change": -469.75,
+      "changePercent": -1.58,
+      "return2w": -0.71,
+      "return3m": 16.64
     }
   ],
   "benchmarks": {
     "twii": {
       "label": "台股大盤",
-      "return2w": 4.21,
-      "return3m": 26.97
+      "return2w": 3.27,
+      "return3m": 25.82
     },
     "sp500": {
       "label": "S&P 500",

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-26T03:10:29.013918+00:00",
+  "updatedAt": "2026-06-26T03:30:28.701522+00:00",
   "items": {
     "ACDD04-4102": {
       "return2w": 13.34,
@@ -125,361 +125,361 @@
       "return2w": 7.81,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.931896+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.392495+00:00"
     },
     "ACFH03-5409": {
       "return2w": 13.45,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.148431+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.402658+00:00"
     },
     "ACFH01-5404": {
       "return2w": 13.77,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:32.082896+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.402667+00:00"
     },
     "ACPS38-6723": {
       "return2w": 12.25,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.865927+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.392507+00:00"
     },
     "ACPS10-6705": {
       "return2w": 8.16,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.756032+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.402662+00:00"
     },
     "ACML09-4308": {
       "return2w": 7.8,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:32.076289+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.402669+00:00"
     },
     "ACIC04-7002": {
       "return2w": 6.71,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.299899+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.392503+00:00"
     },
     "AC0015-6220": {
       "return2w": 11.21,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.002115+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.409924+00:00"
     },
     "ACJF76-5810": {
       "return2w": 5.34,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.294896+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.409929+00:00"
     },
     "ACCP03-3502": {
       "return2w": 8.92,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.022557+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.402665+00:00"
     },
     "ACPS39-7U11": {
       "return2w": 11.97,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.873404+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.469117+00:00"
     },
     "ACYT03-3206": {
       "return2w": 14.5,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:32.001019+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.452168+00:00"
     },
     "ACPS06-6703": {
       "return2w": 8.68,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.744495+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.471020+00:00"
     },
     "ACNC16-3305": {
       "return2w": 7.98,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.668042+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.457262+00:00"
     },
     "ACTC10-5501": {
       "return2w": 7.79,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.931892+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.462600+00:00"
     },
     "ACYT11-3209": {
       "return2w": 12.72,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:32.001025+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.463553+00:00"
     },
     "ACYT12-3208": {
       "return2w": 12.09,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:32.084136+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.470060+00:00"
     },
     "ACIC08-7005": {
       "return2w": 6.69,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.285844+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.473054+00:00"
     },
     "ACGC08-3702": {
       "return2w": 9.49,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.144313+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.464493+00:00"
     },
     "ACPS23-6712": {
       "return2w": 9.42,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.791510+00:00"
+      "fetchedAt": "2026-06-26T03:26:41.472110+00:00"
     },
     "ACSH03-3904": {
       "return2w": 5.83,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.940122+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.107996+00:00"
     },
     "ACKH19-4909": {
       "return2w": 7.71,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.430486+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.091753+00:00"
     },
     "ACCY14-5708": {
       "return2w": 9.23,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.094662+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.107999+00:00"
     },
     "ACPS40-7U12": {
       "return2w": 12.41,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.929036+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.107993+00:00"
     },
     "ACFP03-6203": {
       "return2w": 8.57,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.234427+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.107985+00:00"
     },
     "ACNB55-9H04": {
       "return2w": 12.69,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.591392+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.091762+00:00"
     },
     "ACNB56-9K01": {
       "return2w": 12.66,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.598014+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.114273+00:00"
     },
     "AC0029-6211": {
       "return2w": 8.46,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.018356+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.114275+00:00"
     },
     "AC0014-6704": {
       "return2w": 6.8,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.012955+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.107991+00:00"
     },
     "ACNC38-3330": {
       "return2w": 7.36,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.661558+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.114268+00:00"
     },
     "ACPS01-6710": {
       "return2w": 9.88,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.661564+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.155048+00:00"
     },
     "ACIC06-7004": {
       "return2w": 7.89,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.364516+00:00"
+      "fetchedAt": "2026-06-26T03:29:25.207438+00:00"
     },
     "ACPS09-6713": {
       "return2w": 4.13,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.733447+00:00"
+      "fetchedAt": "2026-06-26T03:29:25.202720+00:00"
     },
     "ACFP04-6204": {
       "return2w": 11.27,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.155211+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.164941+00:00"
     },
     "ACPS24-6715": {
       "return2w": 6.99,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.858339+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.170427+00:00"
     },
     "ACNB47-7901": {
       "return2w": 12.71,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.501380+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.171339+00:00"
     },
     "ACNB48-9301": {
       "return2w": 12.69,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.591386+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.165986+00:00"
     },
     "ACFH15-5408": {
       "return2w": 14.04,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.161291+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.169291+00:00"
     },
     "ACYT09-3213": {
       "return2w": 13.83,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:32.075096+00:00"
+      "fetchedAt": "2026-06-26T03:29:24.168328+00:00"
     },
     "ACPS25-6716": {
       "return2w": 13.46,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.812406+00:00"
+      "fetchedAt": "2026-06-26T03:29:25.196051+00:00"
     },
     "ACCP10-3529": {
       "return2w": 7.9,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.022551+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.673726+00:00"
     },
     "ACCY07-5702": {
       "return2w": 8.97,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:32.099945+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.677602+00:00"
     },
     "ACCS07-6001": {
       "return2w": 11.01,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.012959+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.688414+00:00"
     },
     "ACCY06-5705": {
       "return2w": 9.5,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.088564+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.692295+00:00"
     },
     "ACNB49-9H01": {
       "return2w": 12.39,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.635505+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.677613+00:00"
     },
     "ACNB50-9I01": {
       "return2w": 12.42,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.573918+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.692299+00:00"
     },
     "ACJS73-4826": {
       "return2w": 11.76,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.364525+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.688410+00:00"
     },
     "ACIC01-7001": {
       "return2w": 3.95,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.234431+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.677609+00:00"
     },
     "ACYT04-3211": {
       "return2w": 7.04,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.994355+00:00"
+      "fetchedAt": "2026-06-26T03:30:28.690732+00:00"
     },
     "ACKH07-4903": {
       "return2w": 3.72,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.364530+00:00"
+      "fetchedAt": "2026-06-26T03:30:28.701245+00:00"
     },
     "ACML07-4306": {
       "return2w": 6.46,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.426724+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.742498+00:00"
     },
     "ACPS49-7U07": {
       "return2w": 13.16,
       "return2wStartDate": "2026-06-10",
       "return2wEndDate": "2026-06-24",
-      "fetchedAt": "2026-06-26T03:08:31.869712+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.746585+00:00"
     },
     "ACML02-4302": {
       "return2w": 4.63,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.498653+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.754305+00:00"
     },
     "ACML02-4332": {
       "return2w": 4.63,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.509665+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.739366+00:00"
     },
     "ACPS02-6701": {
       "return2w": 10.11,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.693691+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.745618+00:00"
     },
     "ACCP04-3503": {
       "return2w": 7.44,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.005858+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.754299+00:00"
     },
     "ACYT02-3210": {
       "return2w": 7.73,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:32.013981+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.747588+00:00"
     },
     "ACCY01-5703": {
       "return2w": 9.39,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.075365+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.754302+00:00"
     },
     "ACCP07-3506": {
       "return2w": 7.17,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.018362+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.805206+00:00"
     },
     "ACPS14-6706": {
       "return2w": 9.15,
       "return2wStartDate": "2026-06-11",
       "return2wEndDate": "2026-06-25",
-      "fetchedAt": "2026-06-26T03:08:31.800515+00:00"
+      "fetchedAt": "2026-06-26T03:30:27.803131+00:00"
     },
     "ACJF105-5829": {
       "return2w": 6.42,
@@ -9812,5 +9812,5 @@
       "fetchedAt": "2026-06-26T02:51:12.513160+00:00"
     }
   },
-  "nextTopOffset": 20
+  "nextTopOffset": 0
 }

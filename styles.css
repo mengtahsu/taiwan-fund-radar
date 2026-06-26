@@ -619,6 +619,96 @@ footer a {
   background: rgba(255, 255, 255, 0.6);
 }
 
+.detail-main {
+  width: min(920px, calc(100% - 32px));
+}
+
+.detail-panel {
+  display: grid;
+  gap: 16px;
+  padding: 28px 0 48px;
+}
+
+.detail-hero {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.detail-hero h2 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.15;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.source-link {
+  display: inline-grid;
+  min-height: 36px;
+  place-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.detail-benchmark {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.detail-benchmark span,
+.detail-benchmark small {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.detail-benchmark strong {
+  font-size: 28px;
+}
+
+.detail-benchmark.beat strong {
+  color: var(--accent-dark);
+}
+
+.detail-benchmark.lag strong {
+  color: var(--danger);
+}
+
+.muted-box {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.detail-section {
+  display: grid;
+  gap: 10px;
+}
+
+.detail-section h3 {
+  margin: 0;
+}
+
 @media (max-width: 880px) {
   .topbar,
   .hero,
@@ -665,10 +755,15 @@ footer a {
     font-size: 40px;
   }
 
+  .detail-hero h2 {
+    font-size: 28px;
+  }
+
   .market-row strong {
     font-size: 22px;
   }
 
+  .detail-grid,
   .stats {
     grid-template-columns: 1fr;
   }

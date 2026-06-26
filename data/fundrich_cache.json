@@ -1,0 +1,3625 @@
+{
+  "items": {
+    "YUI043": {
+      "fundrichFundId": "YUI043",
+      "fundrichName": "元大新主流證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI043",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI043]"
+    },
+    "PAR006": {
+      "fundrichFundId": "PAR006",
+      "fundrichName": "街口中小證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PAR006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PAR006]"
+    },
+    "PAR001": {
+      "fundrichFundId": "PAR001",
+      "fundrichName": "街口台灣證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PAR001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PAR001]"
+    },
+    "NOM006": {
+      "fundrichFundId": "NOM006",
+      "fundrichName": "野村台灣運籌證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM006]"
+    },
+    "NOM004": {
+      "fundrichFundId": "NOM004",
+      "fundrichName": "野村鴻運證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM004]"
+    },
+    "ALI006": {
+      "fundrichFundId": "ALI006",
+      "fundrichName": "安聯台灣科技基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI006]"
+    },
+    "YUI066": {
+      "fundrichFundId": "YUI066",
+      "fundrichName": "元大多多證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI066",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI066]"
+    },
+    "UNI029": {
+      "fundrichFundId": "UNI029",
+      "fundrichName": "統一中小基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI029",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI029]"
+    },
+    "TST018": {
+      "fundrichFundId": "TST018",
+      "fundrichName": "台新主流基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST018",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST018]"
+    },
+    "TST020": {
+      "fundrichFundId": "TST020",
+      "fundrichName": "台新中國通基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST020",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST020]"
+    },
+    "YUI065": {
+      "fundrichFundId": "YUI065",
+      "fundrichName": "元大經貿證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI065",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI065]"
+    },
+    "YUI064": {
+      "fundrichFundId": "YUI064",
+      "fundrichName": "元大高科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI064",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI064]"
+    },
+    "NOM011": {
+      "fundrichFundId": "NOM011",
+      "fundrichName": "野村成長證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM011]"
+    },
+    "UNI027": {
+      "fundrichFundId": "UNI027",
+      "fundrichName": "統一龍馬基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI027",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI027]"
+    },
+    "UNI006": {
+      "fundrichFundId": "UNI006",
+      "fundrichName": "統一新亞洲科技能源基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI006]"
+    },
+    "ALI005": {
+      "fundrichFundId": "ALI005",
+      "fundrichName": "安聯台灣大壩基金-A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI005]"
+    },
+    "JPM003": {
+      "fundrichFundId": "JPM003",
+      "fundrichName": "摩根新興科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM003]"
+    },
+    "NBG061": {
+      "fundrichFundId": "NBG061",
+      "fundrichName": "路博邁台灣5G股票證券投資信託基金T累積級別(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG061",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG061]"
+    },
+    "NBG062": {
+      "fundrichFundId": "NBG062",
+      "fundrichName": "路博邁台灣5G股票證券投資信託基金T月配級別(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG062",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG062]"
+    },
+    "ALI043": {
+      "fundrichFundId": "ALI043",
+      "fundrichName": "安聯台灣智慧基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI043",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI043]"
+    },
+    "SCH004": {
+      "fundrichFundId": "SCH004",
+      "fundrichName": "施羅德台灣樂活中小基金 - A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SCH004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SCH004]"
+    },
+    "Pru012": {
+      "fundrichFundId": "Pru012",
+      "fundrichName": "玉山科技島證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru012",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru012]"
+    },
+    "TCT043": {
+      "fundrichFundId": "TCT043",
+      "fundrichName": "合庫台灣高科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TCT043",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TCT043]"
+    },
+    "NOM003": {
+      "fundrichFundId": "NOM003",
+      "fundrichName": "野村中小證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM003]"
+    },
+    "YUI039": {
+      "fundrichFundId": "YUI039",
+      "fundrichName": "元大多福證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI039]"
+    },
+    "FHI048": {
+      "fundrichFundId": "FHI048",
+      "fundrichName": "復華高成長基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI048",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI048]"
+    },
+    "CSI009": {
+      "fundrichFundId": "CSI009",
+      "fundrichName": "國泰大中華基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI009",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI009]"
+    },
+    "UNI001": {
+      "fundrichFundId": "UNI001",
+      "fundrichName": "統一全天候基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI001]"
+    },
+    "YUI038": {
+      "fundrichFundId": "YUI038",
+      "fundrichName": "元大2001證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI038]"
+    },
+    "FIL001": {
+      "fundrichFundId": "FIL001",
+      "fundrichName": "富達台灣成長基金A股累積型新臺幣計價級別",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FIL001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FIL001]"
+    },
+    "UNI004": {
+      "fundrichFundId": "UNI004",
+      "fundrichName": "統一大龍印基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI004]"
+    },
+    "SIN001": {
+      "fundrichFundId": "SIN001",
+      "fundrichName": "永豐中小證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN001]"
+    },
+    "YUI069": {
+      "fundrichFundId": "YUI069",
+      "fundrichName": "元大卓越證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI069",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI069]"
+    },
+    "ESI119": {
+      "fundrichFundId": "ESI119",
+      "fundrichName": "瀚亞亞洲科技資本家股票基金A - 新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI119",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI119]"
+    },
+    "TCT078": {
+      "fundrichFundId": "TCT078",
+      "fundrichName": "合庫台灣證券投資信託基金-B類(月配型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TCT078",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TCT078]"
+    },
+    "TCT001": {
+      "fundrichFundId": "TCT001",
+      "fundrichName": "合庫台灣證券投資信託基金-A類(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TCT001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TCT001]"
+    },
+    "Pru014": {
+      "fundrichFundId": "Pru014",
+      "fundrichName": "玉山中小型股證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru014",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru014]"
+    },
+    "FHI049": {
+      "fundrichFundId": "FHI049",
+      "fundrichName": "復華復華基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI049",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI049]"
+    },
+    "KGI003": {
+      "fundrichFundId": "KGI003",
+      "fundrichName": "凱基台灣精五門證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/KGI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[KGI003]"
+    },
+    "NOM014": {
+      "fundrichFundId": "NOM014",
+      "fundrichName": "野村e科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM014",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM014]"
+    },
+    "JIH030": {
+      "fundrichFundId": "JIH030",
+      "fundrichName": "富邦新台商證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH030",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH030]"
+    },
+    "CSI099": {
+      "fundrichFundId": "CSI099",
+      "fundrichName": "【好好退休】國泰小龍證券投資信託基金R",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI099",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI099]"
+    },
+    "NOM012": {
+      "fundrichFundId": "NOM012",
+      "fundrichName": "野村高科技證券投資信託基金-累積類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM012",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM012]"
+    },
+    "TST001": {
+      "fundrichFundId": "TST001",
+      "fundrichName": "台新２０００高科技基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST001]"
+    },
+    "CSI002": {
+      "fundrichFundId": "CSI002",
+      "fundrichName": "國泰小龍基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI002]"
+    },
+    "FHI039": {
+      "fundrichFundId": "FHI039",
+      "fundrichName": "復華全球物聯網科技基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI039]"
+    },
+    "FHI054": {
+      "fundrichFundId": "FHI054",
+      "fundrichName": "復華亞太神龍科技基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI054",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI054]"
+    },
+    "FHI003": {
+      "fundrichFundId": "FHI003",
+      "fundrichName": "復華華人世紀基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI003]"
+    },
+    "KGI001": {
+      "fundrichFundId": "KGI001",
+      "fundrichName": "凱基開創證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/KGI001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[KGI001]"
+    },
+    "CSI003": {
+      "fundrichFundId": "CSI003",
+      "fundrichName": "國泰科技生化基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI003]"
+    },
+    "FSI003": {
+      "fundrichFundId": "FSI003",
+      "fundrichName": "第一金電子基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI003]"
+    },
+    "ESI067": {
+      "fundrichFundId": "ESI067",
+      "fundrichName": "瀚亞中小型股基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI067",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI067]"
+    },
+    "ESI121": {
+      "fundrichFundId": "ESI121",
+      "fundrichName": "瀚亞亞洲科技資本家股票基金A - 美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI121",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI121]"
+    },
+    "JIH027": {
+      "fundrichFundId": "JIH027",
+      "fundrichName": "富邦小而美證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH027",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH027]"
+    },
+    "051022": {
+      "fundrichFundId": "051022",
+      "fundrichName": "利安資金韓國基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/051022",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[051022]"
+    },
+    "FHI043": {
+      "fundrichFundId": "FHI043",
+      "fundrichName": "復華亞太成長基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI043",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI043]"
+    },
+    "FHI009": {
+      "fundrichFundId": "FHI009",
+      "fundrichName": "復華中小精選基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI009",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI009]"
+    },
+    "UNI026": {
+      "fundrichFundId": "UNI026",
+      "fundrichName": "統一黑馬基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI026",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI026]"
+    },
+    "FSI006": {
+      "fundrichFundId": "FSI006",
+      "fundrichName": "第一金創新趨勢基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI006]"
+    },
+    "FSI059": {
+      "fundrichFundId": "FSI059",
+      "fundrichName": "第一金台灣核心戰略建設證券投資信託基金-累積型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI059",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI059]"
+    },
+    "051023": {
+      "fundrichFundId": "051023",
+      "fundrichName": "利安資金韓國基金(新元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/051023",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[051023]"
+    },
+    "FSI060": {
+      "fundrichFundId": "FSI060",
+      "fundrichName": "第一金台灣核心戰略建設證券投資信託基金-配息型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI060",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI060]"
+    },
+    "SKI016": {
+      "fundrichFundId": "SKI016",
+      "fundrichName": "新光創新科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI016]"
+    },
+    "FSI009": {
+      "fundrichFundId": "FSI009",
+      "fundrichName": "第一金小型精選基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI009",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI009]"
+    },
+    "SIN040": {
+      "fundrichFundId": "SIN040",
+      "fundrichName": "【好好退休】永豐永豐證券投資信託基金R類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN040]"
+    },
+    "FHI040": {
+      "fundrichFundId": "FHI040",
+      "fundrichName": "復華全球物聯網科技基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI040]"
+    },
+    "FUB007": {
+      "fundrichFundId": "FUB007",
+      "fundrichName": "富邦長紅證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB007]"
+    },
+    "UNI023": {
+      "fundrichFundId": "UNI023",
+      "fundrichName": "統一奔騰基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI023",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI023]"
+    },
+    "NOM008": {
+      "fundrichFundId": "NOM008",
+      "fundrichName": "野村積極成長證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM008",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM008]"
+    },
+    "FUB009": {
+      "fundrichFundId": "FUB009",
+      "fundrichName": "富邦證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB009",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB009]"
+    },
+    "SIN033": {
+      "fundrichFundId": "SIN033",
+      "fundrichName": "永豐永豐證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN033",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN033]"
+    },
+    "ESI071": {
+      "fundrichFundId": "ESI071",
+      "fundrichName": "瀚亞菁華基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI071",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI071]"
+    },
+    "NOM015": {
+      "fundrichFundId": "NOM015",
+      "fundrichName": "野村優質證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM015]"
+    },
+    "UNI025": {
+      "fundrichFundId": "UNI025",
+      "fundrichName": "統一經建基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI025",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI025]"
+    },
+    "FTS008": {
+      "fundrichFundId": "FTS008",
+      "fundrichName": "富蘭克林華美台股傘型證券投資信託基金之高科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS008",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS008]"
+    },
+    "FHI055": {
+      "fundrichFundId": "FHI055",
+      "fundrichName": "復華亞太神龍科技基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI055",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI055]"
+    },
+    "CTB015": {
+      "fundrichFundId": "CTB015",
+      "fundrichName": "中國信託台灣活力證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CTB015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CTB015]"
+    },
+    "CIT003": {
+      "fundrichFundId": "CIT003",
+      "fundrichName": "群益創新科技基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT003]"
+    },
+    "UNI022": {
+      "fundrichFundId": "UNI022",
+      "fundrichName": "統一台灣動力基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI022",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI022]"
+    },
+    "UNI017": {
+      "fundrichFundId": "UNI017",
+      "fundrichName": "統一全球新科技基金新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI017",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI017]"
+    },
+    "SIN032": {
+      "fundrichFundId": "SIN032",
+      "fundrichName": "永豐領航科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN032",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN032]"
+    },
+    "ESI070": {
+      "fundrichFundId": "ESI070",
+      "fundrichName": "瀚亞外銷基金Ａ類型–新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI070",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI070]"
+    },
+    "SKI001": {
+      "fundrichFundId": "SKI001",
+      "fundrichName": "新光台灣富貴證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI001]"
+    },
+    "UNI024": {
+      "fundrichFundId": "UNI024",
+      "fundrichName": "統一統信基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI024",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI024]"
+    },
+    "FHI010": {
+      "fundrichFundId": "FHI010",
+      "fundrichName": "復華全方位基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI010]"
+    },
+    "JPM012": {
+      "fundrichFundId": "JPM012",
+      "fundrichName": "摩根台灣金磚證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM012",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM012]"
+    },
+    "FUB011": {
+      "fundrichFundId": "FUB011",
+      "fundrichName": "富邦精銳中小證券投資信託基金-A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB011]"
+    },
+    "CSI005": {
+      "fundrichFundId": "CSI005",
+      "fundrichName": "國泰國泰基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI005]"
+    },
+    "ESI123": {
+      "fundrichFundId": "ESI123",
+      "fundrichName": "瀚亞亞洲科技資本家股票基金A - 人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI123",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI123]"
+    },
+    "TST021": {
+      "fundrichFundId": "TST021",
+      "fundrichName": "台新台灣中小基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST021",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST021]"
+    },
+    "Pru057": {
+      "fundrichFundId": "Pru057",
+      "fundrichName": "【好好退休】玉山金滿意證券投資信託基金—R級別",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru057",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru057]"
+    },
+    "UNI002": {
+      "fundrichFundId": "UNI002",
+      "fundrichName": "統一大滿貫基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI002]"
+    },
+    "HSB008": {
+      "fundrichFundId": "HSB008",
+      "fundrichName": "滙豐台灣精典基金-台幣不配息A",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HSB008",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HSB008]"
+    },
+    "SKI002": {
+      "fundrichFundId": "SKI002",
+      "fundrichName": "新光大三通證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI002]"
+    },
+    "Pru015": {
+      "fundrichFundId": "Pru015",
+      "fundrichName": "玉山金滿意證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru015]"
+    },
+    "036032": {
+      "fundrichFundId": "036032",
+      "fundrichName": "霸菱韓國基金-A類美元累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/036032",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[036032]"
+    },
+    "FUB006": {
+      "fundrichFundId": "FUB006",
+      "fundrichName": "富邦精準證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB006]"
+    },
+    "JIH045": {
+      "fundrichFundId": "JIH045",
+      "fundrichName": "富邦台灣永續成長股息證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH045",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH045]"
+    },
+    "JIH002": {
+      "fundrichFundId": "JIH002",
+      "fundrichName": "富邦高科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH002]"
+    },
+    "CIT075": {
+      "fundrichFundId": "CIT075",
+      "fundrichName": "群益中小型股基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT075",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT075]"
+    },
+    "FUB005": {
+      "fundrichFundId": "FUB005",
+      "fundrichName": "富邦科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB005]"
+    },
+    "CIT074": {
+      "fundrichFundId": "CIT074",
+      "fundrichName": "群益長安基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT074",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT074]"
+    },
+    "Ivc013": {
+      "fundrichFundId": "Ivc013",
+      "fundrichName": "景順台灣科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Ivc013",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Ivc013]"
+    },
+    "FTS015": {
+      "fundrichFundId": "FTS015",
+      "fundrichName": "富蘭克林華美第一富證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS015]"
+    },
+    "JPM002": {
+      "fundrichFundId": "JPM002",
+      "fundrichName": "摩根中小證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM002]"
+    },
+    "Pru019": {
+      "fundrichFundId": "Pru019",
+      "fundrichName": "玉山高成長證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru019]"
+    },
+    "UNI018": {
+      "fundrichFundId": "UNI018",
+      "fundrichName": "統一全球新科技基金美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI018",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI018]"
+    },
+    "Pru017": {
+      "fundrichFundId": "Pru017",
+      "fundrichName": "玉山店頭市場證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru017",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru017]"
+    },
+    "CSI007": {
+      "fundrichFundId": "CSI007",
+      "fundrichName": "國泰中小成長基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI007]"
+    },
+    "ABI030": {
+      "fundrichFundId": "ABI030",
+      "fundrichName": "聯博大利基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI030",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI030]"
+    },
+    "UNI005": {
+      "fundrichFundId": "UNI005",
+      "fundrichName": "統一大中華中小基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI005]"
+    },
+    "ESI069": {
+      "fundrichFundId": "ESI069",
+      "fundrichName": "瀚亞高科技基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI069",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI069]"
+    },
+    "SKI014": {
+      "fundrichFundId": "SKI014",
+      "fundrichName": "新光店頭證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI014",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI014]"
+    },
+    "Meg004": {
+      "fundrichFundId": "Meg004",
+      "fundrichName": "兆豐國民基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg004]"
+    },
+    "FSI045": {
+      "fundrichFundId": "FSI045",
+      "fundrichName": "第一金亞洲科技基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI045",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI045]"
+    },
+    "HSB007": {
+      "fundrichFundId": "HSB007",
+      "fundrichName": "滙豐龍騰電子證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HSB007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HSB007]"
+    },
+    "KGI019": {
+      "fundrichFundId": "KGI019",
+      "fundrichName": "凱基台商天下證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/KGI019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[KGI019]"
+    },
+    "PBI010": {
+      "fundrichFundId": "PBI010",
+      "fundrichName": "柏瑞巨人證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI010]"
+    },
+    "YUI028": {
+      "fundrichFundId": "YUI028",
+      "fundrichName": "元大大中華TMT證券投資信託基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI028",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI028]"
+    },
+    "FSI005": {
+      "fundrichFundId": "FSI005",
+      "fundrichName": "第一金店頭市場基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI005]"
+    },
+    "JIH003": {
+      "fundrichFundId": "JIH003",
+      "fundrichName": "富邦日盛證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH003]"
+    },
+    "FSI010": {
+      "fundrichFundId": "FSI010",
+      "fundrichName": "第一金中概平衡基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI010]"
+    },
+    "UNI019": {
+      "fundrichFundId": "UNI019",
+      "fundrichName": "統一全球新科技基金人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI019]"
+    },
+    "USI004": {
+      "fundrichFundId": "USI004",
+      "fundrichName": "聯邦中國龍證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/USI004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[USI004]"
+    },
+    "UNI030": {
+      "fundrichFundId": "UNI030",
+      "fundrichName": "統一大中華中小基金美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI030",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI030]"
+    },
+    "UNI003": {
+      "fundrichFundId": "UNI003",
+      "fundrichName": "統一亞太基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI003]"
+    },
+    "Ivc014": {
+      "fundrichFundId": "Ivc014",
+      "fundrichName": "景順潛力證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Ivc014",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Ivc014]"
+    },
+    "CSI098": {
+      "fundrichFundId": "CSI098",
+      "fundrichName": "國泰台灣高股息證券投資信託基金B",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI098",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI098]"
+    },
+    "CSI097": {
+      "fundrichFundId": "CSI097",
+      "fundrichName": "國泰台灣高股息證券投資信託基金A",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI097",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI097]"
+    },
+    "Man035": {
+      "fundrichFundId": "Man035",
+      "fundrichName": "宏利台灣動力基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man035",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man035]"
+    },
+    "BRI002": {
+      "fundrichFundId": "BRI002",
+      "fundrichName": "貝萊德寶利基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/BRI002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[BRI002]"
+    },
+    "DEF003": {
+      "fundrichFundId": "DEF003",
+      "fundrichName": "德銀遠東DWS台灣旗艦基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/DEF003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[DEF003]"
+    },
+    "YUI045": {
+      "fundrichFundId": "YUI045",
+      "fundrichName": "元大店頭證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI045",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI045]"
+    },
+    "HSB045": {
+      "fundrichFundId": "HSB045",
+      "fundrichName": "【好好退休】滙豐龍鳳證券投資信託基金-R類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HSB045",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HSB045]"
+    },
+    "FHI015": {
+      "fundrichFundId": "FHI015",
+      "fundrichName": "復華大中華中小策略基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI015]"
+    },
+    "UNI045": {
+      "fundrichFundId": "UNI045",
+      "fundrichName": "統一全球智聯網AIoT基金(新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI045",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI045]"
+    },
+    "JIH029": {
+      "fundrichFundId": "JIH029",
+      "fundrichName": "富邦上選證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH029",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH029]"
+    },
+    "HSB006": {
+      "fundrichFundId": "HSB006",
+      "fundrichName": "滙豐龍鳳證券投資信託基金-A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HSB006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HSB006]"
+    },
+    "Meg001": {
+      "fundrichFundId": "Meg001",
+      "fundrichName": "兆豐第一基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg001]"
+    },
+    "FHI041": {
+      "fundrichFundId": "FHI041",
+      "fundrichName": "復華亞太平衡基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI041",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI041]"
+    },
+    "USI003": {
+      "fundrichFundId": "USI003",
+      "fundrichName": "聯邦精選科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/USI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[USI003]"
+    },
+    "ESI120": {
+      "fundrichFundId": "ESI120",
+      "fundrichName": "瀚亞亞洲科技資本家股票基金B - 新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI120",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI120]"
+    },
+    "Meg005": {
+      "fundrichFundId": "Meg005",
+      "fundrichName": "兆豐豐台灣基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg005]"
+    },
+    "HUA039": {
+      "fundrichFundId": "HUA039",
+      "fundrichName": "華南永昌未來科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HUA039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HUA039]"
+    },
+    "FHI006": {
+      "fundrichFundId": "FHI006",
+      "fundrichName": "復華傳家基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI006]"
+    },
+    "YUI090": {
+      "fundrichFundId": "YUI090",
+      "fundrichName": "元大台灣高股息優質龍頭證券投資信託基金-新台幣(B)配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI090",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI090]"
+    },
+    "YUI089": {
+      "fundrichFundId": "YUI089",
+      "fundrichName": "元大台灣高股息優質龍頭證券投資信託基金-新台幣(A)不配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI089",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI089]"
+    },
+    "YUI116": {
+      "fundrichFundId": "YUI116",
+      "fundrichName": "【好好退休】元大台灣高股息優質龍頭證券投資信託基金-新台幣R類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI116",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI116]"
+    },
+    "FUB043": {
+      "fundrichFundId": "FUB043",
+      "fundrichName": "富邦AI智能新趨勢多重資產型證券投資信託基金-A類型(新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB043",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB043]"
+    },
+    "UNI031": {
+      "fundrichFundId": "UNI031",
+      "fundrichName": "統一大中華中小基金人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI031",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI031]"
+    },
+    "NBG021": {
+      "fundrichFundId": "NBG021",
+      "fundrichName": "路博邁5G股票證券投資信託基金T累積(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG021",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG021]"
+    },
+    "FUB034": {
+      "fundrichFundId": "FUB034",
+      "fundrichName": "富邦歐亞絲路多重資產型證券投資信託基金-B類型（新臺幣）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB034",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB034]"
+    },
+    "FUB033": {
+      "fundrichFundId": "FUB033",
+      "fundrichName": "富邦歐亞絲路多重資產型證券投資信託基金-A類型（新臺幣）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB033",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB033]"
+    },
+    "UNI046": {
+      "fundrichFundId": "UNI046",
+      "fundrichName": "統一全球智聯網AIoT基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI046",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI046]"
+    },
+    "UNI049": {
+      "fundrichFundId": "UNI049",
+      "fundrichName": "統一台灣高息優選基金-月配型(新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI049",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI049]"
+    },
+    "UNI048": {
+      "fundrichFundId": "UNI048",
+      "fundrichName": "統一台灣高息優選基金-累積型(新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI048",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI048]"
+    },
+    "FHI001": {
+      "fundrichFundId": "FHI001",
+      "fundrichName": "復華全球大趨勢基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI001]"
+    },
+    "005013": {
+      "fundrichFundId": "005013",
+      "fundrichName": "摩根南韓基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/005013",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[005013]"
+    },
+    "YUI077": {
+      "fundrichFundId": "YUI077",
+      "fundrichName": "元大富櫃50ETF連結證券投資信託基金-新台幣(A)不配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI077",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI077]"
+    },
+    "YUI080": {
+      "fundrichFundId": "YUI080",
+      "fundrichName": "元大富櫃50ETF連結證券投資信託基金-新台幣(B)配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI080",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI080]"
+    },
+    "REL017": {
+      "fundrichFundId": "REL017",
+      "fundrichName": "台中銀大發基金B(配息型-新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/REL017",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[REL017]"
+    },
+    "REL006": {
+      "fundrichFundId": "REL006",
+      "fundrichName": "台中銀大發基金A (累積型-新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/REL006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[REL006]"
+    },
+    "YUI029": {
+      "fundrichFundId": "YUI029",
+      "fundrichName": "元大大中華TMT證券投資信託基金-人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI029",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI029]"
+    },
+    "FHI051": {
+      "fundrichFundId": "FHI051",
+      "fundrichName": "復華神盾基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI051",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI051]"
+    },
+    "CIT076": {
+      "fundrichFundId": "CIT076",
+      "fundrichName": "群益馬拉松基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT076",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT076]"
+    },
+    "NBG025": {
+      "fundrichFundId": "NBG025",
+      "fundrichName": "路博邁5G股票證券投資信託基金T累積(南非幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG025",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG025]"
+    },
+    "CIT067": {
+      "fundrichFundId": "CIT067",
+      "fundrichName": "群益奧斯卡基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT067",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT067]"
+    },
+    "FHI050": {
+      "fundrichFundId": "FHI050",
+      "fundrichName": "復華全球平衡基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI050",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI050]"
+    },
+    "FUB010": {
+      "fundrichFundId": "FUB010",
+      "fundrichName": "富邦台灣心證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB010]"
+    },
+    "FHI008": {
+      "fundrichFundId": "FHI008",
+      "fundrichName": "復華傳家二號基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI008",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI008]"
+    },
+    "FHI005": {
+      "fundrichFundId": "FHI005",
+      "fundrichName": "復華人生目標基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI005]"
+    },
+    "FUB038": {
+      "fundrichFundId": "FUB038",
+      "fundrichName": "富邦歐亞絲路多重資產型證券投資信託基金-B類型（美元）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB038]"
+    },
+    "FUB037": {
+      "fundrichFundId": "FUB037",
+      "fundrichName": "富邦歐亞絲路多重資產型證券投資信託基金-A類型（美元）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB037]"
+    },
+    "JIH058": {
+      "fundrichFundId": "JIH058",
+      "fundrichName": "富邦全球關鍵半導體證券投資信託基金(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH058",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH058]"
+    },
+    "NBG022": {
+      "fundrichFundId": "NBG022",
+      "fundrichName": "路博邁5G股票證券投資信託基金T累積(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG022",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG022]"
+    },
+    "FUB045": {
+      "fundrichFundId": "FUB045",
+      "fundrichName": "富邦AI智能新趨勢多重資產型證券投資信託基金-A類型(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB045",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB045]"
+    },
+    "Meg048": {
+      "fundrichFundId": "Meg048",
+      "fundrichName": "兆豐全球元宇宙科技基金-台幣A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg048",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg048]"
+    },
+    "UNI021": {
+      "fundrichFundId": "UNI021",
+      "fundrichName": "統一強漢基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI021",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI021]"
+    },
+    "JIH025": {
+      "fundrichFundId": "JIH025",
+      "fundrichName": "富邦首選證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH025",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH025]"
+    },
+    "Meg037": {
+      "fundrichFundId": "Meg037",
+      "fundrichName": "兆豐中國內需A股基金(台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg037]"
+    },
+    "CIT023": {
+      "fundrichFundId": "CIT023",
+      "fundrichName": "群益安家基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT023",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT023]"
+    },
+    "NBG024": {
+      "fundrichFundId": "NBG024",
+      "fundrichName": "路博邁5G股票證券投資信託基金T累積(澳幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG024",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG024]"
+    },
+    "USI017": {
+      "fundrichFundId": "USI017",
+      "fundrichName": "聯邦金鑽平衡證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/USI017",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[USI017]"
+    },
+    "CIT069": {
+      "fundrichFundId": "CIT069",
+      "fundrichName": "群益葛萊美基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT069",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT069]"
+    },
+    "UNI047": {
+      "fundrichFundId": "UNI047",
+      "fundrichName": "統一全球智聯網AIoT基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI047",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI047]"
+    },
+    "FUB004": {
+      "fundrichFundId": "FUB004",
+      "fundrichName": "富邦高成長證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB004]"
+    },
+    "NBG023": {
+      "fundrichFundId": "NBG023",
+      "fundrichName": "路博邁5G股票證券投資信託基金T累積(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG023",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG023]"
+    },
+    "FHI056": {
+      "fundrichFundId": "FHI056",
+      "fundrichName": "復華台灣好收益基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI056",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI056]"
+    },
+    "TST098": {
+      "fundrichFundId": "TST098",
+      "fundrichName": "台新美日台半導體基金(A)-日圓",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST098",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST098]"
+    },
+    "FHI034": {
+      "fundrichFundId": "FHI034",
+      "fundrichName": "復華中國新經濟平衡基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI034",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI034]"
+    },
+    "Meg049": {
+      "fundrichFundId": "Meg049",
+      "fundrichName": "兆豐全球元宇宙科技基金-美元A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg049",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg049]"
+    },
+    "FHI002": {
+      "fundrichFundId": "FHI002",
+      "fundrichName": "復華全球大趨勢基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI002]"
+    },
+    "UNI010": {
+      "fundrichFundId": "UNI010",
+      "fundrichName": "統一大龍騰中國基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI010]"
+    },
+    "JIH059": {
+      "fundrichFundId": "JIH059",
+      "fundrichName": "富邦全球關鍵半導體證券投資信託基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH059",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH059]"
+    },
+    "NOM005": {
+      "fundrichFundId": "NOM005",
+      "fundrichName": "野村鴻利證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM005]"
+    },
+    "CIT001": {
+      "fundrichFundId": "CIT001",
+      "fundrichName": "群益真善美基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT001]"
+    },
+    "CSI047": {
+      "fundrichFundId": "CSI047",
+      "fundrichName": "國泰亞太入息平衡基金B",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI047",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI047]"
+    },
+    "CSI046": {
+      "fundrichFundId": "CSI046",
+      "fundrichName": "國泰亞太入息平衡基金A",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI046",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI046]"
+    },
+    "HUA001": {
+      "fundrichFundId": "HUA001",
+      "fundrichName": "華南永昌永昌證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HUA001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HUA001]"
+    },
+    "CIT004": {
+      "fundrichFundId": "CIT004",
+      "fundrichName": "群益店頭市場基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT004]"
+    },
+    "CIT123": {
+      "fundrichFundId": "CIT123",
+      "fundrichName": "群益智慧聯網電動車基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT123",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT123]"
+    },
+    "FUB044": {
+      "fundrichFundId": "FUB044",
+      "fundrichName": "富邦AI智能新趨勢多重資產型證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB044",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB044]"
+    },
+    "Meg038": {
+      "fundrichFundId": "Meg038",
+      "fundrichName": "兆豐中國內需A股基金(美金)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg038]"
+    },
+    "NOM013": {
+      "fundrichFundId": "NOM013",
+      "fundrichName": "野村平衡證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM013",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM013]"
+    },
+    "UNI034": {
+      "fundrichFundId": "UNI034",
+      "fundrichName": "統一強漢基金美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI034",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI034]"
+    },
+    "CSI038": {
+      "fundrichFundId": "CSI038",
+      "fundrichName": "國泰亞洲成長基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI038]"
+    },
+    "JIH005": {
+      "fundrichFundId": "JIH005",
+      "fundrichName": "富邦ＭＩＴ主流證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH005]"
+    },
+    "FUB035": {
+      "fundrichFundId": "FUB035",
+      "fundrichName": "富邦歐亞絲路多重資產型證券投資信託基金-A類型（人民幣）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB035",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB035]"
+    },
+    "FUB036": {
+      "fundrichFundId": "FUB036",
+      "fundrichName": "富邦歐亞絲路多重資產型證券投資信託基金-B類型（人民幣）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB036",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB036]"
+    },
+    "Meg025": {
+      "fundrichFundId": "Meg025",
+      "fundrichName": "兆豐電子基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg025",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg025]"
+    },
+    "CIT070": {
+      "fundrichFundId": "CIT070",
+      "fundrichName": "群益亞太新趨勢平衡基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT070",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT070]"
+    },
+    "TST095": {
+      "fundrichFundId": "TST095",
+      "fundrichName": "台新美日台半導體基金(A)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST095",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST095]"
+    },
+    "Meg050": {
+      "fundrichFundId": "Meg050",
+      "fundrichName": "兆豐全球元宇宙科技基金-人民幣A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg050",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg050]"
+    },
+    "Meg040": {
+      "fundrichFundId": "Meg040",
+      "fundrichName": "兆豐台灣先進通訊基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg040]"
+    },
+    "UNI032": {
+      "fundrichFundId": "UNI032",
+      "fundrichName": "統一大龍騰中國基金美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI032",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI032]"
+    },
+    "Man051": {
+      "fundrichFundId": "Man051",
+      "fundrichName": "宏利臺灣股息收益基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man051",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man051]"
+    },
+    "Meg063": {
+      "fundrichFundId": "Meg063",
+      "fundrichName": "【好好退休】兆豐萬全基金 R類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg063",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg063]"
+    },
+    "YUI076": {
+      "fundrichFundId": "YUI076",
+      "fundrichName": "元大台灣卓越50ETF連結證券投資信託基金-新台幣(A)不配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI076",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI076]"
+    },
+    "YUI079": {
+      "fundrichFundId": "YUI079",
+      "fundrichName": "元大台灣卓越50ETF連結證券投資信託基金-新台幣(B)配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI079",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI079]"
+    },
+    "Meg002": {
+      "fundrichFundId": "Meg002",
+      "fundrichName": "兆豐萬全基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg002]"
+    },
+    "CSI048": {
+      "fundrichFundId": "CSI048",
+      "fundrichName": "國泰亞太入息平衡基金A(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI048",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI048]"
+    },
+    "CSI049": {
+      "fundrichFundId": "CSI049",
+      "fundrichName": "國泰亞太入息平衡基金B(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI049",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI049]"
+    },
+    "CSI024": {
+      "fundrichFundId": "CSI024",
+      "fundrichName": "國泰中國新興戰略基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI024",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI024]"
+    },
+    "CIT124": {
+      "fundrichFundId": "CIT124",
+      "fundrichName": "群益智慧聯網電動車基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT124",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT124]"
+    },
+    "SIN002": {
+      "fundrichFundId": "SIN002",
+      "fundrichName": "永豐趨勢平衡證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN002]"
+    },
+    "Meg039": {
+      "fundrichFundId": "Meg039",
+      "fundrichName": "兆豐中國內需A股基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg039]"
+    },
+    "JIH001": {
+      "fundrichFundId": "JIH001",
+      "fundrichName": "富邦精選五虎證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH001]"
+    },
+    "YUI012": {
+      "fundrichFundId": "YUI012",
+      "fundrichName": "元大新興亞洲證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI012",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI012]"
+    },
+    "CSI039": {
+      "fundrichFundId": "CSI039",
+      "fundrichName": "國泰亞洲成長基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI039]"
+    },
+    "UNI036": {
+      "fundrichFundId": "UNI036",
+      "fundrichName": "統一全球動態多重資產基金-累積台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI036",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI036]"
+    },
+    "UNI037": {
+      "fundrichFundId": "UNI037",
+      "fundrichName": "統一全球動態多重資產基金-月配台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI037]"
+    },
+    "UNI035": {
+      "fundrichFundId": "UNI035",
+      "fundrichName": "統一強漢基金人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI035",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI035]"
+    },
+    "CSI010": {
+      "fundrichFundId": "CSI010",
+      "fundrichName": "國泰中港台基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI010]"
+    },
+    "FHI007": {
+      "fundrichFundId": "FHI007",
+      "fundrichName": "復華數位經濟基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI007]"
+    },
+    "FHI035": {
+      "fundrichFundId": "FHI035",
+      "fundrichName": "復華中國新經濟平衡基金-人民幣A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI035",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI035]"
+    },
+    "TST096": {
+      "fundrichFundId": "TST096",
+      "fundrichName": "台新美日台半導體基金(A)-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST096",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST096]"
+    },
+    "Ivc002": {
+      "fundrichFundId": "Ivc002",
+      "fundrichName": "景順主流證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Ivc002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Ivc002]"
+    },
+    "REL002": {
+      "fundrichFundId": "REL002",
+      "fundrichName": "台中銀數位時代基金A (累積型-新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/REL002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[REL002]"
+    },
+    "CIT002": {
+      "fundrichFundId": "CIT002",
+      "fundrichName": "群益平衡王基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT002]"
+    },
+    "REL018": {
+      "fundrichFundId": "REL018",
+      "fundrichName": "台中銀數位時代基金B(配息型-新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/REL018",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[REL018]"
+    },
+    "YUI114": {
+      "fundrichFundId": "YUI114",
+      "fundrichName": "元大臺灣ESG永續ETF連結證券投資信託基金-新台幣A類型不配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI114",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI114]"
+    },
+    "YUI115": {
+      "fundrichFundId": "YUI115",
+      "fundrichName": "元大臺灣ESG永續ETF連結證券投資信託基金-新台幣B類型配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI115",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI115]"
+    },
+    "KGI006": {
+      "fundrichFundId": "KGI006",
+      "fundrichName": "凱基新興市場中小證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/KGI006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[KGI006]"
+    },
+    "CSI025": {
+      "fundrichFundId": "CSI025",
+      "fundrichName": "國泰中國新興戰略基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI025",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI025]"
+    },
+    "UNI033": {
+      "fundrichFundId": "UNI033",
+      "fundrichName": "統一大龍騰中國基金人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI033",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI033]"
+    },
+    "CSI013": {
+      "fundrichFundId": "CSI013",
+      "fundrichName": "國泰新興市場基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI013",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI013]"
+    },
+    "CSI110": {
+      "fundrichFundId": "CSI110",
+      "fundrichName": "國泰亞洲成長基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI110",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI110]"
+    },
+    "CSI050": {
+      "fundrichFundId": "CSI050",
+      "fundrichName": "國泰亞太入息平衡基金A(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI050",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI050]"
+    },
+    "FHI053": {
+      "fundrichFundId": "FHI053",
+      "fundrichName": "復華台灣智能基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI053",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI053]"
+    },
+    "ESI004": {
+      "fundrichFundId": "ESI004",
+      "fundrichName": "瀚亞美國高科技基金A類型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI004]"
+    },
+    "CIT125": {
+      "fundrichFundId": "CIT125",
+      "fundrichName": "群益智慧聯網電動車基金-人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT125",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT125]"
+    },
+    "HSB011": {
+      "fundrichFundId": "HSB011",
+      "fundrichName": "滙豐安富證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HSB011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HSB011]"
+    },
+    "YUI070": {
+      "fundrichFundId": "YUI070",
+      "fundrichName": "元大台灣加權股價指數證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI070",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI070]"
+    },
+    "YUI095": {
+      "fundrichFundId": "YUI095",
+      "fundrichName": "【好好退休】元大台灣加權股價指數基金-新台幣R類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI095",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI095]"
+    },
+    "FUB003": {
+      "fundrichFundId": "FUB003",
+      "fundrichName": "富邦大中華成長證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB003]"
+    },
+    "UNI038": {
+      "fundrichFundId": "UNI038",
+      "fundrichName": "統一全球動態多重資產基金-累積美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI038]"
+    },
+    "UNI039": {
+      "fundrichFundId": "UNI039",
+      "fundrichName": "統一全球動態多重資產基金-月配美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI039]"
+    },
+    "CSI011": {
+      "fundrichFundId": "CSI011",
+      "fundrichName": "國泰中港台基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI011]"
+    },
+    "UNI007": {
+      "fundrichFundId": "UNI007",
+      "fundrichName": "統一亞洲大金磚基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI007]"
+    },
+    "HSB003": {
+      "fundrichFundId": "HSB003",
+      "fundrichName": "滙豐全球關鍵資源證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HSB003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HSB003]"
+    },
+    "JIH031": {
+      "fundrichFundId": "JIH031",
+      "fundrichName": "富邦中國戰略 A 股證券投資信託基金(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH031",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH031]"
+    },
+    "JPM010": {
+      "fundrichFundId": "JPM010",
+      "fundrichName": "摩根東方科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM010]"
+    },
+    "JPM007": {
+      "fundrichFundId": "JPM007",
+      "fundrichName": "摩根台灣增長證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM007]"
+    },
+    "CSI015": {
+      "fundrichFundId": "CSI015",
+      "fundrichName": "國泰中國內需增長基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI015]"
+    },
+    "TST003": {
+      "fundrichFundId": "TST003",
+      "fundrichName": "台新中國精選中小基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST003]"
+    },
+    "Pru004": {
+      "fundrichFundId": "Pru004",
+      "fundrichName": "玉山中國中小證券投資信託基金－新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru004]"
+    },
+    "TST097": {
+      "fundrichFundId": "TST097",
+      "fundrichName": "台新美日台半導體基金(A)-人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST097",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST097]"
+    },
+    "KGI025": {
+      "fundrichFundId": "KGI025",
+      "fundrichName": "凱基新興市場中小證券投資信託基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/KGI025",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[KGI025]"
+    },
+    "CSI074": {
+      "fundrichFundId": "CSI074",
+      "fundrichName": "國泰新興市場基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI074",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI074]"
+    },
+    "CSI111": {
+      "fundrichFundId": "CSI111",
+      "fundrichName": "國泰亞洲成長基金(澳幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI111",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI111]"
+    },
+    "CSI051": {
+      "fundrichFundId": "CSI051",
+      "fundrichName": "國泰亞太入息平衡基金A(澳幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI051",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI051]"
+    },
+    "005008": {
+      "fundrichFundId": "005008",
+      "fundrichName": "摩根太平洋科技基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/005008",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[005008]"
+    },
+    "CSI081": {
+      "fundrichFundId": "CSI081",
+      "fundrichName": "國泰中國新興戰略基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI081",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI081]"
+    },
+    "032079": {
+      "fundrichFundId": "032079",
+      "fundrichName": "法巴乾淨能源股票基金C(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/032079",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[032079]"
+    },
+    "ESI109": {
+      "fundrichFundId": "ESI109",
+      "fundrichName": "瀚亞美國高科技基金A類型-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI109",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI109]"
+    },
+    "032129": {
+      "fundrichFundId": "032129",
+      "fundrichName": "法巴乾淨能源股票基金 RH (美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/032129",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[032129]"
+    },
+    "FUB047": {
+      "fundrichFundId": "FUB047",
+      "fundrichName": "富邦台灣高股息證券投資信託基金-B類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB047",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB047]"
+    },
+    "FUB046": {
+      "fundrichFundId": "FUB046",
+      "fundrichName": "富邦台灣高股息證券投資信託基金-A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FUB046",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FUB046]"
+    },
+    "Pru027": {
+      "fundrichFundId": "Pru027",
+      "fundrichName": "玉山中國品牌證券投資信託基金－新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru027",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru027]"
+    },
+    "SCH037": {
+      "fundrichFundId": "SCH037",
+      "fundrichName": "施羅德台美雙利多重資產基金(新台幣) - B配息型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SCH037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SCH037]"
+    },
+    "SCH036": {
+      "fundrichFundId": "SCH036",
+      "fundrichName": "施羅德台美雙利多重資產基金(新台幣) - A累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SCH036",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SCH036]"
+    },
+    "JPM009": {
+      "fundrichFundId": "JPM009",
+      "fundrichName": "摩根平衡證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM009",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM009]"
+    },
+    "Meg047": {
+      "fundrichFundId": "Meg047",
+      "fundrichName": "兆豐台灣金傳精選股息基金(台幣)A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg047",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg047]"
+    },
+    "JIH033": {
+      "fundrichFundId": "JIH033",
+      "fundrichName": "富邦中國戰略 A 股證券投資信託基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH033",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH033]"
+    },
+    "NOM052": {
+      "fundrichFundId": "NOM052",
+      "fundrichName": "野村亞太高股息證券投資信託基金(台幣累積)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM052",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM052]"
+    },
+    "NOM053": {
+      "fundrichFundId": "NOM053",
+      "fundrichName": "野村亞太高股息證券投資信託基金(台幣季配)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM053",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM053]"
+    },
+    "UNI041": {
+      "fundrichFundId": "UNI041",
+      "fundrichName": "統一全球動態多重資產基金-月配人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI041",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI041]"
+    },
+    "UNI040": {
+      "fundrichFundId": "UNI040",
+      "fundrichName": "統一全球動態多重資產基金-累積人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI040]"
+    },
+    "CSI078": {
+      "fundrichFundId": "CSI078",
+      "fundrichName": "國泰中港台基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI078",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI078]"
+    },
+    "JIH039": {
+      "fundrichFundId": "JIH039",
+      "fundrichName": "富邦全球智能車證券投資信託基金(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH039]"
+    },
+    "FTS040": {
+      "fundrichFundId": "FTS040",
+      "fundrichName": "富蘭克林華美全球成長證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS040]"
+    },
+    "KGI007": {
+      "fundrichFundId": "KGI007",
+      "fundrichName": "凱基雲端趨勢證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/KGI007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[KGI007]"
+    },
+    "CSI016": {
+      "fundrichFundId": "CSI016",
+      "fundrichName": "國泰中國內需增長基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI016]"
+    },
+    "SKI055": {
+      "fundrichFundId": "SKI055",
+      "fundrichName": "新光臺灣高股息基金-新台幣(B)配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI055",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI055]"
+    },
+    "SKI054": {
+      "fundrichFundId": "SKI054",
+      "fundrichName": "新光臺灣高股息基金-新台幣(A)不配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI054",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI054]"
+    },
+    "Pru037": {
+      "fundrichFundId": "Pru037",
+      "fundrichName": "玉山中國中小證券投資信託基金－美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru037]"
+    },
+    "FHI030": {
+      "fundrichFundId": "FHI030",
+      "fundrichName": "復華美國新星基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI030",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI030]"
+    },
+    "CIT020": {
+      "fundrichFundId": "CIT020",
+      "fundrichName": "群益大中華雙力優勢基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT020",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT020]"
+    },
+    "101026": {
+      "fundrichFundId": "101026",
+      "fundrichName": "路博邁投資基金 - NB次世代通訊基金A累積類股(南非幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/101026",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[101026]"
+    },
+    "032016": {
+      "fundrichFundId": "032016",
+      "fundrichName": "法巴乾淨能源股票基金/年配(歐元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/032016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[032016]"
+    },
+    "032080": {
+      "fundrichFundId": "032080",
+      "fundrichName": "法巴乾淨能源股票基金C(歐元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/032080",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[032080]"
+    },
+    "NBG080": {
+      "fundrichFundId": "NBG080",
+      "fundrichName": "路博邁台日雙星股票證券投資信託基金T累積(日圓)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG080",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG080]"
+    },
+    "NBG078": {
+      "fundrichFundId": "NBG078",
+      "fundrichName": "路博邁台日雙星股票證券投資信託基金T月配(日圓)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG078",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG078]"
+    },
+    "101024": {
+      "fundrichFundId": "101024",
+      "fundrichName": "路博邁投資基金 - NB次世代通訊基金A累積類股(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/101024",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[101024]"
+    },
+    "Meg057": {
+      "fundrichFundId": "Meg057",
+      "fundrichName": "兆豐日本優勢多重資產基金-台幣A(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg057",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg057]"
+    },
+    "Meg058": {
+      "fundrichFundId": "Meg058",
+      "fundrichName": "兆豐日本優勢多重資產基金-台幣B(配息型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg058",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg058]"
+    },
+    "101025": {
+      "fundrichFundId": "101025",
+      "fundrichName": "路博邁投資基金 - NB次世代通訊基金A累積類股(澳幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/101025",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[101025]"
+    },
+    "REL016": {
+      "fundrichFundId": "REL016",
+      "fundrichName": "台中銀台灣優息基金B(配息型-新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/REL016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[REL016]"
+    },
+    "REL015": {
+      "fundrichFundId": "REL015",
+      "fundrichName": "台中銀台灣優息基金A(累積型-新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/REL015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[REL015]"
+    },
+    "Pru032": {
+      "fundrichFundId": "Pru032",
+      "fundrichName": "玉山中國品牌證券投資信託基金－美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru032",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru032]"
+    },
+    "SCH038": {
+      "fundrichFundId": "SCH038",
+      "fundrichName": "施羅德台美雙利多重資產基金(美元) - A累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SCH038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SCH038]"
+    },
+    "Meg003": {
+      "fundrichFundId": "Meg003",
+      "fundrichName": "兆豐全球基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg003]"
+    },
+    "CIT032": {
+      "fundrichFundId": "CIT032",
+      "fundrichName": "群益中國新機會基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT032",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT032]"
+    },
+    "JIH026": {
+      "fundrichFundId": "JIH026",
+      "fundrichName": "富邦全球抗暖化證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH026",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH026]"
+    },
+    "019010": {
+      "fundrichFundId": "019010",
+      "fundrichName": "安聯亞洲不含中國股票基金-A配息類股(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/019010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[019010]"
+    },
+    "JIH024": {
+      "fundrichFundId": "JIH024",
+      "fundrichName": "富邦亞洲機會證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH024",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH024]"
+    },
+    "SIN039": {
+      "fundrichFundId": "SIN039",
+      "fundrichName": "永豐臺灣ESG永續優選-A年配型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN039]"
+    },
+    "SIN038": {
+      "fundrichFundId": "SIN038",
+      "fundrichName": "永豐臺灣ESG永續優選-A累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN038]"
+    },
+    "052122": {
+      "fundrichFundId": "052122",
+      "fundrichName": "施羅德環球基金系列-環球黃金(美元)A級別累積",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/052122",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[052122]"
+    },
+    "JIH040": {
+      "fundrichFundId": "JIH040",
+      "fundrichName": "富邦全球智能車證券投資信託基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH040]"
+    },
+    "FTS041": {
+      "fundrichFundId": "FTS041",
+      "fundrichName": "富蘭克林華美全球成長證券投資信託基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS041",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS041]"
+    },
+    "FHI031": {
+      "fundrichFundId": "FHI031",
+      "fundrichName": "復華美國新星基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI031",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI031]"
+    },
+    "KGI024": {
+      "fundrichFundId": "KGI024",
+      "fundrichName": "凱基雲端趨勢證券投資信託基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/KGI024",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[KGI024]"
+    },
+    "SKI036": {
+      "fundrichFundId": "SKI036",
+      "fundrichName": "新光全球AI新創產業基金(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI036",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI036]"
+    },
+    "JIH032": {
+      "fundrichFundId": "JIH032",
+      "fundrichName": "富邦中國戰略 A 股證券投資信託基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH032",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH032]"
+    },
+    "CIT021": {
+      "fundrichFundId": "CIT021",
+      "fundrichName": "群益大中華雙力優勢基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT021",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT021]"
+    },
+    "116147": {
+      "fundrichFundId": "116147",
+      "fundrichName": "富蘭克林坦伯頓全球投資系列－黃金及貴金屬基金美元A(acc)股",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/116147",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[116147]"
+    },
+    "FHI013": {
+      "fundrichFundId": "FHI013",
+      "fundrichName": "復華全球原物料基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI013",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI013]"
+    },
+    "CSI080": {
+      "fundrichFundId": "CSI080",
+      "fundrichName": "國泰中國內需增長基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI080",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI080]"
+    },
+    "Pru038": {
+      "fundrichFundId": "Pru038",
+      "fundrichName": "玉山中國中小證券投資信託基金－人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru038]"
+    },
+    "NBG074": {
+      "fundrichFundId": "NBG074",
+      "fundrichName": "路博邁台日雙星股票證券投資信託基金T累積(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG074",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG074]"
+    },
+    "NBG079": {
+      "fundrichFundId": "NBG079",
+      "fundrichName": "路博邁台日雙星股票證券投資信託基金T月配(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG079",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG079]"
+    },
+    "FTS086": {
+      "fundrichFundId": "FTS086",
+      "fundrichName": "富蘭克林華美AI新科技證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS086",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS086]"
+    },
+    "Pru059": {
+      "fundrichFundId": "Pru059",
+      "fundrichName": "【好好退休】玉山新世紀證券投資信託基金—R級別",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru059",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru059]"
+    },
+    "YUI111": {
+      "fundrichFundId": "YUI111",
+      "fundrichName": "元大日本龍頭企業證券投資信託基金-日圓A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI111",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI111]"
+    },
+    "Meg061": {
+      "fundrichFundId": "Meg061",
+      "fundrichName": "兆豐日本優勢多重資產基金-日圓A(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg061",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg061]"
+    },
+    "Meg062": {
+      "fundrichFundId": "Meg062",
+      "fundrichName": "兆豐日本優勢多重資產基金-日圓B(配息型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg062",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg062]"
+    },
+    "Meg059": {
+      "fundrichFundId": "Meg059",
+      "fundrichName": "兆豐日本優勢多重資產基金-美元A(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg059",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg059]"
+    },
+    "Meg060": {
+      "fundrichFundId": "Meg060",
+      "fundrichName": "兆豐日本優勢多重資產基金-美元B(配息型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg060",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg060]"
+    },
+    "USI018": {
+      "fundrichFundId": "USI018",
+      "fundrichName": "聯邦環太平洋平衡證券投資信託基金-A類型(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/USI018",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[USI018]"
+    },
+    "USI045": {
+      "fundrichFundId": "USI045",
+      "fundrichName": "聯邦環太平洋平衡證券投資信託基金-A類型(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/USI045",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[USI045]"
+    },
+    "Pru023": {
+      "fundrichFundId": "Pru023",
+      "fundrichName": "玉山新世紀證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru023",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru023]"
+    },
+    "USI019": {
+      "fundrichFundId": "USI019",
+      "fundrichName": "聯邦環太平洋平衡證券投資信託基金-B類型(新臺幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/USI019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[USI019]"
+    },
+    "FHI037": {
+      "fundrichFundId": "FHI037",
+      "fundrichName": "復華中國新經濟A股基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI037]"
+    },
+    "ALI031": {
+      "fundrichFundId": "ALI031",
+      "fundrichName": "安聯中華新思路基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI031",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI031]"
+    },
+    "052123": {
+      "fundrichFundId": "052123",
+      "fundrichName": "施羅德環球基金系列-環球黃金(歐元對沖)A級別累積",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/052123",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[052123]"
+    },
+    "FHI060": {
+      "fundrichFundId": "FHI060",
+      "fundrichName": "復華台灣科技高股息基金A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI060",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI060]"
+    },
+    "FHI061": {
+      "fundrichFundId": "FHI061",
+      "fundrichName": "復華台灣科技高股息基金B類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI061",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI061]"
+    },
+    "NOM021": {
+      "fundrichFundId": "NOM021",
+      "fundrichName": "野村中國機會證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM021",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM021]"
+    },
+    "ESI122": {
+      "fundrichFundId": "ESI122",
+      "fundrichName": "瀚亞亞洲科技資本家股票基金B - 美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI122",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI122]"
+    },
+    "029079": {
+      "fundrichFundId": "029079",
+      "fundrichName": "聯博-國際科技基金 A股美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/029079",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[029079]"
+    },
+    "UNI042": {
+      "fundrichFundId": "UNI042",
+      "fundrichName": "統一大東協高股息基金(新台幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI042",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI042]"
+    },
+    "116148": {
+      "fundrichFundId": "116148",
+      "fundrichName": "富蘭克林坦伯頓全球投資系列－黃金及貴金屬基金歐元A(acc)股",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/116148",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[116148]"
+    },
+    "Pru013": {
+      "fundrichFundId": "Pru013",
+      "fundrichName": "玉山大中華證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru013",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru013]"
+    },
+    "CIT033": {
+      "fundrichFundId": "CIT033",
+      "fundrichName": "群益中國新機會基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT033",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT033]"
+    },
+    "CIT071": {
+      "fundrichFundId": "CIT071",
+      "fundrichName": "群益新興金鑽基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT071",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT071]"
+    },
+    "116149": {
+      "fundrichFundId": "116149",
+      "fundrichName": "富蘭克林坦伯頓全球投資系列－黃金及貴金屬基金歐元避險A(acc)股-H1",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/116149",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[116149]"
+    },
+    "019109": {
+      "fundrichFundId": "019109",
+      "fundrichName": "安聯全球礦金資源基金-AT累積類股(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/019109",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[019109]"
+    },
+    "SKI004": {
+      "fundrichFundId": "SKI004",
+      "fundrichName": "新光中國成長基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI004]"
+    },
+    "081031": {
+      "fundrichFundId": "081031",
+      "fundrichName": "安本基金－未來礦業基金 X 累積 美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/081031",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[081031]"
+    },
+    "029152": {
+      "fundrichFundId": "029152",
+      "fundrichName": "聯博-國際科技基金A澳幣避險級別",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/029152",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[029152]"
+    },
+    "Pru033": {
+      "fundrichFundId": "Pru033",
+      "fundrichName": "玉山中國品牌證券投資信託基金－人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru033",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru033]"
+    },
+    "043061": {
+      "fundrichFundId": "043061",
+      "fundrichName": "富達基金－亞洲成長趨勢基金 (A股美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/043061",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[043061]"
+    },
+    "043077": {
+      "fundrichFundId": "043077",
+      "fundrichName": "富達基金－亞洲成長趨勢基金 (A股累計美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/043077",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[043077]"
+    },
+    "FTS051": {
+      "fundrichFundId": "FTS051",
+      "fundrichName": "富蘭克林華美新世界股票證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS051",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS051]"
+    },
+    "NOM142": {
+      "fundrichFundId": "NOM142",
+      "fundrichName": "【好好退休】野村台灣高股息證券投資信託基金（Ｓ級別）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM142",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM142]"
+    },
+    "SKI037": {
+      "fundrichFundId": "SKI037",
+      "fundrichName": "新光全球AI新創產業基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI037]"
+    },
+    "038023": {
+      "fundrichFundId": "038023",
+      "fundrichName": "晉達環球策略基金 - 環球黃金基金 C 收益股份",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/038023",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[038023]"
+    },
+    "NOM064": {
+      "fundrichFundId": "NOM064",
+      "fundrichName": "野村台灣高股息證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM064",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM064]"
+    },
+    "NOM150": {
+      "fundrichFundId": "NOM150",
+      "fundrichName": "野村台灣高股息證券投資信託基金（台幣月配）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM150",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM150]"
+    },
+    "JIH006": {
+      "fundrichFundId": "JIH006",
+      "fundrichName": "富邦中國內需動力證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JIH006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JIH006]"
+    },
+    "CIT006": {
+      "fundrichFundId": "CIT006",
+      "fundrichName": "群益東方盛世基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT006]"
+    },
+    "029177": {
+      "fundrichFundId": "029177",
+      "fundrichName": "聯博-國際科技基金 A股歐元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/029177",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[029177]"
+    },
+    "NBG076": {
+      "fundrichFundId": "NBG076",
+      "fundrichName": "路博邁台日雙星股票證券投資信託基金T月配(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG076",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG076]"
+    },
+    "042085": {
+      "fundrichFundId": "042085",
+      "fundrichName": "貝萊德世界礦業基金 A2 美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/042085",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[042085]"
+    },
+    "NBG075": {
+      "fundrichFundId": "NBG075",
+      "fundrichName": "路博邁台日雙星股票證券投資信託基金T累積(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG075",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG075]"
+    },
+    "FTS087": {
+      "fundrichFundId": "FTS087",
+      "fundrichName": "富蘭克林華美AI新科技證券投資信託基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS087",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS087]"
+    },
+    "TCT027": {
+      "fundrichFundId": "TCT027",
+      "fundrichName": "合庫ＡＩ電動車及車聯網創新證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TCT027",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TCT027]"
+    },
+    "019108": {
+      "fundrichFundId": "019108",
+      "fundrichName": "安聯全球礦金資源基金-AT累積類股(歐元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/019108",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[019108]"
+    },
+    "CIT022": {
+      "fundrichFundId": "CIT022",
+      "fundrichName": "群益大中華雙力優勢基金-人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT022",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT022]"
+    },
+    "042182": {
+      "fundrichFundId": "042182",
+      "fundrichName": "貝萊德世界礦業基金 A10美元(總報酬穩定配息)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/042182",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[042182]"
+    },
+    "Man049": {
+      "fundrichFundId": "Man049",
+      "fundrichName": "宏利精選中華基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man049",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man049]"
+    },
+    "TST066": {
+      "fundrichFundId": "TST066",
+      "fundrichName": "台新中國政策趨勢基金(A)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST066",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST066]"
+    },
+    "YUI109": {
+      "fundrichFundId": "YUI109",
+      "fundrichName": "元大日本龍頭企業證券投資信託基金-新台幣A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI109",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI109]"
+    },
+    "085020": {
+      "fundrichFundId": "085020",
+      "fundrichName": "普徠仕（盧森堡）系列基金—普徠仕全球科技股票基金Ａ級別（美元）—累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/085020",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[085020]"
+    },
+    "NOM149": {
+      "fundrichFundId": "NOM149",
+      "fundrichName": "野村全球科技多重資產證券投資信託基金（日幣月配）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM149",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM149]"
+    },
+    "042092": {
+      "fundrichFundId": "042092",
+      "fundrichName": "貝萊德世界礦業基金 Hedged A2 澳幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/042092",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[042092]"
+    },
+    "Pru056": {
+      "fundrichFundId": "Pru056",
+      "fundrichName": "【好好退休】玉山金平衡證券投資信託基金—R級別",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru056",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru056]"
+    },
+    "033005": {
+      "fundrichFundId": "033005",
+      "fundrichName": "高盛基金III - 高盛亞洲收益基金X股對沖級別澳幣(月配息)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/033005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[033005]"
+    },
+    "ALI034": {
+      "fundrichFundId": "ALI034",
+      "fundrichName": "安聯中華新思路基金-美元",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI034",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI034]"
+    },
+    "Pru024": {
+      "fundrichFundId": "Pru024",
+      "fundrichName": "玉山金平衡證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru024",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru024]"
+    },
+    "043037": {
+      "fundrichFundId": "043037",
+      "fundrichName": "富達基金－亞洲成長趨勢基金 (A股累計歐元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/043037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[043037]"
+    },
+    "029099": {
+      "fundrichFundId": "029099",
+      "fundrichName": "聯博-亞洲股票基金AD月配南非幣避險級別",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/029099",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[029099]"
+    },
+    "042093": {
+      "fundrichFundId": "042093",
+      "fundrichName": "貝萊德世界礦業基金 Hedged A2 港幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/042093",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[042093]"
+    },
+    "HUA004": {
+      "fundrichFundId": "HUA004",
+      "fundrichName": "華南永昌全球物聯網精選基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HUA004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HUA004]"
+    },
+    "UNI043": {
+      "fundrichFundId": "UNI043",
+      "fundrichName": "統一大東協高股息基金(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI043",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI043]"
+    },
+    "HSB077": {
+      "fundrichFundId": "HSB077",
+      "fundrichName": "匯豐台灣精典基金-台幣月配息AM2",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HSB077",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HSB077]"
+    },
+    "SKI038": {
+      "fundrichFundId": "SKI038",
+      "fundrichName": "新光全球AI新創產業基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI038]"
+    },
+    "FSI017": {
+      "fundrichFundId": "FSI017",
+      "fundrichName": "第一金全球 AI 人工智慧基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI017",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI017]"
+    },
+    "FTS054": {
+      "fundrichFundId": "FTS054",
+      "fundrichName": "富蘭克林華美亞太平衡證券投資信託基金(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS054",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS054]"
+    },
+    "Pru016": {
+      "fundrichFundId": "Pru016",
+      "fundrichName": "玉山亞太證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru016]"
+    },
+    "NOM040": {
+      "fundrichFundId": "NOM040",
+      "fundrichName": "野村日本領先證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM040]"
+    },
+    "Man050": {
+      "fundrichFundId": "Man050",
+      "fundrichName": "宏利精選中華基金（人民幣避險）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man050",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man050]"
+    },
+    "FSI041": {
+      "fundrichFundId": "FSI041",
+      "fundrichName": "第一金全球大趨勢基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI041",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI041]"
+    },
+    "CSI107": {
+      "fundrichFundId": "CSI107",
+      "fundrichName": "國泰美國ESG證券投資信託基金(美)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI107",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI107]"
+    },
+    "YUI057": {
+      "fundrichFundId": "YUI057",
+      "fundrichName": "元大全球ETF成長組合證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI057",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI057]"
+    },
+    "YUI054": {
+      "fundrichFundId": "YUI054",
+      "fundrichName": "元大亞太成長證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI054",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI054]"
+    },
+    "FSI053": {
+      "fundrichFundId": "FSI053",
+      "fundrichName": "第一金全球eSports電競基金-台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI053",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI053]"
+    },
+    "CIT101": {
+      "fundrichFundId": "CIT101",
+      "fundrichName": "群益全民成長樂退組合基金A(累積型-美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT101",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT101]"
+    },
+    "CIT102": {
+      "fundrichFundId": "CIT102",
+      "fundrichName": "群益全民成長樂退組合基金B(月配型-美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT102",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT102]"
+    },
+    "JPM004": {
+      "fundrichFundId": "JPM004",
+      "fundrichName": "摩根亞洲證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM004]"
+    },
+    "FTS043": {
+      "fundrichFundId": "FTS043",
+      "fundrichName": "富蘭克林華美多重資產收益證券投資信託基金(分配型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS043",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS043]"
+    },
+    "YUI056": {
+      "fundrichFundId": "YUI056",
+      "fundrichName": "元大全球新興市場精選組合證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI056",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI056]"
+    },
+    "ALI022": {
+      "fundrichFundId": "ALI022",
+      "fundrichName": "安聯四季成長組合基金 - A類型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI022",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI022]"
+    },
+    "JPM019": {
+      "fundrichFundId": "JPM019",
+      "fundrichName": "摩根泛亞太股票入息基金－累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM019]"
+    },
+    "JPM037": {
+      "fundrichFundId": "JPM037",
+      "fundrichName": "摩根泛亞太股票入息基金－月配息型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM037]"
+    },
+    "Pru058": {
+      "fundrichFundId": "Pru058",
+      "fundrichName": "【好好退休】玉山策略成長ETF組合證券投資信託基金－新台幣R級別",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru058",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru058]"
+    },
+    "ESI007": {
+      "fundrichFundId": "ESI007",
+      "fundrichName": "瀚亞理財通基金A類型-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI007]"
+    },
+    "SKI040": {
+      "fundrichFundId": "SKI040",
+      "fundrichName": "新光中國成長基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SKI040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SKI040]"
+    },
+    "KGI004": {
+      "fundrichFundId": "KGI004",
+      "fundrichName": "凱基新興趨勢ETF組合證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/KGI004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[KGI004]"
+    },
+    "YUI003": {
+      "fundrichFundId": "YUI003",
+      "fundrichName": "元大新中國證券投資信託基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI003]"
+    },
+    "SIN004": {
+      "fundrichFundId": "SIN004",
+      "fundrichName": "永豐亞洲民生消費證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN004]"
+    },
+    "CIT040": {
+      "fundrichFundId": "CIT040",
+      "fundrichName": "群益工業國入息基金A(累積型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT040]"
+    },
+    "CIT039": {
+      "fundrichFundId": "CIT039",
+      "fundrichName": "群益工業國入息基金B(月配型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT039]"
+    },
+    "FSI011": {
+      "fundrichFundId": "FSI011",
+      "fundrichName": "第一金全球 AI 機器人及自動化產業基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI011]"
+    },
+    "JPM026": {
+      "fundrichFundId": "JPM026",
+      "fundrichName": "摩根新絲路證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM026",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM026]"
+    },
+    "TST004": {
+      "fundrichFundId": "TST004",
+      "fundrichName": "台新新興市場機會股票基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST004]"
+    },
+    "PBI133": {
+      "fundrichFundId": "PBI133",
+      "fundrichName": "柏瑞ESG量化全球股票收益證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI133",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI133]"
+    },
+    "PBI132": {
+      "fundrichFundId": "PBI132",
+      "fundrichName": "柏瑞ESG量化全球股票收益證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI132",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI132]"
+    },
+    "YUI006": {
+      "fundrichFundId": "YUI006",
+      "fundrichName": "元大大中華價值指數證券投資信託基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI006]"
+    },
+    "ABI041": {
+      "fundrichFundId": "ABI041",
+      "fundrichName": "聯博中國A股基金-A2類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI041",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI041]"
+    },
+    "JPM028": {
+      "fundrichFundId": "JPM028",
+      "fundrichName": "摩根金龍收成證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM028",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM028]"
+    },
+    "JPM005": {
+      "fundrichFundId": "JPM005",
+      "fundrichName": "摩根龍揚基金－累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM005]"
+    },
+    "CIT111": {
+      "fundrichFundId": "CIT111",
+      "fundrichName": "群益全民優質樂退組合基金A(累積型-美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT111",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT111]"
+    },
+    "CIT112": {
+      "fundrichFundId": "CIT112",
+      "fundrichName": "群益全民優質樂退組合基金B(月配型-美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT112",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT112]"
+    },
+    "PBI101": {
+      "fundrichFundId": "PBI101",
+      "fundrichName": "柏瑞新興動態多重資產證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI101",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI101]"
+    },
+    "PBI102": {
+      "fundrichFundId": "PBI102",
+      "fundrichName": "柏瑞新興動態多重資產證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI102",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI102]"
+    },
+    "ABI057": {
+      "fundrichFundId": "ABI057",
+      "fundrichName": "聯博美國成長入息基金-AI類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI057",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI057]"
+    },
+    "ALI019": {
+      "fundrichFundId": "ALI019",
+      "fundrichName": "安聯四季雙收入息組合基金-A類型(累積)-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI019]"
+    },
+    "ABI055": {
+      "fundrichFundId": "ABI055",
+      "fundrichName": "聯博美國成長入息基金-A2類型(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI055",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI055]"
+    },
+    "HUA002": {
+      "fundrichFundId": "HUA002",
+      "fundrichName": "華南永昌中國A股證券投資信託基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/HUA002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[HUA002]"
+    },
+    "Pru070": {
+      "fundrichFundId": "Pru070",
+      "fundrichName": "玉山全球生態友善ESG多重資產證券投資信託基金-新臺幣月配息型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru070",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru070]"
+    },
+    "NBG016": {
+      "fundrichFundId": "NBG016",
+      "fundrichName": "路博邁收益成長多重資產證券投資信託基金T月配(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG016]"
+    },
+    "JPM027": {
+      "fundrichFundId": "JPM027",
+      "fundrichName": "摩根大歐洲證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM027",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM027]"
+    },
+    "SIN008": {
+      "fundrichFundId": "SIN008",
+      "fundrichName": "永豐中國經濟建設證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN008",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN008]"
+    },
+    "TCT064": {
+      "fundrichFundId": "TCT064",
+      "fundrichName": "合庫全球核心基礎建設收益證券投資信託基金－A類（累積型）人民幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TCT064",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TCT064]"
+    },
+    "FTS020": {
+      "fundrichFundId": "FTS020",
+      "fundrichName": "富蘭克林華美中華證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS020",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS020]"
+    },
+    "CIT096": {
+      "fundrichFundId": "CIT096",
+      "fundrichName": "群益潛力收益多重資產基金A(累積型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT096",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT096]"
+    },
+    "CIT097": {
+      "fundrichFundId": "CIT097",
+      "fundrichName": "群益潛力收益多重資產基金B(月配型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT097",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT097]"
+    },
+    "Pru011": {
+      "fundrichFundId": "Pru011",
+      "fundrichName": "玉山全球基礎建設證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru011]"
+    },
+    "YUI061": {
+      "fundrichFundId": "YUI061",
+      "fundrichName": "元大全球地產建設入息證券投資信託基金-配息型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI061",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI061]"
+    },
+    "PBI020": {
+      "fundrichFundId": "PBI020",
+      "fundrichName": "柏瑞旗艦全球成長組合證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI020",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI020]"
+    },
+    "YUI047": {
+      "fundrichFundId": "YUI047",
+      "fundrichName": "元大全球不動產證券化證券投資信託基金(A)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI047",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI047]"
+    },
+    "JPM029": {
+      "fundrichFundId": "JPM029",
+      "fundrichName": "摩根新興日本證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM029",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM029]"
+    },
+    "TST005": {
+      "fundrichFundId": "TST005",
+      "fundrichName": "台新印度基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST005]"
+    },
+    "PBI037": {
+      "fundrichFundId": "PBI037",
+      "fundrichName": "柏瑞亞洲亮點股票基金-A類型(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI037",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI037]"
+    },
+    "JPM035": {
+      "fundrichFundId": "JPM035",
+      "fundrichName": "摩根新興雙利平衡基金－月配型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM035",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM035]"
+    },
+    "JPM021": {
+      "fundrichFundId": "JPM021",
+      "fundrichName": "摩根新興雙利平衡基金－累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM021",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM021]"
+    },
+    "ALI040": {
+      "fundrichFundId": "ALI040",
+      "fundrichName": "安聯全球綠能趨勢基金-A類型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI040]"
+    },
+    "CIT048": {
+      "fundrichFundId": "CIT048",
+      "fundrichName": "群益環球金綻雙喜基金A(累積型-澳幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT048",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT048]"
+    },
+    "CIT049": {
+      "fundrichFundId": "CIT049",
+      "fundrichName": "群益環球金綻雙喜基金B(月配型-澳幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT049",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT049]"
+    },
+    "MAI082": {
+      "fundrichFundId": "MAI082",
+      "fundrichName": "東方匯理新興市場非投資等級債券證券投資信託基金-AD 月配型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI082",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI082]"
+    },
+    "MAI077": {
+      "fundrichFundId": "MAI077",
+      "fundrichName": "東方匯理新興市場非投資等級債券證券投資信託基金-A2 累積型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI077",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI077]"
+    },
+    "YUI071": {
+      "fundrichFundId": "YUI071",
+      "fundrichName": "元大全球ETF穩健組合證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI071",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI071]"
+    },
+    "NOM047": {
+      "fundrichFundId": "NOM047",
+      "fundrichName": "野村多元收益多重資產證券投資信託基金(人民幣累積)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM047",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM047]"
+    },
+    "PBI068": {
+      "fundrichFundId": "PBI068",
+      "fundrichName": "柏瑞旗艦全球平衡組合證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI068",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI068]"
+    },
+    "ESI025": {
+      "fundrichFundId": "ESI025",
+      "fundrichName": "瀚亞亞太豐收平衡基金A類型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI025",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI025]"
+    },
+    "ALI053": {
+      "fundrichFundId": "ALI053",
+      "fundrichName": "安聯收益成長多重資產基金-A類型(累積)-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI053",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI053]"
+    },
+    "CTB044": {
+      "fundrichFundId": "CTB044",
+      "fundrichName": "中國信託ESG碳商機多重資產基金-台幣A",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CTB044",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CTB044]"
+    },
+    "CTB045": {
+      "fundrichFundId": "CTB045",
+      "fundrichName": "中國信託ESG碳商機多重資產基金-台幣B",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CTB045",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CTB045]"
+    },
+    "ALI041": {
+      "fundrichFundId": "ALI041",
+      "fundrichName": "安聯全球股票多元投資風格證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI041",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI041]"
+    },
+    "PAR005": {
+      "fundrichFundId": "PAR005",
+      "fundrichName": "街口全球時尚精品證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PAR005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PAR005]"
+    },
+    "ESI094": {
+      "fundrichFundId": "ESI094",
+      "fundrichName": "瀚亞多重收益優化組合基金A類型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI094",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI094]"
+    },
+    "ABI016": {
+      "fundrichFundId": "ABI016",
+      "fundrichName": "聯博多元資產收益組合基金-A2類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI016]"
+    },
+    "ABI017": {
+      "fundrichFundId": "ABI017",
+      "fundrichName": "聯博多元資產收益組合基金-AD類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI017",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI017]"
+    },
+    "ABI044": {
+      "fundrichFundId": "ABI044",
+      "fundrichName": "聯博多元資產收益組合基金-AI類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI044",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI044]"
+    },
+    "YUI072": {
+      "fundrichFundId": "YUI072",
+      "fundrichName": "元大新東協平衡證券投資信託基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI072",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI072]"
+    },
+    "BRI019": {
+      "fundrichFundId": "BRI019",
+      "fundrichName": "貝萊德全方位資產收益組合基金－月配類型（人民幣）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/BRI019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[BRI019]"
+    },
+    "MAI072": {
+      "fundrichFundId": "MAI072",
+      "fundrichName": "東方匯理實質收息多重資產證券投資信託基金-AD 月配型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI072",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI072]"
+    },
+    "ABI050": {
+      "fundrichFundId": "ABI050",
+      "fundrichName": "聯博美國多重資產收益基金-AD類型(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI050",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI050]"
+    },
+    "ABI049": {
+      "fundrichFundId": "ABI049",
+      "fundrichName": "聯博美國多重資產收益基金-A2類型(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI049",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI049]"
+    },
+    "ABI052": {
+      "fundrichFundId": "ABI052",
+      "fundrichName": "聯博美國多重資產收益基金-AI類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI052",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI052]"
+    },
+    "PBI140": {
+      "fundrichFundId": "PBI140",
+      "fundrichName": "柏瑞趨勢動態多重資產證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI140",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI140]"
+    },
+    "PBI141": {
+      "fundrichFundId": "PBI141",
+      "fundrichName": "柏瑞趨勢動態多重資產證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI141",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI141]"
+    },
+    "PBI053": {
+      "fundrichFundId": "PBI053",
+      "fundrichName": "柏瑞環球多元資產證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI053",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI053]"
+    },
+    "PBI052": {
+      "fundrichFundId": "PBI052",
+      "fundrichName": "柏瑞環球多元資產證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI052",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI052]"
+    },
+    "PBI058": {
+      "fundrichFundId": "PBI058",
+      "fundrichName": "柏瑞全球金牌組合證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI058",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI058]"
+    },
+    "MAI011": {
+      "fundrichFundId": "MAI011",
+      "fundrichName": "東方匯理全球非投資等級債券證券投資信託基金-A2 累積型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI011]"
+    },
+    "ABI004": {
+      "fundrichFundId": "ABI004",
+      "fundrichName": "聯博全球非投資等級債券基金-TA類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI004]"
+    },
+    "CIT058": {
+      "fundrichFundId": "CIT058",
+      "fundrichName": "群益大印度基金-新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT058",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT058]"
+    },
+    "PBI118": {
+      "fundrichFundId": "PBI118",
+      "fundrichName": "柏瑞ESG量化多重資產證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI118",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI118]"
+    },
+    "MAI067": {
+      "fundrichFundId": "MAI067",
+      "fundrichName": "東方匯理實質收息多重資產證券投資信託基金-A2 累積型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI067",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI067]"
+    },
+    "MAI012": {
+      "fundrichFundId": "MAI012",
+      "fundrichName": "東方匯理全球非投資等級債券證券投資信託基金-AD 月配型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI012",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI012]"
+    },
+    "Man002": {
+      "fundrichFundId": "Man002",
+      "fundrichName": "宏利新興市場非投資等級債券基金A不配息（人民幣）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man002]"
+    },
+    "NOM033": {
+      "fundrichFundId": "NOM033",
+      "fundrichName": "野村亞太複合非投資等級債證券投資信託基金(人民幣月配)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM033",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM033]"
+    },
+    "JPM001": {
+      "fundrichFundId": "JPM001",
+      "fundrichName": "摩根中國A股證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM001]"
+    },
+    "NBG006": {
+      "fundrichFundId": "NBG006",
+      "fundrichName": "路博邁全球非投資等級債券證券投資信託基金T月配(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG006]"
+    },
+    "TCT016": {
+      "fundrichFundId": "TCT016",
+      "fundrichName": "合庫新興多重收益證券投資信託基金-A類(累積型)南非幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TCT016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TCT016]"
+    },
+    "MAI020": {
+      "fundrichFundId": "MAI020",
+      "fundrichName": "東方匯理美國非投資等級債券證券投資信託基金-AD 月配型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI020",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI020]"
+    },
+    "MAI019": {
+      "fundrichFundId": "MAI019",
+      "fundrichName": "東方匯理美國非投資等級債券證券投資信託基金-A2 累積型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI019",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI019]"
+    },
+    "FSI042": {
+      "fundrichFundId": "FSI042",
+      "fundrichName": "第一金中國世紀基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI042",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI042]"
+    },
+    "PBI117": {
+      "fundrichFundId": "PBI117",
+      "fundrichName": "柏瑞ESG量化多重資產證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI117",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI117]"
+    },
+    "DEF015": {
+      "fundrichFundId": "DEF015",
+      "fundrichName": "德銀遠東DWS全球原物料能源基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/DEF015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[DEF015]"
+    },
+    "FSI046": {
+      "fundrichFundId": "FSI046",
+      "fundrichName": "第一金亞洲新興市場基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI046",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI046]"
+    },
+    "Man042": {
+      "fundrichFundId": "Man042",
+      "fundrichName": "宏利亞太中小企業基金（人民幣）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man042",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man042]"
+    },
+    "PBI003": {
+      "fundrichFundId": "PBI003",
+      "fundrichName": "柏瑞全球策略非投資等級債券證券投資信託基金-B類型(澳幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI003]"
+    },
+    "FTS010": {
+      "fundrichFundId": "FTS010",
+      "fundrichName": "富蘭克林華美全球非投資等級債券證券投資信託基金(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS010]"
+    },
+    "CIT010": {
+      "fundrichFundId": "CIT010",
+      "fundrichName": "群益印巴雙星基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT010]"
+    },
+    "Pru007": {
+      "fundrichFundId": "Pru007",
+      "fundrichName": "玉山中國好時平衡證券投資信託基金－新台幣月配息型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru007]"
+    },
+    "NBG031": {
+      "fundrichFundId": "NBG031",
+      "fundrichName": "路博邁優質企業債券證券投資信託基金T月配(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NBG031",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NBG031]"
+    },
+    "ALI033": {
+      "fundrichFundId": "ALI033",
+      "fundrichName": "安聯目標收益基金-A類型(累積)-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI033",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI033]"
+    },
+    "FTS005": {
+      "fundrichFundId": "FTS005",
+      "fundrichName": "富蘭克林華美中國消費證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS005]"
+    },
+    "ESI066": {
+      "fundrichFundId": "ESI066",
+      "fundrichName": "瀚亞亞太基礎建設基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI066",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI066]"
+    },
+    "Man101": {
+      "fundrichFundId": "Man101",
+      "fundrichName": "宏利特別股息收益基金B類型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man101",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man101]"
+    },
+    "PBI082": {
+      "fundrichFundId": "PBI082",
+      "fundrichName": "柏瑞多重資產特別收益證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI082",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI082]"
+    },
+    "FHI052": {
+      "fundrichFundId": "FHI052",
+      "fundrichName": "復華奧林匹克全球組合基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI052",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI052]"
+    },
+    "PBI046": {
+      "fundrichFundId": "PBI046",
+      "fundrichName": "柏瑞亞太非投資等級債券證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI046",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI046]"
+    },
+    "PBI047": {
+      "fundrichFundId": "PBI047",
+      "fundrichName": "柏瑞亞太非投資等級債券證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI047",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI047]"
+    },
+    "PBI127": {
+      "fundrichFundId": "PBI127",
+      "fundrichName": "柏瑞全球策略量化債券證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI127",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI127]"
+    },
+    "PBI007": {
+      "fundrichFundId": "PBI007",
+      "fundrichName": "柏瑞全球策略非投資等級債券證券投資信託基金-A類型(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI007",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI007]"
+    },
+    "ALI001": {
+      "fundrichFundId": "ALI001",
+      "fundrichName": "安聯四季回報債券組合基金-A類型(累積)-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI001]"
+    },
+    "PBI015": {
+      "fundrichFundId": "PBI015",
+      "fundrichName": "柏瑞新興市場非投資等級債券證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI015]"
+    },
+    "PBI016": {
+      "fundrichFundId": "PBI016",
+      "fundrichName": "柏瑞新興市場非投資等級債券證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI016]"
+    },
+    "MAI042": {
+      "fundrichFundId": "MAI042",
+      "fundrichName": "東方匯理全球投資等級綠色債券證券投資信託基金-AD 月配型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI042",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI042]"
+    },
+    "TCT002": {
+      "fundrichFundId": "TCT002",
+      "fundrichName": "合庫全球非投資等級債券證券投資信託基金-A類(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TCT002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TCT002]"
+    },
+    "CIT106": {
+      "fundrichFundId": "CIT106",
+      "fundrichName": "群益全民安穩樂退組合基金A(累積型-美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT106",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT106]"
+    },
+    "CIT107": {
+      "fundrichFundId": "CIT107",
+      "fundrichName": "群益全民安穩樂退組合基金B(月配型-美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT107",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT107]"
+    },
+    "ESI012": {
+      "fundrichFundId": "ESI012",
+      "fundrichName": "瀚亞全球非投資等級債券基金A類型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ESI012",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ESI012]"
+    },
+    "SIN030": {
+      "fundrichFundId": "SIN030",
+      "fundrichName": "永豐主流品牌證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN030",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN030]"
+    },
+    "Pru003": {
+      "fundrichFundId": "Pru003",
+      "fundrichName": "玉山新興市場企業債券證券投資信託基金－月配息型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru003",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru003]"
+    },
+    "ABI029": {
+      "fundrichFundId": "ABI029",
+      "fundrichName": "聯博全球非投資等級債券基金-T2類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI029",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI029]"
+    },
+    "CIT117": {
+      "fundrichFundId": "CIT117",
+      "fundrichName": "群益全球策略收益金融債券基金A(累積型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT117",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT117]"
+    },
+    "CIT118": {
+      "fundrichFundId": "CIT118",
+      "fundrichName": "群益全球策略收益金融債券基金B(月配型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT118",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT118]"
+    },
+    "CIT090": {
+      "fundrichFundId": "CIT090",
+      "fundrichName": "群益全球優先順位非投資等級債券基金A(累積型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT090",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT090]"
+    },
+    "CIT091": {
+      "fundrichFundId": "CIT091",
+      "fundrichName": "群益全球優先順位非投資等級債券基金B(月配型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT091",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT091]"
+    },
+    "NOM123": {
+      "fundrichFundId": "NOM123",
+      "fundrichName": "野村特別時機非投資等級債證券投資信託基金(澳幣月配)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM123",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM123]"
+    },
+    "TST070": {
+      "fundrichFundId": "TST070",
+      "fundrichName": "台新美國策略時機非投資等級債券基金(A)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST070",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST070]"
+    },
+    "FTS017": {
+      "fundrichFundId": "FTS017",
+      "fundrichName": "富蘭克林華美富蘭克林全球債券組合證券投資信託基金(分配型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS017",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS017]"
+    },
+    "PBI076": {
+      "fundrichFundId": "PBI076",
+      "fundrichName": "柏瑞全球策略非投資等級債券證券投資信託基金-Bt類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI076",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI076]"
+    },
+    "YUI040": {
+      "fundrichFundId": "YUI040",
+      "fundrichName": "元大全球資源傘型證券投資信託基金之元大全球農業商機證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI040",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI040]"
+    },
+    "043083": {
+      "fundrichFundId": "043083",
+      "fundrichName": "富達基金－亞洲非投資等級債券基金 (A股累計歐元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/043083",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[043083]"
+    },
+    "Pru002": {
+      "fundrichFundId": "Pru002",
+      "fundrichName": "玉山新興市場企業債券證券投資信託基金－累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Pru002",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Pru002]"
+    },
+    "Meg046": {
+      "fundrichFundId": "Meg046",
+      "fundrichName": "兆豐新興市場短期非投資等級債券基金(人民幣)-配息型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg046",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg046]"
+    },
+    "Meg028": {
+      "fundrichFundId": "Meg028",
+      "fundrichName": "兆豐中國A股基金(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg028",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg028]"
+    },
+    "MAI027": {
+      "fundrichFundId": "MAI027",
+      "fundrichName": "東方匯理美元核心收益債券證券投資信託基金-A2 累積型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI027",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI027]"
+    },
+    "MAI032": {
+      "fundrichFundId": "MAI032",
+      "fundrichName": "東方匯理美元核心收益債券證券投資信託基金-AD 月配型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/MAI032",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[MAI032]"
+    },
+    "PBI032": {
+      "fundrichFundId": "PBI032",
+      "fundrichName": "柏瑞新興亞太策略債券證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI032",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI032]"
+    },
+    "PBI031": {
+      "fundrichFundId": "PBI031",
+      "fundrichName": "柏瑞新興亞太策略債券證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI031",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI031]"
+    },
+    "SIN005": {
+      "fundrichFundId": "SIN005",
+      "fundrichName": "永豐新興市場及非投資等級雙債組合基金累積",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN005",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN005]"
+    },
+    "ALI010": {
+      "fundrichFundId": "ALI010",
+      "fundrichName": "安聯四季豐收債券組合基金-A類型(累積)-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI010]"
+    },
+    "PBI081": {
+      "fundrichFundId": "PBI081",
+      "fundrichName": "柏瑞多重資產特別收益證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI081",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI081]"
+    },
+    "CTB038": {
+      "fundrichFundId": "CTB038",
+      "fundrichName": "中國信託越南機會證券投資信託基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CTB038",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CTB038]"
+    },
+    "PBI024": {
+      "fundrichFundId": "PBI024",
+      "fundrichName": "柏瑞 ESG 新興市場企業策略債券證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI024",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI024]"
+    },
+    "PBI023": {
+      "fundrichFundId": "PBI023",
+      "fundrichName": "柏瑞 ESG 新興市場企業策略債券證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI023",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI023]"
+    },
+    "PBI126": {
+      "fundrichFundId": "PBI126",
+      "fundrichName": "柏瑞全球策略量化債券證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI126",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI126]"
+    },
+    "NOM109": {
+      "fundrichFundId": "NOM109",
+      "fundrichName": "野村全球金融收益證券投資信託基金(人民幣月配)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM109",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM109]"
+    },
+    "FIL004": {
+      "fundrichFundId": "FIL004",
+      "fundrichName": "富達亞洲總報酬基金A股月配息型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FIL004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FIL004]"
+    },
+    "Man100": {
+      "fundrichFundId": "Man100",
+      "fundrichName": "宏利特別股息收益基金A類型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man100",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man100]"
+    },
+    "ABI012": {
+      "fundrichFundId": "ABI012",
+      "fundrichName": "聯博債券收益組合基金-AA類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI012",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI012]"
+    },
+    "TST048": {
+      "fundrichFundId": "TST048",
+      "fundrichName": "台新新興短期非投資等級債券基金(A)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST048",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST048]"
+    },
+    "PBI011": {
+      "fundrichFundId": "PBI011",
+      "fundrichName": "柏瑞旗艦全球債券組合基金-A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI011]"
+    },
+    "PBI109": {
+      "fundrichFundId": "PBI109",
+      "fundrichName": "柏瑞ESG量化債券證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI109",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI109]"
+    },
+    "PBI110": {
+      "fundrichFundId": "PBI110",
+      "fundrichName": "柏瑞ESG量化債券證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI110",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI110]"
+    },
+    "Ivc001": {
+      "fundrichFundId": "Ivc001",
+      "fundrichName": "景順全球康健證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Ivc001",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Ivc001]"
+    },
+    "CSI119": {
+      "fundrichFundId": "CSI119",
+      "fundrichName": "國泰美國優質債券基金B(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI119",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI119]"
+    },
+    "CSI118": {
+      "fundrichFundId": "CSI118",
+      "fundrichName": "國泰美國優質債券基金A(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI118",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI118]"
+    },
+    "CSI114": {
+      "fundrichFundId": "CSI114",
+      "fundrichName": "國泰亞洲非投資等級債券基金A(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI114",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI114]"
+    },
+    "CSI115": {
+      "fundrichFundId": "CSI115",
+      "fundrichName": "國泰亞洲非投資等級債券基金B(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CSI115",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CSI115]"
+    },
+    "PBI071": {
+      "fundrichFundId": "PBI071",
+      "fundrichName": "柏瑞特別股息收益證券投資信託基金-A類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI071",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI071]"
+    },
+    "PBI072": {
+      "fundrichFundId": "PBI072",
+      "fundrichName": "柏瑞特別股息收益證券投資信託基金-B類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI072",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI072]"
+    },
+    "FHI012": {
+      "fundrichFundId": "FHI012",
+      "fundrichName": "復華高益策略組合基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI012",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI012]"
+    },
+    "FSI013": {
+      "fundrichFundId": "FSI013",
+      "fundrichName": "第一金全球AI FinTech金融科技基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI013",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI013]"
+    },
+    "FTS030": {
+      "fundrichFundId": "FTS030",
+      "fundrichName": "富蘭克林華美全球投資級債券證券投資信託基金(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FTS030",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FTS030]"
+    },
+    "UNI020": {
+      "fundrichFundId": "UNI020",
+      "fundrichName": "統一全球債券組合基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI020",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI020]"
+    },
+    "ABI014": {
+      "fundrichFundId": "ABI014",
+      "fundrichName": "聯博債券收益組合基金-A2類型(人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ABI014",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ABI014]"
+    },
+    "PBI060": {
+      "fundrichFundId": "PBI060",
+      "fundrichName": "柏瑞美國雙核心收益證券投資信託基金-A類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI060",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI060]"
+    },
+    "PBI061": {
+      "fundrichFundId": "PBI061",
+      "fundrichName": "柏瑞美國雙核心收益證券投資信託基金-B類型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI061",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI061]"
+    },
+    "Man039": {
+      "fundrichFundId": "Man039",
+      "fundrichName": "宏利亞太入息債券基金A類型(人民幣避險)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Man039",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Man039]"
+    },
+    "YUI009": {
+      "fundrichFundId": "YUI009",
+      "fundrichName": "元大印度證券投資信託基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI009",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI009]"
+    },
+    "UNI011": {
+      "fundrichFundId": "UNI011",
+      "fundrichName": "統一亞洲非投資等級債券基金－累積型新台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/UNI011",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[UNI011]"
+    },
+    "CIT056": {
+      "fundrichFundId": "CIT056",
+      "fundrichName": "群益中國金采平衡基金A(累積型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT056",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT056]"
+    },
+    "Meg051": {
+      "fundrichFundId": "Meg051",
+      "fundrichName": "兆豐新加坡交易所房地產收益基金-台幣A(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg051",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg051]"
+    },
+    "Meg052": {
+      "fundrichFundId": "Meg052",
+      "fundrichName": "兆豐新加坡交易所房地產收益基金-台幣B(配息型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg052",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg052]"
+    },
+    "CIT057": {
+      "fundrichFundId": "CIT057",
+      "fundrichName": "群益中國金采平衡基金B(月配型-人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/CIT057",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[CIT057]"
+    },
+    "Meg006": {
+      "fundrichFundId": "Meg006",
+      "fundrichName": "兆豐生命科學基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg006",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg006]"
+    },
+    "Meg014": {
+      "fundrichFundId": "Meg014",
+      "fundrichName": "兆豐人民幣貨幣市場基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg014",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg014]"
+    },
+    "JPM016": {
+      "fundrichFundId": "JPM016",
+      "fundrichName": "摩根亞洲總合非投資等級債券證券投資信託基金－累積型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/JPM016",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[JPM016]"
+    },
+    "FHI004": {
+      "fundrichFundId": "FHI004",
+      "fundrichName": "復華全球債券基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FHI004",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FHI004]"
+    },
+    "TST084": {
+      "fundrichFundId": "TST084",
+      "fundrichName": "台新靈活入息債券基金(A)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST084",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST084]"
+    },
+    "TST103": {
+      "fundrichFundId": "TST103",
+      "fundrichName": "台新收益領航多重資產基金A (人民幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST103",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST103]"
+    },
+    "SIN056": {
+      "fundrichFundId": "SIN056",
+      "fundrichName": "永豐創新醫療多重資產基金-新台幣月配型",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/SIN056",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[SIN056]"
+    },
+    "Meg064": {
+      "fundrichFundId": "Meg064",
+      "fundrichName": "兆豐全球債券ETF策略收益組合基金-台幣A(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg064",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg064]"
+    },
+    "Meg081": {
+      "fundrichFundId": "Meg081",
+      "fundrichName": "兆豐雙動能組合證券投資信託基金－台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/Meg081",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[Meg081]"
+    },
+    "TCT083": {
+      "fundrichFundId": "TCT083",
+      "fundrichName": "合庫全球複合收益債券基金-A(累積型)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TCT083",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TCT083]"
+    },
+    "ALI099": {
+      "fundrichFundId": "ALI099",
+      "fundrichName": "【TISA級別】安聯四季成長組合基金-TISA類型-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/ALI099",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[ALI099]"
+    },
+    "PBI166": {
+      "fundrichFundId": "PBI166",
+      "fundrichName": "柏瑞日本多重資產證券投資信託基金-A類型(日幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI166",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI166]"
+    },
+    "PBI167": {
+      "fundrichFundId": "PBI167",
+      "fundrichName": "柏瑞日本多重資產證券投資信託基金-B類型(日幣)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI167",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI167]"
+    },
+    "PBI169": {
+      "fundrichFundId": "PBI169",
+      "fundrichName": "柏瑞日本多重資產證券投資信託基金-AH類型(美元)",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/PBI169",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[PBI169]"
+    },
+    "NOM163": {
+      "fundrichFundId": "NOM163",
+      "fundrichName": "野村全天候組合證券投資信託基金（美元月配）",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/NOM163",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[NOM163]"
+    },
+    "FIL031": {
+      "fundrichFundId": "FIL031",
+      "fundrichName": "【TISA級別】富達台灣成長基金TISA股累積型新臺幣計價級別",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FIL031",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FIL031]"
+    },
+    "TST010": {
+      "fundrichFundId": "TST010",
+      "fundrichName": "台新中証消費服務領先指數基金",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/TST010",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[TST010]"
+    },
+    "FSI015": {
+      "fundrichFundId": "FSI015",
+      "fundrichName": "第一金全球AI精準醫療基金-新臺幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI015",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI015]"
+    },
+    "FSI055": {
+      "fundrichFundId": "FSI055",
+      "fundrichName": "第一金全球Fitness健康瘦身基金-台幣",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/FSI055",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[FSI055]"
+    }
+  },
+  "nextPage": 21,
+  "maxPage": 241,
+  "updatedAt": "2026-06-26T03:26:46.711187+00:00"
+}

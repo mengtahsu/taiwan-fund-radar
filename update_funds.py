@@ -56,6 +56,8 @@ RECENT_NAV_WORKERS = 10
 RECENT_NAV_TOP_LIMIT = 80
 RECENT_NAV_REFRESH_LIMIT = 20
 RECENT_NAV_MAX_AGE_HOURS = 48
+FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
+FUNDRICH_REFRESH_PAGES = 20
 
 TAIWAN_ETFS = [
     {
@@ -1138,11 +1140,68 @@ def build_fubon_lookup() -> dict[str, dict[str, Any]]:
     return lookup
 
 
-def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
+def load_json_file(path: Path, fallback: dict[str, Any]) -> dict[str, Any]:
+    if not path.exists():
+        return fallback
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return fallback
+    return payload if isinstance(payload, dict) else fallback
+
+
+def fundrich_lookup_from_items(items: dict[str, Any]) -> dict[str, dict[str, Any]]:
     lookup: dict[str, dict[str, Any]] = {}
-    page = 1
-    max_page = None
-    while max_page is None or page <= max_page:
+    for item in items.values():
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("fundrichName") or "").strip()
+        fund_id = str(item.get("fundrichFundId") or "").strip()
+        if not name or not fund_id:
+            continue
+        lookup[canonical_fund_name(name)] = {
+            "fundrichFundId": fund_id,
+            "fundrichName": name,
+            "fundrichUrl": str(item.get("fundrichUrl") or FUNDRICH_DETAIL_URL.format(fund_id=fund_id)),
+            "fundrichAppUrl": str(item.get("fundrichAppUrl") or FUNDRICH_APP_BUY_URL.format(fund_id=fund_id)),
+        }
+    return lookup
+
+
+def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
+    root = Path(__file__).resolve().parent
+    cache_path = root / "data/fundrich_cache.json"
+    cache = load_json_file(cache_path, {"items": {}, "nextPage": 1, "maxPage": None, "updatedAt": None})
+    items = cache.setdefault("items", {})
+    funds_path = root / "data/funds.json"
+    if funds_path.exists():
+        try:
+            payload = json.loads(funds_path.read_text(encoding="utf-8"))
+            for fund in payload.get("funds", []):
+                fund_id = str(fund.get("fundrichFundId") or "").strip()
+                name = str(fund.get("fundrichName") or "").strip()
+                if not fund_id or not name or fund_id in items:
+                    continue
+                items[fund_id] = {
+                    "fundrichFundId": fund_id,
+                    "fundrichName": name,
+                    "fundrichUrl": fund.get("fundrichUrl") or FUNDRICH_DETAIL_URL.format(fund_id=fund_id),
+                    "fundrichAppUrl": fund.get("fundrichAppUrl") or FUNDRICH_APP_BUY_URL.format(fund_id=fund_id),
+                }
+        except (OSError, json.JSONDecodeError):
+            pass
+    max_age_hours = float(os.environ.get("FUNDRICH_CACHE_MAX_AGE_HOURS", FUNDRICH_CACHE_MAX_AGE_HOURS))
+    is_fresh = bool(items) and parse_iso_datetime(cache.get("updatedAt")) >= datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+    if is_fresh:
+        return fundrich_lookup_from_items(items)
+
+    page = max(1, int(cache.get("nextPage") or 1))
+    max_page = cache.get("maxPage")
+    max_page = int(max_page) if max_page else None
+    refresh_pages = int(os.environ.get("FUNDRICH_REFRESH_PAGES", FUNDRICH_REFRESH_PAGES))
+    fetched_pages = 0
+
+    while fetched_pages < refresh_pages and (max_page is None or page <= max_page):
         payload = post_json(
             FUNDRICH_FUND_TABLE_URL,
             {"data": {"currentPage": page}},
@@ -1163,15 +1222,29 @@ def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
             state = row.get("state")
             if not fund_id or not name or state not in {0, "0"}:
                 continue
-            lookup[canonical_fund_name(name)] = {
+            items[fund_id] = {
                 "fundrichFundId": fund_id,
                 "fundrichName": name,
                 "fundrichUrl": FUNDRICH_DETAIL_URL.format(fund_id=fund_id),
                 "fundrichAppUrl": FUNDRICH_APP_BUY_URL.format(fund_id=fund_id),
             }
         page += 1
+        fetched_pages += 1
+
+    if max_page and page > max_page:
+        page = 1
+    cache["nextPage"] = page
+    cache["maxPage"] = max_page
+    cache["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    atomic_write_json(cache_path, cache)
+
+    lookup = fundrich_lookup_from_items(items)
     if not lookup:
         raise RuntimeError("FundRich returned no buyable funds")
+    print(
+        f"{datetime.now().isoformat(timespec='seconds')} FundRich refreshed {fetched_pages} pages; cache has {len(items)} funds; next page {page}",
+        file=sys.stderr,
+    )
     return lookup
 
 
