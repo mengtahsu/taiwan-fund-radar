@@ -359,13 +359,13 @@ legend {
   height: 18px;
 }
 
-.range-field {
-  gap: 14px;
-  margin: 28px 0;
+.filters .range-field {
+  gap: 16px;
+  margin: 30px 0;
 }
 
-.range-field + .range-field {
-  margin-top: 36px;
+.filters .range-field + .range-field {
+  margin-top: 44px;
 }
 
 .range-value {
