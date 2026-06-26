@@ -359,6 +359,15 @@ legend {
   height: 18px;
 }
 
+.range-field {
+  gap: 14px;
+  margin: 28px 0;
+}
+
+.range-field + .range-field {
+  margin-top: 36px;
+}
+
 .range-value {
   margin-bottom: 4px;
   color: var(--ink);

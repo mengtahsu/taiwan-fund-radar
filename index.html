@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>台灣基金雷達</title>
-    <link rel="stylesheet" href="styles.css?v=tw-funds-15">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-16">
   </head>
   <body>
     <header class="topbar">
@@ -94,13 +94,13 @@
             <label class="choice"><input name="goal" type="radio" value="stability"> 穩健</label>
           </fieldset>
 
-          <label>
+          <label class="range-field">
             可接受風險
             <input id="riskInput" type="range" min="1" max="5" value="5">
             <span class="range-value">RR <strong id="riskValue">5</strong> 以下</span>
           </label>
 
-          <label>
+          <label class="range-field">
             最低三年年化報酬
             <input id="returnInput" type="range" min="-5" max="80" step="0.5" value="50">
             <span class="range-value"><strong id="returnValue">50</strong>% 以上</span>
@@ -150,6 +150,6 @@
       <a href="https://announce.fundclear.com.tw/MOPSFundWeb/" rel="noreferrer">基金資訊觀測站</a>
     </footer>
 
-    <script src="app.js?v=tw-funds-15"></script>
+    <script src="app.js?v=tw-funds-16"></script>
   </body>
 </html>
