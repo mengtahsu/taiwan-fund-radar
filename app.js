@@ -220,14 +220,16 @@ function filteredFunds() {
   const maxRisk = Number(els.risk.value);
   const minReturn = Number(els.return.value);
   const beatOnly = els.beatBenchmark.checked;
+  const typeValue = els.type.value;
 
   return funds
     .filter((fund) => {
       const haystack = [fund.name, fund.company, fund.ticker || "", fund.fundId || "", fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
       const excess2w = excessReturn2w(fund);
+      const typeMatched = typeValue === "all" || (typeValue === "fubon-buyable" ? Boolean(fund.fubonBuyUrl) : fund.type === typeValue);
       return (
         (!q || haystack.includes(q)) &&
-        (els.type.value === "all" || fund.type === els.type.value) &&
+        typeMatched &&
         (els.region.value === "all" || fund.region === els.region.value) &&
         fund.risk <= maxRisk &&
         fund.return3y >= minReturn &&
