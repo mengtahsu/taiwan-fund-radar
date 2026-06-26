@@ -48,6 +48,13 @@ function renderBuyActions(fund) {
   return actions.join("");
 }
 
+function visibleTags(tags) {
+  return (tags || []).filter((tag) => {
+    const text = String(tag).trim();
+    return text && !/^RR\s*\d+$/i.test(text) && !["富邦銀行可買", "基富通可買"].includes(text);
+  });
+}
+
 function renderBenchmark(fund, benchmarks) {
   const benchmark = benchmarkForFund(fund, benchmarks);
   if (typeof fund.return2w !== "number" || !benchmark || typeof benchmark.return2w !== "number") {
@@ -67,7 +74,7 @@ function renderBenchmark(fund, benchmarks) {
 }
 
 function renderDetail(fund, markets) {
-  const tags = (fund.tags || []).map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("");
+  const tags = visibleTags(fund.tags).map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("");
   root.innerHTML = `
     <div class="detail-hero">
       <p class="kicker">${escapeHtml(fund.company)} / ${escapeHtml(fund.type)} / ${escapeHtml(fund.region)}</p>

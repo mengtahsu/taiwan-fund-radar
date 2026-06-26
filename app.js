@@ -347,6 +347,13 @@ function renderBuyLink(fund) {
   return "";
 }
 
+function visibleTags(tags) {
+  return (tags || []).filter((tag) => {
+    const text = String(tag).trim();
+    return text && !/^RR\s*\d+$/i.test(text) && !["富邦銀行可買", "基富通可買"].includes(text);
+  });
+}
+
 function renderMetrics(list) {
   const total = list.length;
   const avgReturn = total ? list.reduce((sum, fund) => sum + fund.return3y, 0) / total : 0;
@@ -429,7 +436,7 @@ function renderFunds() {
           <div class="pill-row">
             <span class="pill ${riskClass(fund.risk)}">RR ${fund.risk}</span>
             <span class="pill">${escapeHtml(fund.dividend)}</span>
-            ${fund.tags.map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}
+            ${visibleTags(fund.tags).map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}
           </div>
           <div class="stats">
             <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
