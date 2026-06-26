@@ -285,6 +285,24 @@ function formatMarketPrice(value) {
   return Number(value).toLocaleString("zh-TW", { maximumFractionDigits: 2 });
 }
 
+function formatTaiwanDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value || "");
+  }
+  return date
+    .toLocaleString("zh-TW", {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    })
+    .replace(/\//g, "/");
+}
+
 function benchmarkStatus(fund) {
   if (typeof fund.return2w !== "number") {
     return "";
@@ -365,16 +383,7 @@ function renderDataStatus() {
     return;
   }
 
-  const updated = new Date(sourceMeta.updatedAt);
-  const label = Number.isNaN(updated.getTime())
-    ? sourceMeta.updatedAt
-    : updated.toLocaleString("zh-TW", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-  els.dataStatus.textContent = `${sourceMeta.source} ${label}`;
+  els.dataStatus.textContent = `${formatTaiwanDateTime(sourceMeta.updatedAt)} 台灣時間`;
 }
 
 function renderMarkets() {

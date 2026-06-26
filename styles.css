@@ -186,9 +186,9 @@ main {
 }
 
 .market-row.compact strong {
-  max-width: 180px;
+  max-width: 220px;
   color: var(--accent-dark);
-  font-size: 14px;
+  font-size: 13px;
   text-align: right;
 }
 
