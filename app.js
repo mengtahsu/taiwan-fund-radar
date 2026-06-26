@@ -146,6 +146,7 @@ const els = {
   riskValue: document.querySelector("#riskValue"),
   returnValue: document.querySelector("#returnValue"),
   sort: document.querySelector("#sortSelect"),
+  scoreExplain: document.querySelector("#scoreExplain"),
   grid: document.querySelector("#fundGrid"),
   count: document.querySelector("#resultCount"),
   compare: document.querySelector("#compareTable"),
@@ -202,6 +203,18 @@ function scoreTitle() {
   }[goal()];
 }
 
+function renderScoreExplain() {
+  if (!els.scoreExplain) {
+    return;
+  }
+  const label = {
+    growth: "成長目標",
+    income: "配息目標",
+    stability: "穩健目標"
+  }[goal()];
+  els.scoreExplain.textContent = `${label}的綜合分數算法：${scoreTitle().replace("自訂綜合分數：", "")}。分數只用來排序，不代表買賣建議。`;
+}
+
 function filteredFunds() {
   const q = els.query.value.trim().toLowerCase();
   const maxRisk = Number(els.risk.value);
@@ -211,17 +224,17 @@ function filteredFunds() {
   return funds
     .filter((fund) => {
       const haystack = [fund.name, fund.company, fund.ticker || "", fund.fundId || "", fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
-      const excess3m = excessReturn3m(fund);
+      const excess2w = excessReturn2w(fund);
       return (
         (!q || haystack.includes(q)) &&
         (els.type.value === "all" || fund.type === els.type.value) &&
         (els.region.value === "all" || fund.region === els.region.value) &&
         fund.risk <= maxRisk &&
         fund.return3y >= minReturn &&
-        (!beatOnly || (excess3m !== null && excess3m > 0))
+        (!beatOnly || (excess2w !== null && excess2w > 0))
       );
     })
-    .map((fund) => ({ ...fund, score: scoreFund(fund), excess3m: excessReturn3m(fund) ?? -999 }))
+    .map((fund) => ({ ...fund, score: scoreFund(fund), excess2w: excessReturn2w(fund) ?? -999 }))
     .sort((a, b) => {
       if (els.sort.value === "volatility") {
         return a[els.sort.value] - b[els.sort.value];
@@ -255,34 +268,35 @@ function benchmarkForFund(fund) {
 }
 
 function benchmarkStatus(fund) {
-  if (typeof fund.return3m !== "number") {
+  if (typeof fund.return2w !== "number") {
     return "";
   }
   const benchmark = benchmarkForFund(fund);
-  if (!benchmark || typeof benchmark.return3m !== "number") {
+  if (!benchmark || typeof benchmark.return2w !== "number") {
     return "";
   }
-  const excess = fund.return3m - benchmark.return3m;
+  const excess = fund.return2w - benchmark.return2w;
   const statusClass = excess >= 0 ? "beat" : "lag";
-  const label = excess >= 0 ? "近 3 月贏基準" : "近 3 月輸基準";
+  const label = excess >= 0 ? "近 2 週贏基準" : "近 2 週輸基準";
+  const dateRange = fund.return2wStartDate && fund.return2wEndDate ? ` (${escapeHtml(fund.return2wStartDate)}-${escapeHtml(fund.return2wEndDate)})` : "";
   return `
     <div class="benchmark ${statusClass}">
       <span>${label}</span>
       <strong>${formatPercent(excess)}</strong>
-      <small>${fund.return3m.toFixed(2)}% vs ${escapeHtml(benchmark.label)} ${benchmark.return3m.toFixed(2)}%</small>
+      <small>${fund.return2w.toFixed(2)}% vs ${escapeHtml(benchmark.label)} ${benchmark.return2w.toFixed(2)}%${dateRange}</small>
     </div>
   `;
 }
 
-function excessReturn3m(fund) {
-  if (typeof fund.return3m !== "number") {
+function excessReturn2w(fund) {
+  if (typeof fund.return2w !== "number") {
     return null;
   }
   const benchmark = benchmarkForFund(fund);
-  if (!benchmark || typeof benchmark.return3m !== "number") {
+  if (!benchmark || typeof benchmark.return2w !== "number") {
     return null;
   }
-  return fund.return3m - benchmark.return3m;
+  return fund.return2w - benchmark.return2w;
 }
 
 function formatPrice(fund) {
@@ -385,6 +399,7 @@ function renderFunds() {
   els.count.textContent = list.length > DISPLAY_LIMIT ? `${list.length} 檔符合，顯示前 ${DISPLAY_LIMIT} 檔` : `${list.length} 檔符合`;
   renderMetrics(list);
   renderDataStatus();
+  renderScoreExplain();
 
   if (!visibleList.length) {
     els.grid.innerHTML = '<div class="empty">沒有符合條件的基金，放寬風險或報酬門檻再試一次。</div>';
@@ -555,7 +570,7 @@ function applyHighReturnPreset() {
   els.risk.value = 5;
   els.return.value = 8;
   els.beatBenchmark.checked = true;
-  els.sort.value = "excess3m";
+  els.sort.value = "excess2w";
   document.querySelector("input[name='goal'][value='growth']").checked = true;
   syncLabels();
   renderFunds();

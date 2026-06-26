@@ -378,6 +378,13 @@ legend {
   margin: 0;
 }
 
+.score-explain {
+  margin: -6px 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .fund-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

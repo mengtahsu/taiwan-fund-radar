@@ -16,6 +16,7 @@ Run continuously with the interval configured in config/source.json:
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import html
 import json
 import os
@@ -50,6 +51,8 @@ REQUIRED_FIELDS = {
 }
 
 DEFAULT_INTERVAL_SECONDS = 3 * 60 * 60
+RECENT_RETURN_DAYS = 14
+RECENT_NAV_WORKERS = 10
 
 TAIWAN_ETFS = [
     {
@@ -310,6 +313,64 @@ def fetch_yahoo_chart_range(symbol: str, days: int = 120) -> dict[str, Any]:
     return fetch_json(url)
 
 
+def fetch_moneydj_bcd_nav(fund_id: str) -> list[tuple[datetime, float]]:
+    fund_key = fund_id.split("-", 1)[0]
+    query = urlencode(
+        {
+            "a": fund_key,
+            "b": 1,
+            "c": "0",
+            "d": "0",
+        }
+    )
+    url = f"{MEGABANK_BASE_URL}/w/bcd/tBCDNavList.djbcd?{query}"
+    request = Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 TaiwanFundRadar/1.0",
+            "Accept": "text/plain,*/*",
+            "Referer": f"{MEGABANK_BASE_URL}/w/wr/wr02_{fund_id}.djhtm",
+        },
+    )
+    with urlopen(request, timeout=20) as response:
+        text = response.read().decode("big5", "replace")
+    text = text.split("<!--", 1)[0].strip()
+    parts = text.split()
+    if len(parts) < 2:
+        return []
+
+    dates = parts[0].split(",")
+    prices = parts[1].split(",")
+    series: list[tuple[datetime, float]] = []
+    for raw_date, raw_price in zip(dates, prices):
+        try:
+            date = datetime.strptime(raw_date, "%Y%m%d")
+            price = float(raw_price)
+        except ValueError:
+            continue
+        if price > 0:
+            series.append((date, price))
+    return series
+
+
+def period_return_from_series(series: list[tuple[datetime, float]], days: int) -> tuple[float, str, str] | None:
+    if len(series) < 2:
+        return None
+    series = sorted(series, key=lambda item: item[0])
+    end_date, end_price = series[-1]
+    target_date = end_date - timedelta(days=days)
+    start_date, start_price = series[0]
+    for date, price in series:
+        if date <= target_date:
+            start_date, start_price = date, price
+        else:
+            break
+    if start_price <= 0 or start_date == end_date:
+        return None
+    period_return = ((end_price / start_price) - 1) * 100
+    return round(period_return, 2), start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
+
+
 def chart_prices(data: dict[str, Any]) -> list[float]:
     result = (data.get("chart") or {}).get("result") or []
     if not result:
@@ -339,6 +400,7 @@ def quote_from_prices(item: dict[str, Any], prices: list[float]) -> dict[str, An
         "price": round(latest, 2),
         "change": round(change, 2),
         "changePercent": round(change_percent, 2),
+        "return2w": round(total_return(prices[-11:]) or 0.0, 2),
         "return3m": round(total_return(prices) or 0.0, 2),
     }
 
@@ -396,7 +458,11 @@ def build_markets_payload() -> dict[str, Any]:
                 raise RuntimeError("no usable chart prices")
             markets.append(quote)
             if item.get("benchmark"):
-                benchmarks[item["id"]] = {"label": item["label"], "return3m": quote["return3m"]}
+                benchmarks[item["id"]] = {
+                    "label": item["label"],
+                    "return2w": quote["return2w"],
+                    "return3m": quote["return3m"],
+                }
         except Exception as exc:
             warnings.append(f"Yahoo {item['symbol']} failed: {exc}")
 
@@ -780,6 +846,7 @@ def build_megabank_tw_funds_payload() -> dict[str, Any]:
     if not funds:
         raise RuntimeError("MegaBank/MoneyDJ returned no usable Taiwan domestic funds")
 
+    enrich_recent_fund_returns(funds)
     funds.sort(key=lambda fund: fund["return3y"], reverse=True)
     payload: dict[str, Any] = {
         "source": "兆豐基金/MoneyDJ 國內基金公開資料",
@@ -789,6 +856,39 @@ def build_megabank_tw_funds_payload() -> dict[str, Any]:
     if warnings:
         payload["warnings"] = warnings
     return payload
+
+
+def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
+    max_workers = int(os.environ.get("RECENT_NAV_WORKERS", RECENT_NAV_WORKERS))
+
+    def fetch_recent(fund: dict[str, Any]) -> tuple[str, tuple[float, str, str] | None, str | None]:
+        fund_id = str(fund.get("fundId") or "")
+        if not fund_id:
+            return str(fund.get("name") or ""), None, "missing fundId"
+        try:
+            recent = period_return_from_series(fetch_moneydj_bcd_nav(fund_id), RECENT_RETURN_DAYS)
+            return fund_id, recent, None
+        except Exception as exc:
+            return fund_id, None, str(exc)
+
+    errors = 0
+    by_id = {str(fund.get("fundId") or ""): fund for fund in funds}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(fetch_recent, fund) for fund in funds]
+        for future in concurrent.futures.as_completed(futures):
+            fund_id, recent, error = future.result()
+            if error or not recent:
+                errors += 1
+                continue
+            period_return, start_date, end_date = recent
+            fund = by_id.get(fund_id)
+            if fund is not None:
+                fund["return2w"] = period_return
+                fund["return2wStartDate"] = start_date
+                fund["return2wEndDate"] = end_date
+
+    if errors:
+        print(f"{datetime.now().isoformat(timespec='seconds')} recent NAV skipped for {errors} funds", file=sys.stderr)
 
 
 def fubon_text(item: ET.Element, tag: str) -> str:
@@ -1094,6 +1194,12 @@ def normalize_fund(item: dict[str, Any]) -> dict[str, Any]:
         normalized["return3yCumulative"] = number(item["return3yCumulative"], "return3yCumulative")
     if item.get("return3m") is not None:
         normalized["return3m"] = number(item["return3m"], "return3m")
+    if item.get("return2w") is not None:
+        normalized["return2w"] = number(item["return2w"], "return2w")
+    if item.get("return2wStartDate"):
+        normalized["return2wStartDate"] = str(item["return2wStartDate"])
+    if item.get("return2wEndDate"):
+        normalized["return2wEndDate"] = str(item["return2wEndDate"])
     if item.get("return1y") is not None:
         normalized["return1y"] = number(item["return1y"], "return1y")
     if item.get("return6m") is not None:

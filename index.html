@@ -108,7 +108,7 @@
 
           <label class="choice">
             <input id="beatBenchmarkInput" type="checkbox">
-            只看近 3 月贏基準
+            只看近 2 週贏基準
           </label>
         </aside>
 
@@ -122,13 +122,14 @@
               排序
               <select id="sortSelect">
                 <option value="score">綜合分數</option>
-                <option value="excess3m">近 3 月超額報酬</option>
+                <option value="excess2w">近 2 週超額報酬</option>
                 <option value="return3y">三年年化報酬</option>
                 <option value="volatility">波動度</option>
                 <option value="aum">規模</option>
               </select>
             </label>
           </div>
+          <p id="scoreExplain" class="score-explain"></p>
           <div id="fundGrid" class="fund-grid"></div>
         </section>
       </section>
