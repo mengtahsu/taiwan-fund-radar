@@ -302,8 +302,7 @@ function benchmarkStatus(fund) {
   return `
     <div class="benchmark ${statusClass}">
       <span>${label}</span>
-      <strong>${formatPercent(excess)}</strong>
-      <small>對 ${escapeHtml(benchmark.label)}</small>
+      <strong>${formatPercent(excess)} <small>對 ${escapeHtml(benchmark.label)}</small></strong>
     </div>
   `;
 }

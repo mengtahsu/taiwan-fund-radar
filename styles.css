@@ -499,7 +499,15 @@ legend {
 }
 
 .benchmark strong {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
   font-size: 20px;
+}
+
+.benchmark strong small {
+  white-space: nowrap;
 }
 
 .benchmark.beat strong {
