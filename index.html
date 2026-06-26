@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>台灣基金雷達</title>
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20260626-1931">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20260626-1947">
   </head>
   <body>
     <header class="topbar">
@@ -92,9 +92,18 @@
 
           <fieldset>
             <legend>你的目標</legend>
-            <label class="choice"><input name="goal" type="radio" value="growth" checked> 成長</label>
-            <label class="choice"><input name="goal" type="radio" value="income"> 配息</label>
-            <label class="choice"><input name="goal" type="radio" value="stability"> 穩健</label>
+            <label class="choice">
+              <input name="goal" type="radio" value="growth" checked>
+              <span class="choice-copy"><strong>成長</strong><small>重視近期動能與高報酬</small></span>
+            </label>
+            <label class="choice">
+              <input name="goal" type="radio" value="income">
+              <span class="choice-copy"><strong>配息</strong><small>偏好配息型與穩定表現</small></span>
+            </label>
+            <label class="choice">
+              <input name="goal" type="radio" value="stability">
+              <span class="choice-copy"><strong>穩健</strong><small>優先低波動與風險控制</small></span>
+            </label>
           </fieldset>
 
           <label class="range-field">
@@ -153,6 +162,6 @@
       <a href="https://announce.fundclear.com.tw/MOPSFundWeb/" rel="noreferrer">基金資訊觀測站</a>
     </footer>
 
-    <script src="app.js?v=tw-funds-20260626-1931"></script>
+    <script src="app.js?v=tw-funds-20260626-1947"></script>
   </body>
 </html>
