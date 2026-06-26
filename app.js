@@ -232,7 +232,7 @@ function renderScoreExplain() {
     income: "配息目標",
     stability: "穩健目標"
   }[goal()];
-  els.scoreExplain.textContent = `${label}的綜合分數算法：${scoreTitle().replace("自訂綜合分數：", "")}。分數只用來排序，不代表買賣建議。`;
+  els.scoreExplain.textContent = `${label}的綜合分數算法：${scoreTitle().replace("自訂綜合分數：", "")}。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。`;
 }
 
 function filteredFunds() {
