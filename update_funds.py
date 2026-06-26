@@ -53,6 +53,9 @@ REQUIRED_FIELDS = {
 DEFAULT_INTERVAL_SECONDS = 3 * 60 * 60
 RECENT_RETURN_DAYS = 14
 RECENT_NAV_WORKERS = 10
+RECENT_NAV_TOP_LIMIT = 80
+RECENT_NAV_REFRESH_LIMIT = 20
+RECENT_NAV_MAX_AGE_HOURS = 48
 
 TAIWAN_ETFS = [
     {
@@ -858,7 +861,100 @@ def build_megabank_tw_funds_payload() -> dict[str, Any]:
     return payload
 
 
+def parse_iso_datetime(value: str | None) -> datetime:
+    if not value:
+        return datetime.fromtimestamp(0, timezone.utc)
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return datetime.fromtimestamp(0, timezone.utc)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def load_nav_cache(root: Path) -> dict[str, Any]:
+    cache_path = root / "data/nav_cache.json"
+    items: dict[str, Any] = {}
+    next_top_offset = 0
+    if cache_path.exists():
+        try:
+            payload = json.loads(cache_path.read_text(encoding="utf-8"))
+            if isinstance(payload.get("items"), dict):
+                items.update(payload["items"])
+            next_top_offset = int(payload.get("nextTopOffset") or 0)
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    funds_path = root / "data/funds.json"
+    if funds_path.exists():
+        try:
+            payload = json.loads(funds_path.read_text(encoding="utf-8"))
+            for fund in payload.get("funds", []):
+                fund_id = str(fund.get("fundId") or "")
+                if not fund_id or fund_id in items or fund.get("return2w") is None:
+                    continue
+                items[fund_id] = {
+                    "return2w": fund["return2w"],
+                    "return2wStartDate": fund.get("return2wStartDate"),
+                    "return2wEndDate": fund.get("return2wEndDate"),
+                    "fetchedAt": payload.get("updatedAt") or datetime.now(timezone.utc).isoformat(),
+                }
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    return {"updatedAt": datetime.now(timezone.utc).isoformat(), "items": items, "nextTopOffset": max(0, next_top_offset)}
+
+
+def apply_nav_cache(funds: list[dict[str, Any]], cache: dict[str, Any]) -> None:
+    items = cache.get("items") or {}
+    max_age_hours = float(os.environ.get("RECENT_NAV_MAX_AGE_HOURS", RECENT_NAV_MAX_AGE_HOURS))
+    fresh_after = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+    for fund in funds:
+        cached = items.get(str(fund.get("fundId") or ""))
+        if not cached or cached.get("return2w") is None:
+            continue
+        if parse_iso_datetime(cached.get("fetchedAt")) < fresh_after:
+            continue
+        fund["return2w"] = cached["return2w"]
+        if cached.get("return2wStartDate"):
+            fund["return2wStartDate"] = cached["return2wStartDate"]
+        if cached.get("return2wEndDate"):
+            fund["return2wEndDate"] = cached["return2wEndDate"]
+
+
+def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
+    top_limit = int(os.environ.get("RECENT_NAV_TOP_LIMIT", RECENT_NAV_TOP_LIMIT))
+    high_performance_funds = sorted(
+        funds,
+        key=lambda fund: (
+            number(fund.get("return3y", 0), "return3y"),
+            number(fund.get("return3m", 0), "return3m"),
+            number(fund.get("return1y", 0), "return1y"),
+        ),
+        reverse=True,
+    )[:top_limit]
+
+    if not high_performance_funds or limit <= 0:
+        return []
+
+    offset = int(cache.get("nextTopOffset") or 0) % len(high_performance_funds)
+    wrapped = high_performance_funds[offset:] + high_performance_funds[:offset]
+    candidates = wrapped[: min(limit, len(wrapped))]
+    cache["nextTopOffset"] = (offset + len(candidates)) % len(high_performance_funds)
+    return candidates
+
+
 def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
+    root = Path(__file__).resolve().parent
+    cache = load_nav_cache(root)
+    apply_nav_cache(funds, cache)
+
+    refresh_limit = int(os.environ.get("RECENT_NAV_REFRESH_LIMIT", RECENT_NAV_REFRESH_LIMIT))
+    candidates = nav_refresh_candidates(funds, cache, max(0, refresh_limit))
+    if not candidates:
+        return
+
     max_workers = int(os.environ.get("RECENT_NAV_WORKERS", RECENT_NAV_WORKERS))
 
     def fetch_recent(fund: dict[str, Any]) -> tuple[str, tuple[float, str, str] | None, str | None]:
@@ -873,8 +969,9 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
 
     errors = 0
     by_id = {str(fund.get("fundId") or ""): fund for fund in funds}
+    cache_items = cache.setdefault("items", {})
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(fetch_recent, fund) for fund in funds]
+        futures = [executor.submit(fetch_recent, fund) for fund in candidates]
         for future in concurrent.futures.as_completed(futures):
             fund_id, recent, error = future.result()
             if error or not recent:
@@ -886,9 +983,21 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
                 fund["return2w"] = period_return
                 fund["return2wStartDate"] = start_date
                 fund["return2wEndDate"] = end_date
+            cache_items[fund_id] = {
+                "return2w": period_return,
+                "return2wStartDate": start_date,
+                "return2wEndDate": end_date,
+                "fetchedAt": datetime.now(timezone.utc).isoformat(),
+            }
 
     if errors:
         print(f"{datetime.now().isoformat(timespec='seconds')} recent NAV skipped for {errors} funds", file=sys.stderr)
+    cache["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    atomic_write_json(root / "data/nav_cache.json", cache)
+    print(
+        f"{datetime.now().isoformat(timespec='seconds')} recent NAV refreshed {len(candidates) - errors}/{len(candidates)} funds; cache has {len(cache_items)} funds",
+        file=sys.stderr,
+    )
 
 
 def fubon_text(item: ET.Element, tag: str) -> str:
