@@ -178,6 +178,35 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+function benchmarkForFund(fund) {
+  if (fund.region === "台灣" || fund.type === "台股") {
+    return marketMeta.benchmarks.twii || null;
+  }
+  const text = [fund.name, fund.type, fund.region, ...(fund.tags || [])].join(" ");
+  if (fund.region === "美國" || /科技|Nasdaq|NASDAQ|那斯達克|5G|AI|半導體/.test(text)) {
+    return marketMeta.benchmarks.nasdaq || marketMeta.benchmarks.sp500 || null;
+  }
+  return marketMeta.benchmarks.sp500 || null;
+}
+
+function excessReturn2w(fund) {
+  if (typeof fund.return2w !== "number") {
+    return null;
+  }
+  const benchmark = benchmarkForFund(fund);
+  if (!benchmark || typeof benchmark.return2w !== "number") {
+    return null;
+  }
+  return fund.return2w - benchmark.return2w;
+}
+
+function recentMomentumScore(fund) {
+  const return3mScore = clamp((fund.return3m ?? 0) / 60, 0, 1);
+  const excess2w = excessReturn2w(fund);
+  const excess2wScore = excess2w === null ? 0.45 : clamp((excess2w + 10) / 25, 0, 1);
+  return return3mScore * 0.55 + excess2wScore * 0.45;
+}
+
 function scoreFund(fund) {
   const currentGoal = goal();
   const riskFit = 1 - Math.max(0, fund.risk - Number(els.risk.value)) / 4;
@@ -185,21 +214,22 @@ function scoreFund(fund) {
   const stabilityScore = 1 - clamp(fund.volatility / 28, 0, 1);
   const incomeScore = fund.dividend.includes("配") ? 1 : 0.35;
   const sharpeScore = clamp(fund.sharpe / 2, 0, 1);
+  const momentumScore = recentMomentumScore(fund);
 
   const weights = {
-    growth: [returnScore, riskFit, sharpeScore],
-    income: [incomeScore, stabilityScore, riskFit],
-    stability: [stabilityScore, riskFit, sharpeScore]
+    growth: [returnScore, momentumScore, sharpeScore, riskFit],
+    income: [incomeScore, stabilityScore, riskFit, momentumScore],
+    stability: [stabilityScore, riskFit, sharpeScore, momentumScore]
   }[currentGoal];
 
-  return Math.round((weights[0] * 0.45 + weights[1] * 0.25 + weights[2] * 0.3) * 100);
+  return Math.round((weights[0] * 0.35 + weights[1] * 0.3 + weights[2] * 0.2 + weights[3] * 0.15) * 100);
 }
 
 function scoreTitle() {
   return {
-    growth: "自訂綜合分數：三年年化 45%、風險符合度 25%、Sharpe 30%",
-    income: "自訂綜合分數：配息型態 45%、低波動 25%、風險符合度 30%",
-    stability: "自訂綜合分數：低波動 45%、風險符合度 25%、Sharpe 30%"
+    growth: "自訂綜合分數：三年年化 35%、近期動能 30%、Sharpe 20%、風險符合度 15%。近期動能含近 3 月報酬與近 2 週超額報酬",
+    income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週超額報酬",
+    stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週超額報酬"
   }[goal()];
 }
 
@@ -258,17 +288,6 @@ function formatMarketPrice(value) {
   return Number(value).toLocaleString("zh-TW", { maximumFractionDigits: 2 });
 }
 
-function benchmarkForFund(fund) {
-  if (fund.region === "台灣" || fund.type === "台股") {
-    return marketMeta.benchmarks.twii || null;
-  }
-  const text = [fund.name, fund.type, fund.region, ...(fund.tags || [])].join(" ");
-  if (fund.region === "美國" || /科技|Nasdaq|NASDAQ|那斯達克|5G|AI|半導體/.test(text)) {
-    return marketMeta.benchmarks.nasdaq || marketMeta.benchmarks.sp500 || null;
-  }
-  return marketMeta.benchmarks.sp500 || null;
-}
-
 function benchmarkStatus(fund) {
   if (typeof fund.return2w !== "number") {
     return "";
@@ -287,17 +306,6 @@ function benchmarkStatus(fund) {
       <small>對 ${escapeHtml(benchmark.label)}</small>
     </div>
   `;
-}
-
-function excessReturn2w(fund) {
-  if (typeof fund.return2w !== "number") {
-    return null;
-  }
-  const benchmark = benchmarkForFund(fund);
-  if (!benchmark || typeof benchmark.return2w !== "number") {
-    return null;
-  }
-  return fund.return2w - benchmark.return2w;
 }
 
 function formatPrice(fund) {
