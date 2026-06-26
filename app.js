@@ -206,18 +206,33 @@ function scoreFund(fund) {
   const sharpeScore = clamp(fund.sharpe / 2, 0, 1);
   const momentumScore = recentMomentumScore(fund);
 
-  const weights = {
-    growth: [returnScore, momentumScore, sharpeScore, riskFit],
-    income: [incomeScore, stabilityScore, riskFit, momentumScore],
-    stability: [stabilityScore, riskFit, sharpeScore, momentumScore]
+  const scoreParts = {
+    growth: [
+      [returnScore, 0.25],
+      [momentumScore, 0.45],
+      [sharpeScore, 0.2],
+      [riskFit, 0.1]
+    ],
+    income: [
+      [incomeScore, 0.35],
+      [stabilityScore, 0.3],
+      [riskFit, 0.2],
+      [momentumScore, 0.15]
+    ],
+    stability: [
+      [stabilityScore, 0.35],
+      [riskFit, 0.3],
+      [sharpeScore, 0.2],
+      [momentumScore, 0.15]
+    ]
   }[currentGoal];
 
-  return Math.round((weights[0] * 0.35 + weights[1] * 0.3 + weights[2] * 0.2 + weights[3] * 0.15) * 100);
+  return Math.round(scoreParts.reduce((total, [score, weight]) => total + score * weight, 0) * 100);
 }
 
 function scoreTitle() {
   return {
-    growth: "自訂綜合分數：三年年化 35%、近期動能 30%、Sharpe 20%、風險符合度 15%。近期動能含近 3 月報酬與近 2 週相對台股大盤",
+    growth: "自訂綜合分數：三年年化 25%、近期動能 45%、Sharpe 20%、風險符合度 10%。近期動能含近 3 月報酬與近 2 週相對台股大盤",
     income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週相對台股大盤",
     stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週相對台股大盤"
   }[goal()];
