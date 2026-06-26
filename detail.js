@@ -25,14 +25,7 @@ function formatPercent(value) {
 }
 
 function benchmarkForFund(fund, benchmarks) {
-  if (fund.region === "台灣" || fund.type === "台股") {
-    return benchmarks.twii || null;
-  }
-  const text = [fund.name, fund.type, fund.region, ...(fund.tags || [])].join(" ");
-  if (fund.region === "美國" || /科技|Nasdaq|NASDAQ|那斯達克|5G|AI|半導體/.test(text)) {
-    return benchmarks.nasdaq || benchmarks.sp500 || null;
-  }
-  return benchmarks.sp500 || null;
+  return benchmarks.twii || null;
 }
 
 function renderBuyActions(fund) {

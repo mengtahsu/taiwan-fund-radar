@@ -176,14 +176,7 @@ function escapeHtml(value) {
 }
 
 function benchmarkForFund(fund) {
-  if (fund.region === "台灣" || fund.type === "台股") {
-    return marketMeta.benchmarks.twii || null;
-  }
-  const text = [fund.name, fund.type, fund.region, ...(fund.tags || [])].join(" ");
-  if (fund.region === "美國" || /科技|Nasdaq|NASDAQ|那斯達克|5G|AI|半導體/.test(text)) {
-    return marketMeta.benchmarks.nasdaq || marketMeta.benchmarks.sp500 || null;
-  }
-  return marketMeta.benchmarks.sp500 || null;
+  return marketMeta.benchmarks.twii || null;
 }
 
 function excessReturn2w(fund) {
@@ -224,9 +217,9 @@ function scoreFund(fund) {
 
 function scoreTitle() {
   return {
-    growth: "自訂綜合分數：三年年化 35%、近期動能 30%、Sharpe 20%、風險符合度 15%。近期動能含近 3 月報酬與近 2 週超額報酬",
-    income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週超額報酬",
-    stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週超額報酬"
+    growth: "自訂綜合分數：三年年化 35%、近期動能 30%、Sharpe 20%、風險符合度 15%。近期動能含近 3 月報酬與近 2 週相對台股大盤",
+    income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週相對台股大盤",
+    stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週相對台股大盤"
   }[goal()];
 }
 
