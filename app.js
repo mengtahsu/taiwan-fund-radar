@@ -155,10 +155,7 @@ const els = {
   dataStatus: document.querySelector("#dataStatus"),
   marketList: document.querySelector("#marketList"),
   reset: document.querySelector("#resetBtn"),
-  highReturn: document.querySelector("#highReturnBtn"),
-  dataInput: document.querySelector("#dataInput"),
-  loadData: document.querySelector("#loadDataBtn"),
-  sampleData: document.querySelector("#sampleDataBtn")
+  highReturn: document.querySelector("#highReturnBtn")
 };
 
 function goal() {
@@ -548,21 +545,6 @@ function normalizePayload(payload) {
   throw new Error("資料格式不符合欄位需求。");
 }
 
-function loadCustomData() {
-  try {
-    const parsed = normalizePayload(JSON.parse(els.dataInput.value));
-    if (!parsed.funds.every(validateFund)) {
-      throw new Error("資料格式不符合欄位需求。");
-    }
-    funds = parsed.funds;
-    sourceMeta = parsed.meta;
-    selected = new Set();
-    renderFunds();
-  } catch (error) {
-    alert(error.message || "無法讀取 JSON。");
-  }
-}
-
 function resetFilters() {
   els.query.value = "";
   els.type.value = "all";
@@ -599,17 +581,6 @@ function applyHighReturnPreset() {
 document.querySelectorAll("input[name='goal']").forEach((input) => input.addEventListener("change", renderFunds));
 els.reset.addEventListener("click", resetFilters);
 els.highReturn.addEventListener("click", applyHighReturnPreset);
-els.loadData.addEventListener("click", loadCustomData);
-els.sampleData.addEventListener("click", () => {
-  funds = [...sampleFunds];
-  sourceMeta = {
-    source: "示範資料",
-    updatedAt: null
-  };
-  selected = new Set();
-  els.dataInput.value = "";
-  renderFunds();
-});
 
 async function loadLatestData() {
   try {

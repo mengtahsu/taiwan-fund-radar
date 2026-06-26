@@ -98,8 +98,7 @@ button {
   font-weight: 800;
 }
 
-button.primary,
-.data-actions button:first-child {
+button.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
@@ -158,8 +157,7 @@ main {
 
 .market-panel,
 .filters,
-.compare-section,
-.data-section {
+.compare-section {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -284,9 +282,7 @@ main {
 
 .filter-header,
 .results-toolbar,
-.compare-section,
-.data-section,
-.data-actions {
+.compare-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -300,8 +296,7 @@ p {
 
 .filters h2,
 .results-toolbar h2,
-.compare-section h2,
-.data-section h2 {
+.compare-section h2 {
   margin-bottom: 4px;
 }
 
@@ -313,6 +308,11 @@ fieldset {
   color: var(--muted);
   font-size: 14px;
   font-weight: 700;
+}
+
+.filters label,
+.filters fieldset {
+  margin: 20px 0;
 }
 
 input,
@@ -358,6 +358,7 @@ legend {
 }
 
 .range-value {
+  margin-bottom: 4px;
   color: var(--ink);
   font-size: 13px;
 }
@@ -367,8 +368,7 @@ legend {
 }
 
 .results-toolbar p,
-.compare-section p,
-.data-section p {
+.compare-section p {
   margin-bottom: 0;
   color: var(--muted);
 }
@@ -551,8 +551,7 @@ legend {
   color: var(--danger);
 }
 
-.compare-section,
-.data-section {
+.compare-section {
   align-items: stretch;
   margin-top: 32px;
   padding: 22px;
@@ -585,22 +584,6 @@ td {
 
 th {
   color: var(--muted);
-  font-size: 13px;
-}
-
-.data-section {
-  display: grid;
-}
-
-textarea {
-  min-height: 150px;
-  resize: vertical;
-  padding: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 13px;
-}
-
-.source-note {
   font-size: 13px;
 }
 

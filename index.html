@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>台灣基金雷達</title>
-    <link rel="stylesheet" href="styles.css?v=tw-funds-10">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-11">
   </head>
   <body>
     <header class="topbar">
@@ -15,7 +15,6 @@
       <nav aria-label="主要連結">
         <a href="#finder">篩選</a>
         <a href="#compare">比較</a>
-        <a href="#data">資料</a>
       </nav>
     </header>
 
@@ -143,24 +142,6 @@
         <div id="compareTable" class="compare-table"></div>
       </section>
 
-      <section id="data" class="data-section">
-        <div>
-          <h2>資料匯入</h2>
-          <p>
-            網站會優先讀取 data/funds.json。也可貼上 JSON 陣列暫時覆蓋畫面資料。
-            欄位需包含 name、company、type、region、risk、
-            return3y、volatility、sharpe、aum、dividend、minRsp、tags。
-          </p>
-        </div>
-        <textarea id="dataInput" spellcheck="false" placeholder='[{"name":"範例基金","company":"投信公司","type":"台股","region":"台灣","risk":4,"return3y":8.2,"volatility":14.8,"sharpe":0.62,"aum":320,"dividend":"累積型","minRsp":3000,"tags":["電子","大型股"]}]'></textarea>
-        <div class="data-actions">
-          <button id="loadDataBtn" type="button">載入資料</button>
-          <button id="sampleDataBtn" type="button">還原示範資料</button>
-        </div>
-        <p class="source-note">
-          自動更新由 update_funds.py 負責；預設在台灣時間 04:00、12:00、20:00 更新。
-        </p>
-      </section>
     </main>
 
     <footer>
@@ -169,6 +150,6 @@
       <a href="https://announce.fundclear.com.tw/MOPSFundWeb/" rel="noreferrer">基金資訊觀測站</a>
     </footer>
 
-    <script src="app.js?v=tw-funds-10"></script>
+    <script src="app.js?v=tw-funds-11"></script>
   </body>
 </html>
