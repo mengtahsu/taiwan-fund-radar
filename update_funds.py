@@ -699,6 +699,13 @@ def clean_megabank_name(value: str) -> tuple[str, str]:
     return match.group(1), match.group(2).strip()
 
 
+def is_twd_currency(value: str | None) -> bool:
+    text = (value or "").strip().upper()
+    if not text:
+        return False
+    return any(keyword in text for keyword in ["台幣", "新台幣", "新臺幣", "TWD", "NTD"])
+
+
 def canonical_fund_name(value: str) -> str:
     text = html.unescape(value)
     text = re.sub(r"[\(（].*?本金.*?[\)）]", "", text)
@@ -779,6 +786,9 @@ def normalize_megabank_fund(
         return None
 
     currency = return_row[1]
+    if not is_twd_currency(currency):
+        return None
+
     three_month = optional_number(return_row[2])
     six_month = optional_number(return_row[3])
     one_year = optional_number(return_row[4])
@@ -813,6 +823,7 @@ def normalize_megabank_fund(
         "ticker": bank_code,
         "name": name,
         "company": company,
+        "currency": "台幣",
         "type": map_megabank_type(fund_type, name),
         "region": map_megabank_region(fund_type, name),
         "risk": risk,
@@ -1050,6 +1061,9 @@ def normalize_fubon_fund(item: ET.Element) -> dict[str, Any] | None:
     target = fubon_text(item, "INVEST_TARGET_CHINESE")
     org_name = fubon_text(item, "ORG_FUND_NAME") or "富邦銀行上架基金"
     currency = fubon_text(item, "CURRENCY_CODE")
+    if not is_twd_currency(currency):
+        return None
+
     area = fubon_text(item, "AREA")
     risk = parse_rr(fubon_text(item, "RAM_TYPE"), fallback=4)
     three_year = optional_number(fubon_text(item, "YEAR_VALUE_3")) or 0.0
@@ -1090,6 +1104,7 @@ def normalize_fubon_fund(item: ET.Element) -> dict[str, Any] | None:
         "ticker": fund_code,
         "name": name,
         "company": org_name,
+        "currency": "台幣",
         "type": map_fubon_type(target, name),
         "region": map_fubon_region(target, area, name),
         "risk": risk,
@@ -1159,6 +1174,8 @@ def fundrich_lookup_from_items(items: dict[str, Any]) -> dict[str, dict[str, Any
         fund_id = str(item.get("fundrichFundId") or "").strip()
         if not name or not fund_id:
             continue
+        if not is_twd_currency(name):
+            continue
         lookup[canonical_fund_name(name)] = {
             "fundrichFundId": fund_id,
             "fundrichName": name,
@@ -1181,6 +1198,8 @@ def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
                 fund_id = str(fund.get("fundrichFundId") or "").strip()
                 name = str(fund.get("fundrichName") or "").strip()
                 if not fund_id or not name or fund_id in items:
+                    continue
+                if not is_twd_currency(name):
                     continue
                 items[fund_id] = {
                     "fundrichFundId": fund_id,

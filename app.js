@@ -538,10 +538,18 @@ function validateFund(item) {
   return required.every((key) => key in item) && Array.isArray(item.tags);
 }
 
+function isTaiwanDollarFund(fund) {
+  const text = [fund.currency, fund.name, ...(fund.tags || [])].filter(Boolean).join(" ").toUpperCase();
+  if (!text) {
+    return false;
+  }
+  return ["台幣", "新台幣", "新臺幣", "TWD", "NTD"].some((keyword) => text.includes(keyword));
+}
+
 function normalizePayload(payload) {
   if (Array.isArray(payload)) {
     return {
-      funds: payload,
+      funds: payload.filter(isTaiwanDollarFund),
       meta: {
         source: "匯入資料",
         updatedAt: null
@@ -551,7 +559,7 @@ function normalizePayload(payload) {
 
   if (payload && Array.isArray(payload.funds)) {
     return {
-      funds: payload.funds,
+      funds: payload.funds.filter(isTaiwanDollarFund),
       meta: {
         source: payload.source || "自動更新資料",
         updatedAt: payload.updatedAt || null

@@ -16,6 +16,14 @@ function formatNumber(value, digits = 2) {
   return value.toLocaleString("zh-TW", { maximumFractionDigits: digits });
 }
 
+function isTaiwanDollarFund(fund) {
+  const text = [fund.currency, fund.name, ...(fund.tags || [])].filter(Boolean).join(" ").toUpperCase();
+  if (!text) {
+    return false;
+  }
+  return ["台幣", "新台幣", "新臺幣", "TWD", "NTD"].some((keyword) => text.includes(keyword));
+}
+
 function formatPercent(value) {
   if (typeof value !== "number" || Number.isNaN(value)) {
     return "-";
@@ -105,7 +113,7 @@ async function loadDetail() {
     ]);
     const fundPayload = await fundResponse.json();
     const marketPayload = marketResponse.ok ? await marketResponse.json() : { benchmarks: {} };
-    const funds = fundPayload.funds || [];
+    const funds = (fundPayload.funds || []).filter(isTaiwanDollarFund);
     const fund = funds.find((item) => item.fundId === id || item.name === id);
     if (!fund) {
       throw new Error("找不到這檔基金。");
