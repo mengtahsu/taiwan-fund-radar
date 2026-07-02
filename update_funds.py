@@ -173,6 +173,7 @@ TAIFEX_QUOTE_URL = "https://mis.taifex.com.tw/futures/api/getQuoteList"
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 TAIFEX_LIVE_QUOTE_URL = "https://tw.tradingview.com/symbols/TAIFEX-TXF1!/"
 YAHOO_FINANCE_QUOTE_URL = "https://finance.yahoo.com/quote/{symbol}"
+YAHOO_TWII_QUOTE_URL = "https://tw.stock.yahoo.com/quote/%5ETWII"
 
 MARKET_SYMBOLS = [
     {"id": "twii", "label": "台股大盤", "symbol": "^TWII", "benchmark": True, "urlSymbol": "%5ETWII"},
@@ -393,18 +394,25 @@ def total_return(prices: list[float]) -> float | None:
     return ((prices[-1] / prices[0]) - 1) * 100
 
 
-def quote_from_prices(item: dict[str, Any], prices: list[float]) -> dict[str, Any] | None:
+def quote_from_chart(item: dict[str, Any], data: dict[str, Any]) -> dict[str, Any] | None:
+    result = (data.get("chart") or {}).get("result") or []
+    meta = result[0].get("meta") if result else {}
+    prices = chart_prices(data)
     if len(prices) < 2:
         return None
-    latest = prices[-1]
-    previous = prices[-2]
+    latest = optional_number((meta or {}).get("regularMarketPrice")) or prices[-1]
+    previous = (
+        optional_number((meta or {}).get("previousClose"))
+        or optional_number((meta or {}).get("chartPreviousClose"))
+        or prices[-2]
+    )
     change = latest - previous
     change_percent = (change / previous) * 100 if previous else 0.0
     return {
         "id": item["id"],
         "label": item["label"],
         "symbol": item["symbol"],
-        "url": YAHOO_FINANCE_QUOTE_URL.format(symbol=item["urlSymbol"]),
+        "url": YAHOO_TWII_QUOTE_URL if item["id"] == "twii" else YAHOO_FINANCE_QUOTE_URL.format(symbol=item["urlSymbol"]),
         "price": round(latest, 2),
         "change": round(change, 2),
         "changePercent": round(change_percent, 2),
@@ -461,8 +469,8 @@ def build_markets_payload() -> dict[str, Any]:
 
     for item in MARKET_SYMBOLS:
         try:
-            prices = chart_prices(fetch_yahoo_chart_range(item["symbol"], days=120))
-            quote = quote_from_prices(item, prices)
+            chart = fetch_yahoo_chart_range(item["symbol"], days=120)
+            quote = quote_from_chart(item, chart)
             if not quote:
                 raise RuntimeError("no usable chart prices")
             markets.append(quote)
