@@ -169,10 +169,10 @@ FUBON_PLUS_BUY_URL = "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId
 FUNDRICH_FUND_TABLE_URL = "https://apis.fundrich.com.tw/FRSDataCenter/FundTableInfo"
 FUNDRICH_DETAIL_URL = "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/{fund_id}"
 FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
-TAIFEX_QUOTE_URL = "https://mis.taifex.com.tw/futures/api/getQuoteList"
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-TAIFEX_LIVE_QUOTE_URL = "https://tw.tradingview.com/symbols/TAIFEX-TXF1!/"
 YAHOO_TW_QUOTE_URL = "https://tw.stock.yahoo.com/quote/{symbol}"
+
+TXF_QUOTE_ITEM = {"id": "txf", "label": "台指期", "symbol": "WTX&", "urlSymbol": "WTX%26"}
 
 MARKET_SYMBOLS = [
     {"id": "twii", "label": "台股大盤", "symbol": "^TWII", "benchmark": True, "urlSymbol": "%5ETWII"},
@@ -440,37 +440,15 @@ def fetch_yahoo_direct_quote(item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def fetch_taifex_txf_quote() -> dict[str, Any] | None:
-    payload = {"MarketType": "0", "SymbolType": "F", "KindID": "1", "CID": "TXF"}
-    data = post_json_with_headers(
-        TAIFEX_QUOTE_URL,
-        payload,
-        {
-            "User-Agent": "Mozilla/5.0 TaiwanFundRadar/1.0",
-            "Accept": "application/json,text/plain,*/*",
-            "Content-Type": "application/json",
-            "Origin": "https://mis.taifex.com.tw",
-            "Referer": "https://mis.taifex.com.tw/futures/",
-        },
-    )
-    quotes = ((data.get("RtData") or {}).get("QuoteList") or [])
-    futures = [quote for quote in quotes if str(quote.get("SymbolID", "")).endswith("-F")]
-    active = next((quote for quote in futures if optional_number(quote.get("CLastPrice")) is not None), None)
-    if not active:
-        return None
-    date_text = str(active.get("CDate") or "")
-    time_text = str(active.get("CTime") or "")
+def fetch_txf_quote() -> dict[str, Any]:
+    quote = fetch_yahoo_direct_quote(TXF_QUOTE_ITEM)
     return {
         "id": "txf",
         "label": "台指期",
-        "symbol": active.get("SymbolID") or "TXF",
-        "url": TAIFEX_LIVE_QUOTE_URL,
-        "name": active.get("DispCName") or "臺指期",
-        "price": round(optional_number(active.get("CLastPrice")) or 0.0, 2),
-        "change": round(optional_number(active.get("CDiff")) or 0.0, 2),
-        "changePercent": round(optional_number(active.get("CDiffRate")) or 0.0, 2),
-        "volume": int(optional_number(active.get("CTotalVolume")) or 0),
-        "quoteTime": f"{date_text} {time_text}".strip(),
+        "symbol": TXF_QUOTE_ITEM["symbol"],
+        "url": YAHOO_TW_QUOTE_URL.format(symbol=TXF_QUOTE_ITEM["urlSymbol"]),
+        "name": "台指期近一",
+        **quote,
     }
 
 
@@ -480,11 +458,11 @@ def build_markets_payload() -> dict[str, Any]:
     warnings: list[str] = []
 
     try:
-        txf_quote = fetch_taifex_txf_quote()
+        txf_quote = fetch_txf_quote()
         if txf_quote:
             markets.append(txf_quote)
     except Exception as exc:
-        warnings.append(f"TAIFEX TXF failed: {exc}")
+        warnings.append(f"Yahoo TXF failed: {exc}")
 
     for item in MARKET_SYMBOLS:
         try:
@@ -507,7 +485,7 @@ def build_markets_payload() -> dict[str, Any]:
         raise RuntimeError("No market quote source returned usable data")
 
     payload = {
-        "source": "TAIFEX + Yahoo Finance market data",
+        "source": "Yahoo Taiwan market data",
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "markets": markets,
         "benchmarks": benchmarks,

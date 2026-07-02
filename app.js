@@ -430,7 +430,7 @@ function renderMarkets() {
 
 function marketUrl(market) {
   const fixedUrls = {
-    txf: "https://tw.tradingview.com/symbols/TAIFEX-TXF1!/",
+    txf: "https://tw.stock.yahoo.com/quote/WTX%26",
     twii: "https://tw.stock.yahoo.com/quote/%5ETWII",
     sp500: "https://tw.stock.yahoo.com/quote/%5EGSPC",
     nasdaq: "https://tw.stock.yahoo.com/quote/%5EIXIC",
