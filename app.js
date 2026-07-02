@@ -432,9 +432,9 @@ function marketUrl(market) {
   const fixedUrls = {
     txf: "https://tw.tradingview.com/symbols/TAIFEX-TXF1!/",
     twii: "https://tw.stock.yahoo.com/quote/%5ETWII",
-    sp500: "https://finance.yahoo.com/quote/%5EGSPC",
-    nasdaq: "https://finance.yahoo.com/quote/%5EIXIC",
-    nasdaqFuture: "https://finance.yahoo.com/quote/NQ%3DF"
+    sp500: "https://tw.stock.yahoo.com/quote/%5EGSPC",
+    nasdaq: "https://tw.stock.yahoo.com/quote/%5EIXIC",
+    nasdaqFuture: "https://tw.stock.yahoo.com/quote/NQ%3DF"
   };
   if (fixedUrls[market.id]) {
     return fixedUrls[market.id];

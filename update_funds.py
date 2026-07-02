@@ -172,8 +172,7 @@ FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
 TAIFEX_QUOTE_URL = "https://mis.taifex.com.tw/futures/api/getQuoteList"
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 TAIFEX_LIVE_QUOTE_URL = "https://tw.tradingview.com/symbols/TAIFEX-TXF1!/"
-YAHOO_FINANCE_QUOTE_URL = "https://finance.yahoo.com/quote/{symbol}"
-YAHOO_TWII_QUOTE_URL = "https://tw.stock.yahoo.com/quote/%5ETWII"
+YAHOO_TW_QUOTE_URL = "https://tw.stock.yahoo.com/quote/{symbol}"
 
 MARKET_SYMBOLS = [
     {"id": "twii", "label": "台股大盤", "symbol": "^TWII", "benchmark": True, "urlSymbol": "%5ETWII"},
@@ -412,7 +411,7 @@ def quote_from_chart(item: dict[str, Any], data: dict[str, Any]) -> dict[str, An
         "id": item["id"],
         "label": item["label"],
         "symbol": item["symbol"],
-        "url": YAHOO_TWII_QUOTE_URL if item["id"] == "twii" else YAHOO_FINANCE_QUOTE_URL.format(symbol=item["urlSymbol"]),
+        "url": YAHOO_TW_QUOTE_URL.format(symbol=item["urlSymbol"]),
         "price": round(latest, 2),
         "change": round(change, 2),
         "changePercent": round(change_percent, 2),
@@ -421,8 +420,8 @@ def quote_from_chart(item: dict[str, Any], data: dict[str, Any]) -> dict[str, An
     }
 
 
-def fetch_yahoo_twii_quote() -> dict[str, Any]:
-    page = fetch_text(YAHOO_TWII_QUOTE_URL)
+def fetch_yahoo_direct_quote(item: dict[str, Any]) -> dict[str, Any]:
+    page = fetch_text(YAHOO_TW_QUOTE_URL.format(symbol=item["urlSymbol"]))
     marker = '"quote":{"data":'
     start = page.find(marker)
     if start < 0:
@@ -493,8 +492,7 @@ def build_markets_payload() -> dict[str, Any]:
             quote = quote_from_chart(item, chart)
             if not quote:
                 raise RuntimeError("no usable chart prices")
-            if item["id"] == "twii":
-                quote.update(fetch_yahoo_twii_quote())
+            quote.update(fetch_yahoo_direct_quote(item))
             markets.append(quote)
             if item.get("benchmark"):
                 benchmarks[item["id"]] = {
