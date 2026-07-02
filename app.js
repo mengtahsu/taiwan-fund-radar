@@ -409,7 +409,6 @@ function renderMarkets() {
   els.marketList.innerHTML = marketMeta.markets
     .map((market) => {
       const moveClass = market.changePercent >= 0 ? "up" : "down";
-      const time = market.quoteTime ? `<small>${escapeHtml(market.quoteTime)}</small>` : "";
       const url = market.url || marketUrl(market);
       const label = url
         ? `<a class="quote-link" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${escapeHtml(market.label)}</a>`
@@ -418,7 +417,6 @@ function renderMarkets() {
         <div class="quote-row">
           <div>
             ${label}
-            ${time}
           </div>
           <strong>${formatMarketPrice(market.price)}</strong>
           <em class="${moveClass}">${formatPercent(market.changePercent)}</em>
