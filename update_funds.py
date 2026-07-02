@@ -402,8 +402,8 @@ def quote_from_chart(item: dict[str, Any], data: dict[str, Any]) -> dict[str, An
         return None
     latest = optional_number((meta or {}).get("regularMarketPrice")) or prices[-1]
     previous = (
-        optional_number((meta or {}).get("previousClose"))
-        or optional_number((meta or {}).get("chartPreviousClose"))
+        optional_number((meta or {}).get("chartPreviousClose"))
+        or optional_number((meta or {}).get("previousClose"))
         or prices[-2]
     )
     change = latest - previous
