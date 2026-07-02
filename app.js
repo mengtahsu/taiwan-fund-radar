@@ -356,8 +356,12 @@ function riskClass(risk) {
 
 function renderFundName(fund) {
   const name = escapeHtml(fund.name);
-  const detailKey = encodeURIComponent(fund.fundId || fund.name);
-  return `<a class="fund-name-link" href="detail.html?id=${detailKey}">${name}</a>`;
+  const moneyDjId = String(fund.fundId || "").split("-", 1)[0].trim();
+  if (!moneyDjId) {
+    return name;
+  }
+  const url = `https://m.moneydj.com/a1.aspx?a=${encodeURIComponent(moneyDjId)}`;
+  return `<a class="fund-name-link" href="${url}">${name}</a>`;
 }
 
 function renderBuyLink(fund) {
