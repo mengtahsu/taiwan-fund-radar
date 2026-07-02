@@ -421,6 +421,26 @@ def quote_from_chart(item: dict[str, Any], data: dict[str, Any]) -> dict[str, An
     }
 
 
+def fetch_yahoo_twii_quote() -> dict[str, Any]:
+    page = fetch_text(YAHOO_TWII_QUOTE_URL)
+    marker = '"quote":{"data":'
+    start = page.find(marker)
+    if start < 0:
+        raise RuntimeError("Yahoo Taiwan quote data not found")
+    quote, _ = json.JSONDecoder().raw_decode(page[start + len(marker):])
+    price = optional_number(((quote.get("price") or {}).get("raw")))
+    change = optional_number(((quote.get("change") or {}).get("raw")))
+    change_percent = optional_number(str(quote.get("changePercent") or "").replace("%", ""))
+    if price is None or change is None or change_percent is None:
+        raise RuntimeError("Yahoo Taiwan quote fields incomplete")
+    return {
+        "price": round(price, 2),
+        "change": round(change, 2),
+        "changePercent": round(change_percent, 2),
+        "quoteTime": str(quote.get("regularMarketTime") or ""),
+    }
+
+
 def fetch_taifex_txf_quote() -> dict[str, Any] | None:
     payload = {"MarketType": "0", "SymbolType": "F", "KindID": "1", "CID": "TXF"}
     data = post_json_with_headers(
@@ -473,6 +493,8 @@ def build_markets_payload() -> dict[str, Any]:
             quote = quote_from_chart(item, chart)
             if not quote:
                 raise RuntimeError("no usable chart prices")
+            if item["id"] == "twii":
+                quote.update(fetch_yahoo_twii_quote())
             markets.append(quote)
             if item.get("benchmark"):
                 benchmarks[item["id"]] = {
