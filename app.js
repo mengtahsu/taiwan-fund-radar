@@ -155,6 +155,7 @@ const els = {
   dataStatus: document.querySelector("#dataStatus"),
   marketList: document.querySelector("#marketList"),
   marketChart: document.querySelector("#marketChart"),
+  usChartControl: document.querySelector("#usChartControl"),
   reset: document.querySelector("#resetBtn"),
   highReturn: document.querySelector("#highReturnBtn")
 };
@@ -476,6 +477,15 @@ function renderMarketChart(symbol, label) {
   }
 }
 
+document.querySelectorAll("[data-chart-region]").forEach((button) => {
+  button.addEventListener("click", () => {
+    setActiveChartButtons("[data-chart-region]", button);
+    const isUs = button.dataset.chartRegion === "us";
+    els.usChartControl.hidden = !isUs;
+    renderMarketChart(isUs ? selectedUsChart : "AMEX:EWT", isUs ? "美股即時 CFD" : "EWT 台灣 ETF（延遲 15 分鐘）");
+  });
+});
+
 document.querySelectorAll("[data-chart-symbol]").forEach((button) => {
   button.addEventListener("click", () => {
     selectedUsChart = button.dataset.chartSymbol;
@@ -737,5 +747,5 @@ async function loadMarketData() {
   }
 }
 
-renderMarketChart("FOREXCOM:NSXUSD", "Nasdaq 100 即時 CFD");
+renderMarketChart("AMEX:EWT", "EWT 台灣 ETF（延遲 15 分鐘）");
 Promise.all([loadLatestData(), loadMarketData()]);
