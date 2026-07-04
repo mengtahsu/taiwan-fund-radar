@@ -155,7 +155,6 @@ const els = {
   dataStatus: document.querySelector("#dataStatus"),
   marketList: document.querySelector("#marketList"),
   marketChart: document.querySelector("#marketChart"),
-  usChartControl: document.querySelector("#usChartControl"),
   reset: document.querySelector("#resetBtn"),
   highReturn: document.querySelector("#highReturnBtn")
 };
@@ -477,15 +476,6 @@ function renderMarketChart(symbol, label) {
   }
 }
 
-document.querySelectorAll("[data-chart-region]").forEach((button) => {
-  button.addEventListener("click", () => {
-    setActiveChartButtons("[data-chart-region]", button);
-    const isUs = button.dataset.chartRegion === "us";
-    els.usChartControl.hidden = !isUs;
-    renderMarketChart(isUs ? selectedUsChart : "IG:TAIWAN", isUs ? "美股即時 CFD" : "台灣指數即時 CFD");
-  });
-});
-
 document.querySelectorAll("[data-chart-symbol]").forEach((button) => {
   button.addEventListener("click", () => {
     selectedUsChart = button.dataset.chartSymbol;
@@ -747,5 +737,5 @@ async function loadMarketData() {
   }
 }
 
-renderMarketChart("IG:TAIWAN", "台灣指數即時 CFD");
+renderMarketChart("FOREXCOM:NSXUSD", "Nasdaq 100 即時 CFD");
 Promise.all([loadLatestData(), loadMarketData()]);

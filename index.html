@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20260704-04">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20260704-05">
   </head>
   <body>
     <header class="topbar">
@@ -61,24 +61,20 @@
         <div class="market-chart-header">
           <div>
             <p class="kicker">即時市場</p>
-            <h2 id="marketChartTitle">市場走勢</h2>
+            <h2 id="marketChartTitle">美股走勢</h2>
           </div>
           <div class="chart-controls">
-            <div class="segmented-control" aria-label="市場選擇">
-              <button class="active" type="button" data-chart-region="taiwan" aria-pressed="true">台股即時 CFD</button>
-              <button type="button" data-chart-region="us" aria-pressed="false">美股即時 CFD</button>
-            </div>
-            <div id="usChartControl" class="segmented-control" aria-label="美股指數選擇" hidden>
+            <div class="segmented-control" aria-label="美股指數選擇">
               <button class="active" type="button" data-chart-symbol="FOREXCOM:NSXUSD" aria-pressed="true">Nasdaq 100</button>
               <button type="button" data-chart-symbol="FOREXCOM:SPXUSD" aria-pressed="false">S&amp;P 500</button>
             </div>
           </div>
         </div>
         <div id="marketChart" class="market-chart" aria-live="polite">
-          <div class="chart-loading">載入台灣指數即時走勢中</div>
+          <div class="chart-loading">載入 Nasdaq 100 即時走勢中</div>
         </div>
         <p class="market-chart-source">
-          即時 CFD 走勢，價格可能與官方指數略有差異；圖表由
+          美股即時 CFD 走勢，價格可能與官方指數略有差異；台股請點上方「台股大盤」查看正確走勢。圖表由
           <a href="https://tw.tradingview.com/" target="_blank" rel="noreferrer nofollow">TradingView</a> 提供
         </p>
       </section>
@@ -196,6 +192,6 @@
       <a href="https://announce.fundclear.com.tw/MOPSFundWeb/" rel="noreferrer">基金資訊觀測站</a>
     </footer>
 
-    <script src="app.js?v=tw-funds-20260704-04"></script>
+    <script src="app.js?v=tw-funds-20260704-05"></script>
   </body>
 </html>
