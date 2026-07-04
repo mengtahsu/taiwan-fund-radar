@@ -160,7 +160,7 @@ const els = {
   highReturn: document.querySelector("#highReturnBtn")
 };
 
-let selectedUsChart = "NASDAQ:QQQ";
+let selectedUsChart = "FOREXCOM:NSXUSD";
 let chartLoadId = 0;
 
 function goal() {
@@ -482,7 +482,7 @@ document.querySelectorAll("[data-chart-region]").forEach((button) => {
     setActiveChartButtons("[data-chart-region]", button);
     const isUs = button.dataset.chartRegion === "us";
     els.usChartControl.hidden = !isUs;
-    renderMarketChart(isUs ? selectedUsChart : "TWSE:0050", isUs ? "美股 ETF" : "台灣 50 ETF");
+    renderMarketChart(isUs ? selectedUsChart : "IG:TAIWAN", isUs ? "美股即時 CFD" : "台灣指數即時 CFD");
   });
 });
 
@@ -747,5 +747,5 @@ async function loadMarketData() {
   }
 }
 
-renderMarketChart("TWSE:0050", "台灣 50 ETF");
+renderMarketChart("IG:TAIWAN", "台灣指數即時 CFD");
 Promise.all([loadLatestData(), loadMarketData()]);
