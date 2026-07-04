@@ -154,9 +154,14 @@ const els = {
   metricReturn: document.querySelector("#metricReturn"),
   dataStatus: document.querySelector("#dataStatus"),
   marketList: document.querySelector("#marketList"),
+  marketChart: document.querySelector("#marketChart"),
+  usChartControl: document.querySelector("#usChartControl"),
   reset: document.querySelector("#resetBtn"),
   highReturn: document.querySelector("#highReturnBtn")
 };
+
+let selectedUsChart = "NASDAQ:NDX";
+let chartLoadId = 0;
 
 function goal() {
   return document.querySelector("input[name='goal']:checked").value;
@@ -426,6 +431,69 @@ function renderMarkets() {
     .join("");
 }
 
+function setActiveChartButtons(selector, activeButton) {
+  document.querySelectorAll(selector).forEach((button) => {
+    const isActive = button === activeButton;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+}
+
+function renderMarketChart(symbol, label) {
+  if (!els.marketChart) {
+    return;
+  }
+  const loadId = ++chartLoadId;
+  els.marketChart.innerHTML = `<div class="chart-loading">載入${escapeHtml(label)}走勢中</div>`;
+  const container = document.createElement("div");
+  container.className = "tradingview-widget-container";
+  container.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
+  const script = document.createElement("script");
+  script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+  script.type = "text/javascript";
+  script.async = true;
+  script.textContent = JSON.stringify({
+    autosize: true,
+    symbol,
+    interval: "60",
+    timezone: "Asia/Taipei",
+    theme: "light",
+    backgroundColor: "#ffffff",
+    gridColor: "rgba(86, 99, 94, 0.08)",
+    style: "3",
+    locale: "zh_TW",
+    hide_top_toolbar: false,
+    hide_side_toolbar: true,
+    hide_legend: false,
+    hide_volume: true,
+    allow_symbol_change: false,
+    save_image: false,
+    calendar: false,
+    support_host: "https://www.tradingview.com"
+  });
+  container.appendChild(script);
+  if (loadId === chartLoadId) {
+    els.marketChart.replaceChildren(container);
+  }
+}
+
+document.querySelectorAll("[data-chart-region]").forEach((button) => {
+  button.addEventListener("click", () => {
+    setActiveChartButtons("[data-chart-region]", button);
+    const isUs = button.dataset.chartRegion === "us";
+    els.usChartControl.hidden = !isUs;
+    renderMarketChart(isUs ? selectedUsChart : "INDEX:TAIEX", isUs ? "美股" : "台股");
+  });
+});
+
+document.querySelectorAll("[data-chart-symbol]").forEach((button) => {
+  button.addEventListener("click", () => {
+    selectedUsChart = button.dataset.chartSymbol;
+    setActiveChartButtons("[data-chart-symbol]", button);
+    renderMarketChart(selectedUsChart, button.textContent.trim());
+  });
+});
+
 function marketUrl(market) {
   const fixedUrls = {
     txf: "https://tw.stock.yahoo.com/quote/WTX%26",
@@ -679,4 +747,5 @@ async function loadMarketData() {
   }
 }
 
+renderMarketChart("INDEX:TAIEX", "台股");
 Promise.all([loadLatestData(), loadMarketData()]);
