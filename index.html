@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20260704-02">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20260704-03">
   </head>
   <body>
     <header class="topbar">
@@ -65,17 +65,17 @@
           </div>
           <div class="chart-controls">
             <div class="segmented-control" aria-label="市場選擇">
-              <button class="active" type="button" data-chart-region="taiwan" aria-pressed="true">台股</button>
-              <button type="button" data-chart-region="us" aria-pressed="false">美股</button>
+              <button class="active" type="button" data-chart-region="taiwan" aria-pressed="true">台股 ETF</button>
+              <button type="button" data-chart-region="us" aria-pressed="false">美股 ETF</button>
             </div>
             <div id="usChartControl" class="segmented-control" aria-label="美股指數選擇" hidden>
-              <button class="active" type="button" data-chart-symbol="NASDAQ:NDX" aria-pressed="true">Nasdaq 100</button>
-              <button type="button" data-chart-symbol="SP:SPX" aria-pressed="false">S&amp;P 500</button>
+              <button class="active" type="button" data-chart-symbol="NASDAQ:QQQ" aria-pressed="true">Nasdaq 100 ETF</button>
+              <button type="button" data-chart-symbol="AMEX:SPY" aria-pressed="false">S&amp;P 500 ETF</button>
             </div>
           </div>
         </div>
         <div id="marketChart" class="market-chart" aria-live="polite">
-          <div class="chart-loading">載入台股走勢中</div>
+          <div class="chart-loading">載入台灣 50 ETF 走勢中</div>
         </div>
         <p class="market-chart-source">
           圖表由 <a href="https://tw.tradingview.com/" target="_blank" rel="noreferrer nofollow">TradingView</a> 提供
@@ -195,6 +195,6 @@
       <a href="https://announce.fundclear.com.tw/MOPSFundWeb/" rel="noreferrer">基金資訊觀測站</a>
     </footer>
 
-    <script src="app.js?v=tw-funds-20260704-02"></script>
+    <script src="app.js?v=tw-funds-20260704-03"></script>
   </body>
 </html>

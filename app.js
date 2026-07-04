@@ -160,7 +160,7 @@ const els = {
   highReturn: document.querySelector("#highReturnBtn")
 };
 
-let selectedUsChart = "NASDAQ:NDX";
+let selectedUsChart = "NASDAQ:QQQ";
 let chartLoadId = 0;
 
 function goal() {
@@ -482,7 +482,7 @@ document.querySelectorAll("[data-chart-region]").forEach((button) => {
     setActiveChartButtons("[data-chart-region]", button);
     const isUs = button.dataset.chartRegion === "us";
     els.usChartControl.hidden = !isUs;
-    renderMarketChart(isUs ? selectedUsChart : "INDEX:TAIEX", isUs ? "美股" : "台股");
+    renderMarketChart(isUs ? selectedUsChart : "TWSE:0050", isUs ? "美股 ETF" : "台灣 50 ETF");
   });
 });
 
@@ -747,5 +747,5 @@ async function loadMarketData() {
   }
 }
 
-renderMarketChart("INDEX:TAIEX", "台股");
+renderMarketChart("TWSE:0050", "台灣 50 ETF");
 Promise.all([loadLatestData(), loadMarketData()]);
