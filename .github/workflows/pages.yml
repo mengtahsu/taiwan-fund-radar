@@ -34,6 +34,16 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Restore update caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/nav_cache.json
+            data/fundrich_cache.json
+          key: update-caches-${{ github.run_id }}
+          restore-keys: |
+            update-caches-
+
       - name: Create source config
         if: env.FUND_SOURCE_URL != ''
         run: |
