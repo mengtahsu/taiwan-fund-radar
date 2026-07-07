@@ -311,7 +311,7 @@ function formatTaiwanDateTime(value) {
     .replace(/\//g, "/");
 }
 
-function formatShortDate(value, includeYear = false) {
+function formatShortDate(value) {
   if (!value) {
     return "";
   }
@@ -319,15 +319,12 @@ function formatShortDate(value, includeYear = false) {
   if (parts.length !== 3) {
     return String(value);
   }
-  const [year, month, day] = parts;
-  return includeYear ? `${year}/${month}/${day}` : `${month}/${day}`;
+  const [, month, day] = parts;
+  return `${month}/${day}`;
 }
 
-function fundReturn2wRange(fund) {
-  if (!fund.return2wStartDate || !fund.return2wEndDate) {
-    return "";
-  }
-  return `${formatShortDate(fund.return2wStartDate, true)}-${formatShortDate(fund.return2wEndDate)}`;
+function fundReturn2wDate(fund) {
+  return formatShortDate(fund.return2wEndDate);
 }
 
 function benchmarkStatus(fund) {
@@ -335,28 +332,28 @@ function benchmarkStatus(fund) {
   if (typeof fund.return2w !== "number") {
     return `
       <div class="benchmark pending">
-        <span>近 2 週</span>
-        <strong>更新中 <small>對 台股大盤</small></strong>
+        <span>近 2 週台股</span>
+        <strong>更新中</strong>
       </div>
     `;
   }
   if (!benchmark || typeof benchmark.return2w !== "number") {
     return `
       <div class="benchmark pending">
-        <span>近 2 週</span>
-        <strong>等大盤 <small>對 台股大盤</small></strong>
+        <span>近 2 週台股</span>
+        <strong>等大盤</strong>
       </div>
     `;
   }
   const excess = fund.return2w - benchmark.return2w;
   const statusClass = excess >= 0 ? "beat" : "lag";
-  const label = excess >= 0 ? "近 2 週贏" : "近 2 週輸";
-  const range = fundReturn2wRange(fund);
+  const label = excess >= 0 ? "近 2 週贏台股" : "近 2 週輸台股";
+  const dataDate = fundReturn2wDate(fund);
   return `
     <div class="benchmark ${statusClass}">
       <span>${label}</span>
-      <strong>${formatPercent(excess)} <small>對 ${escapeHtml(benchmark.label)}</small></strong>
-      ${range ? `<small>資料 ${escapeHtml(range)}</small>` : ""}
+      <strong>${formatPercent(excess)}</strong>
+      ${dataDate ? `<small>資料 ${escapeHtml(dataDate)}</small>` : ""}
     </div>
   `;
 }
