@@ -32,6 +32,25 @@ function formatPercent(value) {
   return `${sign}${value.toFixed(2)}%`;
 }
 
+function formatShortDate(value, includeYear = false) {
+  if (!value) {
+    return "";
+  }
+  const parts = String(value).split("-");
+  if (parts.length !== 3) {
+    return String(value);
+  }
+  const [year, month, day] = parts;
+  return includeYear ? `${year}/${month}/${day}` : `${month}/${day}`;
+}
+
+function fundReturn2wRange(fund) {
+  if (!fund.return2wStartDate || !fund.return2wEndDate) {
+    return "";
+  }
+  return `${formatShortDate(fund.return2wStartDate, true)}-${formatShortDate(fund.return2wEndDate)}`;
+}
+
 function benchmarkForFund(fund, benchmarks) {
   return benchmarks.twii || null;
 }
@@ -64,12 +83,12 @@ function renderBenchmark(fund, benchmarks) {
   const excess = fund.return2w - benchmark.return2w;
   const statusClass = excess >= 0 ? "beat" : "lag";
   const statusText = excess >= 0 ? "近 2 週打敗基準" : "近 2 週落後基準";
-  const range = fund.return2wStartDate && fund.return2wEndDate ? `${fund.return2wStartDate} - ${fund.return2wEndDate}` : "";
+  const range = fundReturn2wRange(fund);
   return `
     <div class="detail-benchmark ${statusClass}">
       <span>${statusText}</span>
       <strong>${formatPercent(excess)}</strong>
-      <small>${formatPercent(fund.return2w)} vs ${escapeHtml(benchmark.label)} ${formatPercent(benchmark.return2w)} ${escapeHtml(range)}</small>
+      <small>${formatPercent(fund.return2w)} vs ${escapeHtml(benchmark.label)} ${formatPercent(benchmark.return2w)}${range ? `｜資料 ${escapeHtml(range)}` : ""}</small>
     </div>
   `;
 }

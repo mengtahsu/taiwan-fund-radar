@@ -311,6 +311,25 @@ function formatTaiwanDateTime(value) {
     .replace(/\//g, "/");
 }
 
+function formatShortDate(value, includeYear = false) {
+  if (!value) {
+    return "";
+  }
+  const parts = String(value).split("-");
+  if (parts.length !== 3) {
+    return String(value);
+  }
+  const [year, month, day] = parts;
+  return includeYear ? `${year}/${month}/${day}` : `${month}/${day}`;
+}
+
+function fundReturn2wRange(fund) {
+  if (!fund.return2wStartDate || !fund.return2wEndDate) {
+    return "";
+  }
+  return `${formatShortDate(fund.return2wStartDate, true)}-${formatShortDate(fund.return2wEndDate)}`;
+}
+
 function benchmarkStatus(fund) {
   const benchmark = benchmarkForFund(fund);
   if (typeof fund.return2w !== "number") {
@@ -332,10 +351,12 @@ function benchmarkStatus(fund) {
   const excess = fund.return2w - benchmark.return2w;
   const statusClass = excess >= 0 ? "beat" : "lag";
   const label = excess >= 0 ? "近 2 週贏" : "近 2 週輸";
+  const range = fundReturn2wRange(fund);
   return `
     <div class="benchmark ${statusClass}">
       <span>${label}</span>
       <strong>${formatPercent(excess)} <small>對 ${escapeHtml(benchmark.label)}</small></strong>
+      ${range ? `<small>資料 ${escapeHtml(range)}</small>` : ""}
     </div>
   `;
 }
