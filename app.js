@@ -179,22 +179,32 @@ function benchmarkForFund(fund) {
   return marketMeta.benchmarks.twii || null;
 }
 
-function excessReturn2w(fund) {
-  if (typeof fund.return2w !== "number") {
+function excessReturn(fund, returnKey) {
+  if (typeof fund[returnKey] !== "number") {
     return null;
   }
   const benchmark = benchmarkForFund(fund);
-  if (!benchmark || typeof benchmark.return2w !== "number") {
+  if (!benchmark || typeof benchmark[returnKey] !== "number") {
     return null;
   }
-  return fund.return2w - benchmark.return2w;
+  return fund[returnKey] - benchmark[returnKey];
+}
+
+function excessReturn2w(fund) {
+  return excessReturn(fund, "return2w");
+}
+
+function excessReturn1m(fund) {
+  return excessReturn(fund, "return1m");
 }
 
 function recentMomentumScore(fund) {
   const return3mScore = clamp((fund.return3m ?? 0) / 60, 0, 1);
   const excess2w = excessReturn2w(fund);
+  const excess1m = excessReturn1m(fund);
   const excess2wScore = excess2w === null ? 0.45 : clamp((excess2w + 10) / 25, 0, 1);
-  return return3mScore * 0.55 + excess2wScore * 0.45;
+  const excess1mScore = excess1m === null ? 0.45 : clamp((excess1m + 12) / 30, 0, 1);
+  return return3mScore * 0.45 + excess2wScore * 0.3 + excess1mScore * 0.25;
 }
 
 function scoreFund(fund) {
@@ -232,9 +242,9 @@ function scoreFund(fund) {
 
 function scoreTitle() {
   return {
-    growth: "自訂綜合分數：三年年化 25%、近期動能 45%、Sharpe 20%、風險符合度 10%。近期動能含近 3 月報酬與近 2 週相對台股大盤",
-    income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週相對台股大盤",
-    stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月報酬與近 2 週相對台股大盤"
+    growth: "自訂綜合分數：三年年化 25%、近期動能 45%、Sharpe 20%、風險符合度 10%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股",
+    income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股",
+    stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股"
   }[goal()];
 }
 
@@ -323,32 +333,34 @@ function formatShortDate(value) {
   return `${month}/${day}`;
 }
 
-function fundReturn2wDate(fund) {
-  return formatShortDate(fund.return2wEndDate);
+function fundReturnDate(fund, period) {
+  return formatShortDate(fund[`return${period}EndDate`]);
 }
 
-function benchmarkStatus(fund) {
+function benchmarkStatus(fund, period) {
   const benchmark = benchmarkForFund(fund);
-  if (typeof fund.return2w !== "number") {
+  const returnKey = `return${period}`;
+  const periodLabel = period === "1m" ? "近 1 月" : "近 2 週";
+  if (typeof fund[returnKey] !== "number") {
     return `
       <div class="benchmark pending">
-        <span>近 2 週台股</span>
+        <span>${periodLabel}台股</span>
         <strong>更新中</strong>
       </div>
     `;
   }
-  if (!benchmark || typeof benchmark.return2w !== "number") {
+  if (!benchmark || typeof benchmark[returnKey] !== "number") {
     return `
       <div class="benchmark pending">
-        <span>近 2 週台股</span>
+        <span>${periodLabel}台股</span>
         <strong>等大盤</strong>
       </div>
     `;
   }
-  const excess = fund.return2w - benchmark.return2w;
+  const excess = fund[returnKey] - benchmark[returnKey];
   const statusClass = excess >= 0 ? "beat" : "lag";
-  const label = excess >= 0 ? "近 2 週贏台股" : "近 2 週輸台股";
-  const dataDate = fundReturn2wDate(fund);
+  const label = excess >= 0 ? `${periodLabel}贏台股` : `${periodLabel}輸台股`;
+  const dataDate = fundReturnDate(fund, period);
   return `
     <div class="benchmark ${statusClass}">
       <span>${label}</span>
@@ -507,7 +519,8 @@ function renderFunds() {
             <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
             <div class="stat"><span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong></div>
             <div class="stat"><span>${fund.nav ? "最新淨值" : fund.price ? "最新價格" : "基金規模"}</span><strong>${formatPrice(fund)}</strong></div>
-            ${benchmarkStatus(fund)}
+            ${benchmarkStatus(fund, "2w")}
+            ${benchmarkStatus(fund, "1m")}
           </div>
           <div class="card-actions">
             ${renderBuyLink(fund)}

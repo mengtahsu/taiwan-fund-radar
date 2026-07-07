@@ -52,6 +52,7 @@ REQUIRED_FIELDS = {
 
 DEFAULT_INTERVAL_SECONDS = 3 * 60 * 60
 RECENT_RETURN_DAYS = 14
+MONTH_RETURN_DAYS = 30
 RECENT_NAV_WORKERS = 10
 RECENT_NAV_TOP_LIMIT = 80
 RECENT_NAV_REFRESH_LIMIT = 20
@@ -416,6 +417,7 @@ def quote_from_chart(item: dict[str, Any], data: dict[str, Any]) -> dict[str, An
         "change": round(change, 2),
         "changePercent": round(change_percent, 2),
         "return2w": round(total_return(prices[-11:]) or 0.0, 2),
+        "return1m": round(total_return(prices[-23:]) or 0.0, 2),
         "return3m": round(total_return(prices) or 0.0, 2),
     }
 
@@ -476,6 +478,7 @@ def build_markets_payload() -> dict[str, Any]:
                 benchmarks[item["id"]] = {
                     "label": item["label"],
                     "return2w": quote["return2w"],
+                    "return1m": quote["return1m"],
                     "return3m": quote["return3m"],
                 }
         except Exception as exc:
@@ -921,6 +924,9 @@ def load_nav_cache(root: Path) -> dict[str, Any]:
                     "return2w": fund["return2w"],
                     "return2wStartDate": fund.get("return2wStartDate"),
                     "return2wEndDate": fund.get("return2wEndDate"),
+                    "return1m": fund.get("return1m"),
+                    "return1mStartDate": fund.get("return1mStartDate"),
+                    "return1mEndDate": fund.get("return1mEndDate"),
                     "fetchedAt": payload.get("updatedAt") or datetime.now(timezone.utc).isoformat(),
                 }
         except (OSError, json.JSONDecodeError):
@@ -944,6 +950,12 @@ def apply_nav_cache(funds: list[dict[str, Any]], cache: dict[str, Any]) -> None:
             fund["return2wStartDate"] = cached["return2wStartDate"]
         if cached.get("return2wEndDate"):
             fund["return2wEndDate"] = cached["return2wEndDate"]
+        if cached.get("return1m") is not None:
+            fund["return1m"] = cached["return1m"]
+        if cached.get("return1mStartDate"):
+            fund["return1mStartDate"] = cached["return1mStartDate"]
+        if cached.get("return1mEndDate"):
+            fund["return1mEndDate"] = cached["return1mEndDate"]
 
 
 def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
@@ -980,15 +992,19 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
 
     max_workers = int(os.environ.get("RECENT_NAV_WORKERS", RECENT_NAV_WORKERS))
 
-    def fetch_recent(fund: dict[str, Any]) -> tuple[str, tuple[float, str, str] | None, str | None]:
+    def fetch_recent(fund: dict[str, Any]) -> tuple[str, dict[str, tuple[float, str, str]], str | None]:
         fund_id = str(fund.get("fundId") or "")
         if not fund_id:
-            return str(fund.get("name") or ""), None, "missing fundId"
+            return str(fund.get("name") or ""), {}, "missing fundId"
         try:
-            recent = period_return_from_series(fetch_moneydj_bcd_nav(fund_id), RECENT_RETURN_DAYS)
-            return fund_id, recent, None
+            series = fetch_moneydj_bcd_nav(fund_id)
+            returns = {
+                "return2w": period_return_from_series(series, RECENT_RETURN_DAYS),
+                "return1m": period_return_from_series(series, MONTH_RETURN_DAYS),
+            }
+            return fund_id, {key: value for key, value in returns.items() if value}, None
         except Exception as exc:
-            return fund_id, None, str(exc)
+            return fund_id, {}, str(exc)
 
     errors = 0
     by_id = {str(fund.get("fundId") or ""): fund for fund in funds}
@@ -996,22 +1012,36 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(fetch_recent, fund) for fund in candidates]
         for future in concurrent.futures.as_completed(futures):
-            fund_id, recent, error = future.result()
-            if error or not recent:
+            fund_id, recent_returns, error = future.result()
+            if error or not recent_returns.get("return2w"):
                 errors += 1
                 continue
-            period_return, start_date, end_date = recent
+            period_return, start_date, end_date = recent_returns["return2w"]
             fund = by_id.get(fund_id)
             if fund is not None:
                 fund["return2w"] = period_return
                 fund["return2wStartDate"] = start_date
                 fund["return2wEndDate"] = end_date
-            cache_items[fund_id] = {
+            cache_item = {
                 "return2w": period_return,
                 "return2wStartDate": start_date,
                 "return2wEndDate": end_date,
                 "fetchedAt": datetime.now(timezone.utc).isoformat(),
             }
+            if recent_returns.get("return1m"):
+                month_return, month_start_date, month_end_date = recent_returns["return1m"]
+                if fund is not None:
+                    fund["return1m"] = month_return
+                    fund["return1mStartDate"] = month_start_date
+                    fund["return1mEndDate"] = month_end_date
+                cache_item.update(
+                    {
+                        "return1m": month_return,
+                        "return1mStartDate": month_start_date,
+                        "return1mEndDate": month_end_date,
+                    }
+                )
+            cache_items[fund_id] = cache_item
 
     if errors:
         print(f"{datetime.now().isoformat(timespec='seconds')} recent NAV skipped for {errors} funds", file=sys.stderr)
@@ -1411,6 +1441,12 @@ def normalize_fund(item: dict[str, Any]) -> dict[str, Any]:
         normalized["return2wStartDate"] = str(item["return2wStartDate"])
     if item.get("return2wEndDate"):
         normalized["return2wEndDate"] = str(item["return2wEndDate"])
+    if item.get("return1m") is not None:
+        normalized["return1m"] = number(item["return1m"], "return1m")
+    if item.get("return1mStartDate"):
+        normalized["return1mStartDate"] = str(item["return1mStartDate"])
+    if item.get("return1mEndDate"):
+        normalized["return1mEndDate"] = str(item["return1mEndDate"])
     if item.get("return1y") is not None:
         normalized["return1y"] = number(item["return1y"], "return1y")
     if item.get("return6m") is not None:

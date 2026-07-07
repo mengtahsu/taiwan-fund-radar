@@ -44,8 +44,8 @@ function formatShortDate(value) {
   return `${month}/${day}`;
 }
 
-function fundReturn2wDate(fund) {
-  return formatShortDate(fund.return2wEndDate);
+function fundReturnDate(fund, period) {
+  return formatShortDate(fund[`return${period}EndDate`]);
 }
 
 function benchmarkForFund(fund, benchmarks) {
@@ -72,20 +72,22 @@ function visibleTags(tags) {
   });
 }
 
-function renderBenchmark(fund, benchmarks) {
+function renderBenchmark(fund, benchmarks, period) {
   const benchmark = benchmarkForFund(fund, benchmarks);
-  if (typeof fund.return2w !== "number" || !benchmark || typeof benchmark.return2w !== "number") {
-    return '<div class="detail-benchmark muted-box">近 2 週對決資料暫無法顯示。</div>';
+  const returnKey = `return${period}`;
+  const periodLabel = period === "1m" ? "近 1 月" : "近 2 週";
+  if (typeof fund[returnKey] !== "number" || !benchmark || typeof benchmark[returnKey] !== "number") {
+    return `<div class="detail-benchmark muted-box">${periodLabel}對決資料暫無法顯示。</div>`;
   }
-  const excess = fund.return2w - benchmark.return2w;
+  const excess = fund[returnKey] - benchmark[returnKey];
   const statusClass = excess >= 0 ? "beat" : "lag";
-  const statusText = excess >= 0 ? "近 2 週贏台股" : "近 2 週輸台股";
-  const dataDate = fundReturn2wDate(fund);
+  const statusText = excess >= 0 ? `${periodLabel}贏台股` : `${periodLabel}輸台股`;
+  const dataDate = fundReturnDate(fund, period);
   return `
     <div class="detail-benchmark ${statusClass}">
       <span>${statusText}</span>
       <strong>${formatPercent(excess)}</strong>
-      <small>${formatPercent(fund.return2w)} vs 台股 ${formatPercent(benchmark.return2w)}${dataDate ? `｜資料 ${escapeHtml(dataDate)}` : ""}</small>
+      <small>${formatPercent(fund[returnKey])} vs 台股 ${formatPercent(benchmark[returnKey])}${dataDate ? `｜資料 ${escapeHtml(dataDate)}` : ""}</small>
     </div>
   `;
 }
@@ -99,7 +101,8 @@ function renderDetail(fund, markets) {
       <div class="detail-actions">${renderBuyActions(fund)}</div>
     </div>
 
-    ${renderBenchmark(fund, markets.benchmarks || {})}
+    ${renderBenchmark(fund, markets.benchmarks || {}, "2w")}
+    ${renderBenchmark(fund, markets.benchmarks || {}, "1m")}
 
     <div class="detail-grid">
       <div class="stat"><span>三年年化</span><strong>${formatPercent(fund.return3y)}</strong></div>
