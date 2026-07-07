@@ -312,12 +312,22 @@ function formatTaiwanDateTime(value) {
 }
 
 function benchmarkStatus(fund) {
-  if (typeof fund.return2w !== "number") {
-    return "";
-  }
   const benchmark = benchmarkForFund(fund);
+  if (typeof fund.return2w !== "number") {
+    return `
+      <div class="benchmark pending">
+        <span>近 2 週</span>
+        <strong>更新中 <small>對 台股大盤</small></strong>
+      </div>
+    `;
+  }
   if (!benchmark || typeof benchmark.return2w !== "number") {
-    return "";
+    return `
+      <div class="benchmark pending">
+        <span>近 2 週</span>
+        <strong>等大盤 <small>對 台股大盤</small></strong>
+      </div>
+    `;
   }
   const excess = fund.return2w - benchmark.return2w;
   const statusClass = excess >= 0 ? "beat" : "lag";

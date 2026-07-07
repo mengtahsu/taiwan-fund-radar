@@ -556,6 +556,10 @@ legend {
   color: var(--danger);
 }
 
+.benchmark.pending strong {
+  color: var(--muted);
+}
+
 .card-actions {
   display: flex;
   align-items: center;
