@@ -157,7 +157,10 @@ main {
 
 .market-panel,
 .filters,
-.compare-section {
+.compare-section,
+.auth-panel,
+.purchase-panel,
+.purchase-list-section {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -585,6 +588,19 @@ legend {
   color: #23190a;
 }
 
+.record-link {
+  display: inline-grid;
+  min-height: 36px;
+  place-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .risk-low {
   color: var(--accent-dark);
 }
@@ -601,6 +617,113 @@ legend {
 
 .compare-section {
   display: grid;
+}
+
+.portfolio-section {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.section-heading,
+.list-header,
+.button-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section-heading h2,
+.section-heading p,
+.auth-panel h3,
+.purchase-panel h3,
+.purchase-list-section h3 {
+  margin: 0;
+}
+
+.section-heading > p,
+.form-message {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.auth-panel,
+.purchase-panel,
+.purchase-list-section {
+  padding: 18px;
+}
+
+.auth-form,
+.purchase-form,
+.account-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-form label,
+.purchase-form label {
+  margin: 8px 0;
+}
+
+.button-row {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+textarea {
+  min-height: 84px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.form-message.error {
+  color: var(--danger);
+}
+
+.purchase-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.purchase-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.purchase-item h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.purchase-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.purchase-item button {
+  min-height: 34px;
 }
 
 .compare-table {
@@ -746,6 +869,7 @@ footer a {
   .topbar,
   .hero,
   .workspace,
+  .portfolio-grid,
   .filter-header,
   .results-toolbar {
     align-items: stretch;
@@ -753,7 +877,8 @@ footer a {
 
   .topbar,
   .hero,
-  .workspace {
+  .workspace,
+  .portfolio-grid {
     grid-template-columns: 1fr;
   }
 
@@ -780,6 +905,10 @@ footer a {
 
   .results-toolbar label {
     width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
   }
 }
 

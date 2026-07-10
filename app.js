@@ -135,6 +135,12 @@ let marketMeta = {
 };
 
 const DISPLAY_LIMIT = 50;
+const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
+const SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK";
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+let currentUser = null;
+let purchases = [];
 
 const els = {
   query: document.querySelector("#queryInput"),
@@ -155,7 +161,27 @@ const els = {
   dataStatus: document.querySelector("#dataStatus"),
   marketList: document.querySelector("#marketList"),
   reset: document.querySelector("#resetBtn"),
-  highReturn: document.querySelector("#highReturnBtn")
+  highReturn: document.querySelector("#highReturnBtn"),
+  authStatus: document.querySelector("#authStatus"),
+  authForm: document.querySelector("#authForm"),
+  accountPanel: document.querySelector("#accountPanel"),
+  accountEmail: document.querySelector("#accountEmail"),
+  authEmail: document.querySelector("#authEmail"),
+  authPassword: document.querySelector("#authPassword"),
+  signIn: document.querySelector("#signInBtn"),
+  signUp: document.querySelector("#signUpBtn"),
+  signOut: document.querySelector("#signOutBtn"),
+  authMessage: document.querySelector("#authMessage"),
+  purchaseForm: document.querySelector("#purchaseForm"),
+  purchaseFundId: document.querySelector("#purchaseFundId"),
+  purchaseFundName: document.querySelector("#purchaseFundName"),
+  purchaseDate: document.querySelector("#purchaseDate"),
+  purchaseAmount: document.querySelector("#purchaseAmount"),
+  purchaseNav: document.querySelector("#purchaseNav"),
+  purchaseNote: document.querySelector("#purchaseNote"),
+  purchaseMessage: document.querySelector("#purchaseMessage"),
+  purchaseList: document.querySelector("#purchaseList"),
+  refreshPurchases: document.querySelector("#refreshPurchasesBtn")
 };
 
 function goal() {
@@ -417,6 +443,222 @@ function renderBuyLink(fund) {
   return "";
 }
 
+function fundLookupKey(fund) {
+  return String(fund.fundId || fund.name);
+}
+
+function setMessage(element, text, isError = false) {
+  if (!element) {
+    return;
+  }
+  element.textContent = text || "";
+  element.classList.toggle("error", Boolean(isError));
+}
+
+function todayInputValue() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function moneyNumber(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return "-";
+  }
+  return number.toLocaleString("zh-TW", { maximumFractionDigits: 4 });
+}
+
+function renderAuthState() {
+  if (!els.authStatus) {
+    return;
+  }
+  if (!db) {
+    els.authStatus.textContent = "登入服務未載入";
+    setMessage(els.authMessage, "Supabase 載入失敗，請重新整理。", true);
+    return;
+  }
+  const loggedIn = Boolean(currentUser);
+  els.authStatus.textContent = loggedIn ? "已登入" : "尚未登入";
+  if (els.authForm) {
+    els.authForm.hidden = loggedIn;
+  }
+  if (els.accountPanel) {
+    els.accountPanel.hidden = !loggedIn;
+  }
+  if (els.accountEmail) {
+    els.accountEmail.textContent = currentUser?.email || "";
+  }
+}
+
+function requireLogin() {
+  if (currentUser) {
+    return true;
+  }
+  setMessage(els.authMessage, "請先登入，再記錄買入基金。", true);
+  document.querySelector("#portfolio")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  return false;
+}
+
+function setPurchaseFund(fund) {
+  if (!requireLogin()) {
+    return;
+  }
+  els.purchaseFundId.value = fundLookupKey(fund);
+  els.purchaseFundName.value = fund.name;
+  els.purchaseDate.value = els.purchaseDate.value || todayInputValue();
+  if (typeof fund.nav === "number" && fund.nav > 0) {
+    els.purchaseNav.value = fund.nav;
+  }
+  setMessage(els.purchaseMessage, "");
+  document.querySelector("#portfolio")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  els.purchaseAmount.focus();
+}
+
+function renderPurchases() {
+  if (!els.purchaseList) {
+    return;
+  }
+  if (!currentUser) {
+    els.purchaseList.innerHTML = '<div class="empty">登入後會顯示你的買入紀錄。</div>';
+    return;
+  }
+  if (!purchases.length) {
+    els.purchaseList.innerHTML = '<div class="empty">還沒有買入紀錄。</div>';
+    return;
+  }
+  els.purchaseList.innerHTML = purchases
+    .map(
+      (item) => `
+        <article class="purchase-item">
+          <div>
+            <h4>${escapeHtml(item.fund_name)}</h4>
+            <p>${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 淨值 ${moneyNumber(item.nav)}</p>
+            ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
+          </div>
+          <button type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+        </article>
+      `
+    )
+    .join("");
+  document.querySelectorAll("[data-delete-purchase]").forEach((button) => {
+    button.addEventListener("click", () => deletePurchase(button.dataset.deletePurchase));
+  });
+}
+
+async function loadPurchases() {
+  if (!db || !currentUser) {
+    purchases = [];
+    renderPurchases();
+    return;
+  }
+  const { data, error } = await db
+    .from("fund_purchases")
+    .select("id,fund_id,fund_name,buy_date,amount,nav,note,created_at")
+    .order("buy_date", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) {
+    purchases = [];
+    renderPurchases();
+    setMessage(els.purchaseMessage, `讀取失敗：${error.message}`, true);
+    return;
+  }
+  purchases = data || [];
+  renderPurchases();
+}
+
+async function savePurchase(event) {
+  event.preventDefault();
+  if (!requireLogin()) {
+    return;
+  }
+  const fundId = els.purchaseFundId.value.trim();
+  const fundName = els.purchaseFundName.value.trim();
+  const amount = Number(els.purchaseAmount.value);
+  const nav = els.purchaseNav.value ? Number(els.purchaseNav.value) : null;
+  if (!fundId || !fundName) {
+    setMessage(els.purchaseMessage, "請先從基金卡片按「記錄買入」。", true);
+    return;
+  }
+  if (!els.purchaseDate.value || !Number.isFinite(amount) || amount <= 0) {
+    setMessage(els.purchaseMessage, "請填買入日期和買入金額。", true);
+    return;
+  }
+  const { error } = await db.from("fund_purchases").insert({
+    user_id: currentUser.id,
+    fund_id: fundId,
+    fund_name: fundName,
+    buy_date: els.purchaseDate.value,
+    amount,
+    nav,
+    note: els.purchaseNote.value.trim() || null
+  });
+  if (error) {
+    setMessage(els.purchaseMessage, `儲存失敗：${error.message}`, true);
+    return;
+  }
+  els.purchaseAmount.value = "";
+  els.purchaseNote.value = "";
+  setMessage(els.purchaseMessage, "已儲存。");
+  await loadPurchases();
+}
+
+async function deletePurchase(id) {
+  if (!db || !currentUser || !id) {
+    return;
+  }
+  const { error } = await db.from("fund_purchases").delete().eq("id", id);
+  if (error) {
+    setMessage(els.purchaseMessage, `刪除失敗：${error.message}`, true);
+    return;
+  }
+  setMessage(els.purchaseMessage, "已刪除。");
+  await loadPurchases();
+}
+
+async function signIn() {
+  if (!db) {
+    return;
+  }
+  const email = els.authEmail.value.trim();
+  const password = els.authPassword.value;
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  setMessage(els.authMessage, error ? `登入失敗：${error.message}` : "已登入。", Boolean(error));
+}
+
+async function signUp() {
+  if (!db) {
+    return;
+  }
+  const email = els.authEmail.value.trim();
+  const password = els.authPassword.value;
+  const { error } = await db.auth.signUp({ email, password });
+  setMessage(els.authMessage, error ? `註冊失敗：${error.message}` : "註冊完成，請依 Supabase 設定確認 email 後登入。", Boolean(error));
+}
+
+async function signOut() {
+  if (!db) {
+    return;
+  }
+  await db.auth.signOut();
+}
+
+async function initAuth() {
+  renderAuthState();
+  renderPurchases();
+  if (!db) {
+    return;
+  }
+  const { data } = await db.auth.getSession();
+  currentUser = data.session?.user || null;
+  renderAuthState();
+  await loadPurchases();
+  db.auth.onAuthStateChange(async (_event, session) => {
+    currentUser = session?.user || null;
+    renderAuthState();
+    renderFunds();
+    await loadPurchases();
+  });
+}
+
 function visibleTags(tags) {
   return (tags || []).filter((tag) => {
     const text = String(tag).trim();
@@ -526,6 +768,7 @@ function renderFunds() {
           </div>
           <div class="card-actions">
             ${renderBuyLink(fund)}
+            <button class="record-link" type="button" data-buy-fund="${escapeHtml(fundLookupKey(fund))}">記錄買入</button>
             <label class="choice">
               <input type="checkbox" data-fund="${escapeHtml(fund.name)}" ${checked}>
               比較
@@ -545,6 +788,14 @@ function renderFunds() {
       input.checked ? selected.add(input.dataset.fund) : selected.delete(input.dataset.fund);
       renderFunds();
       renderCompare();
+    });
+  });
+  document.querySelectorAll("[data-buy-fund]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const fund = funds.find((item) => fundLookupKey(item) === button.dataset.buyFund);
+      if (fund) {
+        setPurchaseFund(fund);
+      }
     });
   });
 
@@ -672,6 +923,14 @@ function applyHighReturnPreset() {
 document.querySelectorAll("input[name='goal']").forEach((input) => input.addEventListener("change", renderFunds));
 els.reset.addEventListener("click", resetFilters);
 els.highReturn.addEventListener("click", applyHighReturnPreset);
+els.signIn?.addEventListener("click", signIn);
+els.signUp?.addEventListener("click", signUp);
+els.signOut?.addEventListener("click", signOut);
+els.purchaseForm?.addEventListener("submit", savePurchase);
+els.refreshPurchases?.addEventListener("click", loadPurchases);
+if (els.purchaseDate) {
+  els.purchaseDate.value = todayInputValue();
+}
 
 async function loadLatestData() {
   try {
@@ -722,4 +981,5 @@ async function loadMarketData() {
   }
 }
 
+initAuth();
 Promise.all([loadLatestData(), loadMarketData()]);

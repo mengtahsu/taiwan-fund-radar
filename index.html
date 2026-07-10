@@ -25,6 +25,7 @@
       </div>
       <nav aria-label="主要連結">
         <a href="#finder">篩選</a>
+        <a href="#portfolio">我的基金</a>
         <a href="#compare">比較</a>
       </nav>
     </header>
@@ -155,6 +156,80 @@
         </section>
       </section>
 
+      <section id="portfolio" class="portfolio-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Personal Portfolio</p>
+            <h2>我的基金</h2>
+          </div>
+          <p id="authStatus">尚未登入</p>
+        </div>
+
+        <div class="portfolio-grid">
+          <section class="auth-panel" aria-label="帳號登入">
+            <h3>帳號</h3>
+            <div id="authForm" class="auth-form">
+              <label>
+                Email
+                <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com">
+              </label>
+              <label>
+                密碼
+                <input id="authPassword" type="password" autocomplete="current-password" placeholder="至少 6 個字">
+              </label>
+              <div class="button-row">
+                <button id="signInBtn" class="primary" type="button">登入</button>
+                <button id="signUpBtn" type="button">註冊</button>
+              </div>
+            </div>
+            <div id="accountPanel" class="account-panel" hidden>
+              <p id="accountEmail"></p>
+              <button id="signOutBtn" type="button">登出</button>
+            </div>
+            <p id="authMessage" class="form-message"></p>
+          </section>
+
+          <section class="purchase-panel" aria-label="新增買入紀錄">
+            <h3>新增買入</h3>
+            <form id="purchaseForm" class="purchase-form">
+              <input id="purchaseFundId" type="hidden">
+              <label>
+                基金
+                <input id="purchaseFundName" type="text" placeholder="從基金卡片按記錄買入" readonly>
+              </label>
+              <div class="form-grid">
+                <label>
+                  買入日期
+                  <input id="purchaseDate" type="date">
+                </label>
+                <label>
+                  買入金額
+                  <input id="purchaseAmount" type="number" min="0" step="1" inputmode="decimal" placeholder="例如 10000">
+                </label>
+                <label>
+                  買入淨值
+                  <input id="purchaseNav" type="number" min="0" step="0.0001" inputmode="decimal" placeholder="可留空">
+                </label>
+              </div>
+              <label>
+                備註
+                <textarea id="purchaseNote" rows="3" placeholder="例如 富邦單筆、基富通定期等"></textarea>
+              </label>
+              <button id="savePurchaseBtn" class="primary" type="submit">儲存紀錄</button>
+            </form>
+            <p id="purchaseMessage" class="form-message"></p>
+          </section>
+        </div>
+
+        <section class="purchase-list-section" aria-label="我的買入紀錄">
+          <div class="list-header">
+            <h3>買入紀錄</h3>
+            <button id="refreshPurchasesBtn" type="button">更新</button>
+          </div>
+          <div id="purchaseList" class="purchase-list"></div>
+        </section>
+      </section>
+
       <section id="compare" class="compare-section">
         <div>
           <h2>比較清單</h2>
@@ -171,6 +246,7 @@
       <a href="https://announce.fundclear.com.tw/MOPSFundWeb/" rel="noreferrer">基金資訊觀測站</a>
     </footer>
 
-    <script src="app.js?v=tw-funds-20260710-07"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js?v=tw-funds-20260710-08"></script>
   </body>
 </html>
