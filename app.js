@@ -667,8 +667,10 @@ function purchaseValuation(item) {
 function portfolioSummary() {
   const summary = {
     invested: 0,
-    costBasis: 0,
+    valuedCostBasis: 0,
     currentValue: 0,
+    realizedProfit: 0,
+    unrealizedProfit: 0,
     valuedCount: 0,
     holdings: new Map(),
     months: new Map(),
@@ -678,13 +680,18 @@ function portfolioSummary() {
     const amount = Number(item.amount) || 0;
     const valuation = purchaseValuation(item);
     const isActive = !valuation.isSold;
-    summary.costBasis += amount;
     if (isActive) {
       summary.invested += amount;
     }
-    if (valuation.currentValue !== null) {
-      summary.currentValue += valuation.currentValue;
+    if (valuation.profit !== null) {
+      summary.valuedCostBasis += amount;
       summary.valuedCount += 1;
+      if (isActive) {
+        summary.currentValue += valuation.currentValue;
+        summary.unrealizedProfit += valuation.profit;
+      } else {
+        summary.realizedProfit += valuation.profit;
+      }
     }
     if (isActive) {
       const key = item.fund_id || item.fund_name;
@@ -781,8 +788,9 @@ function renderPortfolioStats() {
     return;
   }
   const summary = portfolioSummary();
-  const profit = summary.currentValue - summary.costBasis;
-  const profitPercent = summary.costBasis > 0 && summary.valuedCount > 0 ? (profit / summary.costBasis) * 100 : null;
+  const profit = summary.realizedProfit + summary.unrealizedProfit;
+  const profitPercent =
+    summary.valuedCostBasis > 0 && summary.valuedCount > 0 ? (profit / summary.valuedCostBasis) * 100 : null;
   const profitClass = profit >= 0 ? "up" : "down";
   const topHoldings = [...summary.holdings.values()]
     .sort((a, b) => b.invested - a.invested)
@@ -795,7 +803,7 @@ function renderPortfolioStats() {
       <strong>${twd(summary.invested)}</strong>
     </div>
     <div class="portfolio-stat">
-      <span>估算/實收總值</span>
+      <span>估算現值</span>
       <strong>${summary.valuedCount ? twd(summary.currentValue) : "-"}</strong>
     </div>
     <div class="portfolio-stat">
