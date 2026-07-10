@@ -844,6 +844,25 @@ textarea {
   background: #fbfaf7;
 }
 
+.purchase-item.sold {
+  background: #fff;
+  opacity: 0.82;
+}
+
+.sold-purchases {
+  display: grid;
+  gap: 8px;
+  padding: 10px 0 0;
+}
+
+.sold-purchases summary {
+  width: max-content;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .purchase-item h4 {
   margin: 0 0 4px;
   font-size: 15px;

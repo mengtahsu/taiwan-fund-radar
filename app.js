@@ -1040,7 +1040,7 @@ function renderPurchases() {
     els.purchaseList.innerHTML = '<div class="empty">還沒有買入紀錄。</div>';
     return;
   }
-  const sortedPurchases = [...purchases].sort((a, b) => {
+  const sortByProfit = (items) => [...items].sort((a, b) => {
     const aProfit = purchaseValuation(a).profitPercent;
     const bProfit = purchaseValuation(b).profitPercent;
     if (aProfit === null && bProfit === null) {
@@ -1054,35 +1054,46 @@ function renderPurchases() {
     }
     return bProfit - aProfit;
   });
-  els.purchaseList.innerHTML = sortedPurchases
-    .map(
-      (item) => {
-        const valuation = purchaseValuation(item);
-        const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
-        const matchedFund = valuation.fund;
-        const currentNavText = `${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"}${!valuation.isSold && matchedFund?.navDate ? ` / ${escapeHtml(matchedFund.navDate)}` : ""}`;
-        const valueLine = valuation.isSold
-          ? `賣出 ${escapeHtml(item.sell_date)} / 賣出淨值 ${currentNavText} / 實收 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 賺賠`
-          : `現在淨值 ${currentNavText} / 現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益`;
-        return `
-          <article class="purchase-item">
-            <div>
-              <h4>${escapeHtml(item.fund_name)}</h4>
-              <p>購買 ${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 買入淨值 ${moneyNumber(item.nav)}</p>
-              <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
-              ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
-            </div>
-            <div class="purchase-actions">
-              <button type="button" data-edit-purchase="${escapeHtml(item.id)}">編輯</button>
-              <button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>
-              ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
-              <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
-            </div>
-          </article>
-        `;
-      }
-    )
-    .join("");
+  const renderPurchaseItem = (item) => {
+    const valuation = purchaseValuation(item);
+    const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
+    const matchedFund = valuation.fund;
+    const currentNavText = `${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"}${!valuation.isSold && matchedFund?.navDate ? ` / ${escapeHtml(matchedFund.navDate)}` : ""}`;
+    const valueLine = valuation.isSold
+      ? `賣出 ${escapeHtml(item.sell_date)} / 賣出淨值 ${currentNavText} / 實收 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 賺賠`
+      : `現在淨值 ${currentNavText} / 現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益`;
+    return `
+      <article class="purchase-item${valuation.isSold ? " sold" : ""}">
+        <div>
+          <h4>${escapeHtml(item.fund_name)}</h4>
+          <p>購買 ${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 買入淨值 ${moneyNumber(item.nav)}</p>
+          <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
+          ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
+        </div>
+        <div class="purchase-actions">
+          <button type="button" data-edit-purchase="${escapeHtml(item.id)}">編輯</button>
+          <button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>
+          ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
+          <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+        </div>
+      </article>
+    `;
+  };
+  const activePurchases = sortByProfit(purchases.filter((item) => !item.sell_date));
+  const soldPurchases = sortByProfit(purchases.filter((item) => item.sell_date));
+  els.purchaseList.innerHTML = `
+    ${activePurchases.length ? activePurchases.map(renderPurchaseItem).join("") : '<div class="empty">目前沒有持有中的基金。</div>'}
+    ${
+      soldPurchases.length
+        ? `
+          <details class="sold-purchases">
+            <summary>已賣出 ${soldPurchases.length} 筆</summary>
+            ${soldPurchases.map(renderPurchaseItem).join("")}
+          </details>
+        `
+        : ""
+    }
+  `;
   document.querySelectorAll("[data-delete-purchase]").forEach((button) => {
     button.addEventListener("click", () => deletePurchase(button.dataset.deletePurchase));
   });
