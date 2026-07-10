@@ -647,7 +647,21 @@ function renderPurchases() {
     els.purchaseList.innerHTML = '<div class="empty">還沒有買入紀錄。</div>';
     return;
   }
-  els.purchaseList.innerHTML = purchases
+  const sortedPurchases = [...purchases].sort((a, b) => {
+    const aProfit = purchaseValuation(a).profitPercent;
+    const bProfit = purchaseValuation(b).profitPercent;
+    if (aProfit === null && bProfit === null) {
+      return String(b.buy_date).localeCompare(String(a.buy_date));
+    }
+    if (aProfit === null) {
+      return 1;
+    }
+    if (bProfit === null) {
+      return -1;
+    }
+    return bProfit - aProfit;
+  });
+  els.purchaseList.innerHTML = sortedPurchases
     .map(
       (item) => {
         const valuation = purchaseValuation(item);
@@ -662,7 +676,7 @@ function renderPurchases() {
               <p>現在淨值 ${currentNavText} / 現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
               ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
             </div>
-            <button type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+            <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
           </article>
         `;
       }
@@ -733,6 +747,9 @@ async function savePurchase(event) {
 
 async function deletePurchase(id) {
   if (!db || !currentUser || !id) {
+    return;
+  }
+  if (!window.confirm("確定要刪除這筆買入紀錄？")) {
     return;
   }
   const { error } = await db.from("fund_purchases").delete().eq("id", id);

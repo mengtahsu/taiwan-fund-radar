@@ -792,6 +792,14 @@ textarea {
   min-height: 34px;
 }
 
+.delete-purchase {
+  align-self: start;
+  min-height: 30px;
+  padding: 0 10px;
+  color: var(--danger);
+  font-size: 12px;
+}
+
 .compare-table {
   overflow-x: auto;
 }
