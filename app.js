@@ -528,6 +528,30 @@ function weekKeyFromDate(value) {
   return `${target.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
+function periodIndex(period, periodType) {
+  if (periodType === "week") {
+    const match = String(period || "").match(/^(\d{4})-W(\d{2})$/);
+    if (!match) {
+      return null;
+    }
+    return Number(match[1]) * 60 + Number(match[2]);
+  }
+  const match = String(period || "").match(/^(\d{4})-(\d{2})$/);
+  if (!match) {
+    return null;
+  }
+  return Number(match[1]) * 12 + Number(match[2]);
+}
+
+function periodsAreContinuous(previousPeriod, currentPeriod, periodType) {
+  if (previousPeriod === currentPeriod) {
+    return true;
+  }
+  const previous = periodIndex(previousPeriod, periodType);
+  const current = periodIndex(currentPeriod, periodType);
+  return previous !== null && current !== null && current - previous === 1;
+}
+
 function periodProfitRowsForPurchase(item, periodType) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
@@ -560,10 +584,18 @@ function periodProfitRowsForPurchase(item, periodType) {
   }
 
   let previousNav = buyNav;
+  let previousPeriod = periodType === "week" ? weekKeyFromDate(buyDate) : monthKeyFromDate(buyDate);
+  let hasGap = false;
   const rows = [];
   points
     .sort((a, b) => String(a.date).localeCompare(String(b.date)))
     .forEach((point) => {
+      if (!periodsAreContinuous(previousPeriod, point.period, periodType)) {
+        hasGap = true;
+        previousNav = point.nav;
+        previousPeriod = point.period;
+        return;
+      }
       const profit = units * (point.nav - previousNav);
       rows.push({
         period: point.period,
@@ -573,9 +605,10 @@ function periodProfitRowsForPurchase(item, periodType) {
         valued: 1
       });
       previousNav = point.nav;
+      previousPeriod = point.period;
     });
 
-  return { rows, missing: rows.length === 0 };
+  return { rows, missing: rows.length === 0 || hasGap };
 }
 
 function monthlyProfitRowsForPurchase(item) {
