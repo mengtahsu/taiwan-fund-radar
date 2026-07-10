@@ -487,6 +487,12 @@ function twd(value) {
   });
 }
 
+function compactTwdWan(value) {
+  const wan = (Number(value) || 0) / 10000;
+  const maximumFractionDigits = Math.abs(wan) >= 100 ? 0 : 1;
+  return `${wan.toLocaleString("zh-TW", { maximumFractionDigits })}萬`;
+}
+
 function currentFundForPurchase(item) {
   return funds.find((fund) => fundLookupKey(fund) === item.fund_id) || null;
 }
@@ -761,11 +767,10 @@ function renderPortfolioStats() {
                 const percent = summary.invested > 0 && item.valued > 0 ? (profit / summary.invested) * 100 : null;
                 const profitClass = profit >= 0 ? "up" : "down";
                 const monthLabel = item.key === "未填日期" ? item.key : item.key.replace("-", "/");
-                const missingText = item.missing ? `，缺 ${item.missing} 筆月底淨值` : "";
-                const coverageText = `，涵蓋 ${twd(item.invested)} / ${twd(summary.invested)}`;
+                const coverageText = `，${compactTwdWan(item.invested)}`;
                 return `
                   <p>
-                    <span>${escapeHtml(monthLabel)}：逐月賺賠${coverageText}${missingText}</span>
+                    <span>${escapeHtml(monthLabel)}：${coverageText.slice(1)}</span>
                     <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
                   </p>
                 `;
@@ -783,12 +788,11 @@ function renderPortfolioStats() {
                 const profit = item.profit || 0;
                 const percent = summary.invested > 0 && item.valued > 0 ? (profit / summary.invested) * 100 : null;
                 const profitClass = profit >= 0 ? "up" : "down";
-                const missingText = item.missing ? `，缺 ${item.missing} 筆週底淨值` : "";
                 const weekLabel = item.date ? item.date.slice(5).replace("-", "/") : item.key;
-                const coverageText = `，涵蓋 ${twd(item.invested)} / ${twd(summary.invested)}`;
+                const coverageText = `，${compactTwdWan(item.invested)}`;
                 return `
                   <p>
-                    <span>${escapeHtml(weekLabel)}：逐週賺賠${coverageText}${missingText}</span>
+                    <span>${escapeHtml(weekLabel)}：${coverageText.slice(1)}</span>
                     <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
                   </p>
                 `;
