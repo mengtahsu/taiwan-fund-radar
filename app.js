@@ -519,7 +519,8 @@ function portfolioSummary() {
     invested: 0,
     currentValue: 0,
     valuedCount: 0,
-    holdings: new Map()
+    holdings: new Map(),
+    months: new Map()
   };
   purchases.forEach((item) => {
     const amount = Number(item.amount) || 0;
@@ -542,6 +543,22 @@ function portfolioSummary() {
       existing.valued += 1;
     }
     summary.holdings.set(key, existing);
+
+    const monthKey = String(item.buy_date || "").slice(0, 7) || "未填日期";
+    const month = summary.months.get(monthKey) || {
+      key: monthKey,
+      invested: 0,
+      currentValue: 0,
+      valued: 0,
+      count: 0
+    };
+    month.invested += amount;
+    month.count += 1;
+    if (valuation.currentValue !== null) {
+      month.currentValue += valuation.currentValue;
+      month.valued += 1;
+    }
+    summary.months.set(monthKey, month);
   });
   return summary;
 }
@@ -561,6 +578,7 @@ function renderPortfolioStats() {
   const topHoldings = [...summary.holdings.values()]
     .sort((a, b) => b.invested - a.invested)
     .slice(0, 3);
+  const monthlyRows = [...summary.months.values()].sort((a, b) => b.key.localeCompare(a.key));
   els.portfolioStats.innerHTML = `
     <div class="portfolio-stat">
       <span>投入金額</span>
@@ -583,6 +601,27 @@ function renderPortfolioStats() {
       ${
         topHoldings.length
           ? topHoldings.map((item) => `<p>${escapeHtml(item.name)}：${twd(item.invested)}</p>`).join("")
+          : "<p>尚無資料</p>"
+      }
+    </div>
+    <div class="monthly-breakdown">
+      <h4>每月賺賠</h4>
+      ${
+        monthlyRows.length
+          ? monthlyRows
+              .map((item) => {
+                const profit = item.currentValue - item.invested;
+                const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
+                const profitClass = profit >= 0 ? "up" : "down";
+                const monthLabel = item.key === "未填日期" ? item.key : item.key.replace("-", "/");
+                return `
+                  <p>
+                    <span>${escapeHtml(monthLabel)}：投入 ${twd(item.invested)}</span>
+                    <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
+                  </p>
+                `;
+              })
+              .join("")
           : "<p>尚無資料</p>"
       }
     </div>
