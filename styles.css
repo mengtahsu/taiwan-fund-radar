@@ -780,6 +780,14 @@ textarea {
   font-weight: 700;
 }
 
+.purchase-item strong.up {
+  color: var(--accent-dark);
+}
+
+.purchase-item strong.down {
+  color: var(--danger);
+}
+
 .purchase-item button {
   min-height: 34px;
 }

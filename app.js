@@ -485,6 +485,34 @@ function currentFundForPurchase(item) {
   return funds.find((fund) => fundLookupKey(fund) === item.fund_id) || null;
 }
 
+function purchaseValuation(item) {
+  const amount = Number(item.amount) || 0;
+  const buyNav = Number(item.nav) || 0;
+  const fund = currentFundForPurchase(item);
+  const currentNav = Number(fund?.nav) || 0;
+  const units = amount > 0 && buyNav > 0 ? amount / buyNav : 0;
+  if (units <= 0 || currentNav <= 0) {
+    return {
+      fund,
+      currentNav,
+      units,
+      currentValue: null,
+      profit: null,
+      profitPercent: null
+    };
+  }
+  const currentValue = units * currentNav;
+  const profit = currentValue - amount;
+  return {
+    fund,
+    currentNav,
+    units,
+    currentValue,
+    profit,
+    profitPercent: amount > 0 ? (profit / amount) * 100 : null
+  };
+}
+
 function portfolioSummary() {
   const summary = {
     invested: 0,
@@ -494,14 +522,10 @@ function portfolioSummary() {
   };
   purchases.forEach((item) => {
     const amount = Number(item.amount) || 0;
-    const buyNav = Number(item.nav) || 0;
-    const fund = currentFundForPurchase(item);
-    const currentNav = Number(fund?.nav) || 0;
-    let currentValue = null;
+    const valuation = purchaseValuation(item);
     summary.invested += amount;
-    if (amount > 0 && buyNav > 0 && currentNav > 0) {
-      currentValue = (amount / buyNav) * currentNav;
-      summary.currentValue += currentValue;
+    if (valuation.currentValue !== null) {
+      summary.currentValue += valuation.currentValue;
       summary.valuedCount += 1;
     }
     const key = item.fund_id || item.fund_name;
@@ -512,8 +536,8 @@ function portfolioSummary() {
       valued: 0
     };
     existing.invested += amount;
-    if (currentValue !== null) {
-      existing.currentValue += currentValue;
+    if (valuation.currentValue !== null) {
+      existing.currentValue += valuation.currentValue;
       existing.valued += 1;
     }
     summary.holdings.set(key, existing);
@@ -625,16 +649,27 @@ function renderPurchases() {
   }
   els.purchaseList.innerHTML = purchases
     .map(
-      (item) => `
-        <article class="purchase-item">
-          <div>
-            <h4>${escapeHtml(item.fund_name)}</h4>
-            <p>${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 淨值 ${moneyNumber(item.nav)}</p>
-            ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
-          </div>
-          <button type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
-        </article>
-      `
+      (item) => {
+        const valuation = purchaseValuation(item);
+        const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
+        const matchedFund = valuation.fund;
+        const matchedText = matchedFund
+          ? `對應 ${escapeHtml(matchedFund.fundId || matchedFund.ticker || "-")} / ${escapeHtml(matchedFund.type)} / 最新 ${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"} ${matchedFund.navDate ? `(${escapeHtml(matchedFund.navDate)})` : ""}`
+          : "未對到基金清單，請確認名稱或從基金卡片重新記錄";
+        return `
+          <article class="purchase-item">
+            <div>
+              <h4>${escapeHtml(item.fund_name)}</h4>
+              <p>${matchedText}</p>
+              <p>${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 買入淨值 ${moneyNumber(item.nav)}</p>
+              <p>單位 ${valuation.units ? moneyNumber(valuation.units) : "-"} / 最新淨值 ${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"}</p>
+              <p>估算現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profit === null ? "-" : `${twd(valuation.profit)} (${formatPercent(valuation.profitPercent || 0)})`}</strong></p>
+              ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
+            </div>
+            <button type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+          </article>
+        `;
+      }
     )
     .join("");
   document.querySelectorAll("[data-delete-purchase]").forEach((button) => {
@@ -648,7 +683,7 @@ async function loadPurchases() {
     renderPurchases();
     return;
   }
-  const { data, error } = await db
+  let { data, error } = await db
     .from("fund_purchases")
     .select("id,fund_id,fund_name,buy_date,amount,nav,note,created_at")
     .order("buy_date", { ascending: false })
