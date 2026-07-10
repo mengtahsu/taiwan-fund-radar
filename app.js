@@ -599,19 +599,23 @@ function periodProfitRowsForPurchase(item, periodType) {
         return;
       }
       const profit = units * (point.nav - previousNav);
+      const periodValue = isSold && point.period === sellPeriod ? 0 : units * point.nav;
       const row = rowsByPeriod.get(point.period) || {
         period: point.period,
         date: point.date,
         profit: 0,
         invested: isSold && point.period === sellPeriod ? 0 : amount,
+        value: periodValue,
         startNav: previousNav,
         endNav: point.nav,
         valued: 1
       };
       row.profit += profit;
+      row.value = periodValue;
       row.endNav = point.nav;
       if (isSold && point.period === sellPeriod) {
         row.invested = 0;
+        row.value = 0;
       }
       if (!row.date || point.date > row.date) {
         row.date = point.date;
@@ -719,6 +723,7 @@ function portfolioSummary() {
       const month = summary.months.get(monthKey) || {
         key: monthKey,
         invested: 0,
+        value: 0,
         profit: 0,
         valued: 0,
         missing: 0,
@@ -731,6 +736,7 @@ function portfolioSummary() {
       month.details.push({
         name: item.fund_name,
         invested: isActive ? amount : 0,
+        value: null,
         profit: null,
         startNav: Number(item.nav) || null,
         endNav: null,
@@ -743,17 +749,20 @@ function portfolioSummary() {
       const month = summary.months.get(row.period) || {
         key: row.period,
         invested: 0,
+        value: 0,
         profit: 0,
         valued: 0,
         missing: 0,
         details: []
       };
       month.invested += row.invested;
+      month.value += row.value;
       month.profit += row.profit;
       month.valued += row.valued;
       month.details.push({
         name: item.fund_name,
         invested: row.invested,
+        value: row.value,
         profit: row.profit,
         startNav: row.startNav,
         endNav: row.endNav,
@@ -771,6 +780,7 @@ function portfolioSummary() {
         key: weekKey,
         date: item.buy_date,
         invested: 0,
+        value: 0,
         profit: 0,
         valued: 0,
         missing: 0,
@@ -783,6 +793,7 @@ function portfolioSummary() {
       week.details.push({
         name: item.fund_name,
         invested: isActive ? amount : 0,
+        value: null,
         profit: null,
         startNav: Number(item.nav) || null,
         endNav: null,
@@ -796,6 +807,7 @@ function portfolioSummary() {
         key: row.period,
         date: row.date,
         invested: 0,
+        value: 0,
         profit: 0,
         valued: 0,
         missing: 0,
@@ -805,11 +817,13 @@ function portfolioSummary() {
         week.date = row.date;
       }
       week.invested += row.invested;
+      week.value += row.value;
       week.profit += row.profit;
       week.valued += row.valued;
       week.details.push({
         name: item.fund_name,
         invested: row.invested,
+        value: row.value,
         profit: row.profit,
         startNav: row.startNav,
         endNav: row.endNav,
@@ -842,7 +856,7 @@ function renderPeriodDetails(details, isOpen = false) {
           return `
             <div>
               <span>${escapeHtml(detail.name || "未命名基金")}</span>
-              <small>${compactTwdWan(detail.invested)} / ${navText}${detail.date ? ` / ${escapeHtml(detail.date)}` : ""}</small>
+              <small>本${compactTwdWan(detail.invested)} / 現${detail.value === null ? "缺" : compactTwdWan(detail.value)} / ${navText}${detail.date ? ` / ${escapeHtml(detail.date)}` : ""}</small>
               <strong class="${profitClass}">${hasProfit ? twd(profit) : "缺資料"}</strong>
             </div>
           `;
@@ -905,11 +919,11 @@ function renderPortfolioStats() {
                 const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
                 const profitClass = profit >= 0 ? "up" : "down";
                 const monthLabel = item.key === "未填日期" ? item.key : item.key.replace("-", "/");
-                const coverageText = `，${compactTwdWan(item.invested)}`;
+                const periodText = `本${compactTwdWan(item.invested)} / 現${item.valued ? compactTwdWan(item.value) : "缺"}`;
                 return `
                   <div class="period-row">
                     <p>
-                      <span>${escapeHtml(monthLabel)}：${coverageText.slice(1)}</span>
+                      <span>${escapeHtml(monthLabel)}：${periodText}</span>
                       <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
                     </p>
                     ${renderPeriodDetails(item.details, item.key === monthlyRows[0]?.key)}
@@ -930,11 +944,11 @@ function renderPortfolioStats() {
                 const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
                 const profitClass = profit >= 0 ? "up" : "down";
                 const weekLabel = item.date ? item.date.slice(5).replace("-", "/") : item.key;
-                const coverageText = `，${compactTwdWan(item.invested)}`;
+                const periodText = `本${compactTwdWan(item.invested)} / 現${item.valued ? compactTwdWan(item.value) : "缺"}`;
                 return `
                   <div class="period-row">
                     <p>
-                      <span>${escapeHtml(weekLabel)}：${coverageText.slice(1)}</span>
+                      <span>${escapeHtml(weekLabel)}：${periodText}</span>
                       <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
                     </p>
                     ${renderPeriodDetails(item.details, item.key === weeklyRows[0]?.key)}
