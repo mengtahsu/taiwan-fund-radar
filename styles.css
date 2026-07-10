@@ -700,6 +700,64 @@ textarea {
   margin-top: 12px;
 }
 
+.portfolio-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.portfolio-stat {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.portfolio-stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.portfolio-stat strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 18px;
+}
+
+.portfolio-stat strong.up {
+  color: var(--accent-dark);
+}
+
+.portfolio-stat strong.down {
+  color: var(--danger);
+}
+
+.holding-breakdown {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.holding-breakdown h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.holding-breakdown p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .purchase-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -909,6 +967,10 @@ footer a {
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .portfolio-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

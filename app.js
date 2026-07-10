@@ -181,6 +181,7 @@ const els = {
   purchaseNav: document.querySelector("#purchaseNav"),
   purchaseNote: document.querySelector("#purchaseNote"),
   purchaseMessage: document.querySelector("#purchaseMessage"),
+  portfolioStats: document.querySelector("#portfolioStats"),
   purchaseList: document.querySelector("#purchaseList"),
   refreshPurchases: document.querySelector("#refreshPurchasesBtn")
 };
@@ -468,6 +469,101 @@ function moneyNumber(value) {
   return number.toLocaleString("zh-TW", { maximumFractionDigits: 4 });
 }
 
+function twd(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return "-";
+  }
+  return number.toLocaleString("zh-TW", {
+    style: "currency",
+    currency: "TWD",
+    maximumFractionDigits: 0
+  });
+}
+
+function currentFundForPurchase(item) {
+  return funds.find((fund) => fundLookupKey(fund) === item.fund_id) || null;
+}
+
+function portfolioSummary() {
+  const summary = {
+    invested: 0,
+    currentValue: 0,
+    valuedCount: 0,
+    holdings: new Map()
+  };
+  purchases.forEach((item) => {
+    const amount = Number(item.amount) || 0;
+    const buyNav = Number(item.nav) || 0;
+    const fund = currentFundForPurchase(item);
+    const currentNav = Number(fund?.nav) || 0;
+    let currentValue = null;
+    summary.invested += amount;
+    if (amount > 0 && buyNav > 0 && currentNav > 0) {
+      currentValue = (amount / buyNav) * currentNav;
+      summary.currentValue += currentValue;
+      summary.valuedCount += 1;
+    }
+    const key = item.fund_id || item.fund_name;
+    const existing = summary.holdings.get(key) || {
+      name: item.fund_name,
+      invested: 0,
+      currentValue: 0,
+      valued: 0
+    };
+    existing.invested += amount;
+    if (currentValue !== null) {
+      existing.currentValue += currentValue;
+      existing.valued += 1;
+    }
+    summary.holdings.set(key, existing);
+  });
+  return summary;
+}
+
+function renderPortfolioStats() {
+  if (!els.portfolioStats) {
+    return;
+  }
+  if (!currentUser || !purchases.length) {
+    els.portfolioStats.innerHTML = "";
+    return;
+  }
+  const summary = portfolioSummary();
+  const profit = summary.currentValue - summary.invested;
+  const profitPercent = summary.invested > 0 && summary.valuedCount > 0 ? (profit / summary.invested) * 100 : null;
+  const profitClass = profit >= 0 ? "up" : "down";
+  const topHoldings = [...summary.holdings.values()]
+    .sort((a, b) => b.invested - a.invested)
+    .slice(0, 3);
+  els.portfolioStats.innerHTML = `
+    <div class="portfolio-stat">
+      <span>投入金額</span>
+      <strong>${twd(summary.invested)}</strong>
+    </div>
+    <div class="portfolio-stat">
+      <span>估算現值</span>
+      <strong>${summary.valuedCount ? twd(summary.currentValue) : "-"}</strong>
+    </div>
+    <div class="portfolio-stat">
+      <span>未實現損益</span>
+      <strong class="${profitClass}">${summary.valuedCount ? `${twd(profit)} ${profitPercent === null ? "" : `(${formatPercent(profitPercent)})`}` : "-"}</strong>
+    </div>
+    <div class="portfolio-stat">
+      <span>可估算筆數</span>
+      <strong>${summary.valuedCount} / ${purchases.length}</strong>
+    </div>
+    <div class="holding-breakdown">
+      <h4>前三大投入</h4>
+      ${
+        topHoldings.length
+          ? topHoldings.map((item) => `<p>${escapeHtml(item.name)}：${twd(item.invested)}</p>`).join("")
+          : "<p>尚無資料</p>"
+      }
+    </div>
+  `;
+}
+
 function renderAuthState() {
   if (!els.authStatus) {
     return;
@@ -518,6 +614,7 @@ function renderPurchases() {
   if (!els.purchaseList) {
     return;
   }
+  renderPortfolioStats();
   if (!currentUser) {
     els.purchaseList.innerHTML = '<div class="empty">登入後會顯示你的買入紀錄。</div>';
     return;
@@ -959,6 +1056,7 @@ async function loadLatestData() {
   } finally {
     syncLabels();
     renderFunds();
+    renderPurchases();
   }
 }
 
