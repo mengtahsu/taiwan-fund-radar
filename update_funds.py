@@ -173,6 +173,16 @@ FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
 MONEYDJ_MOBILE_PLATFORM_URL = "https://m.moneydj.com/jsondata/selectordermobile.aspx"
 MONEYDJ_FUND_BUY_URL = "https://m.moneydj.com/jsondata/funddj/fundjsondata.xdjjson?x=yp76008"
 MONEYDJ_FUNDRICH_PLATFORM_ID = "FundRich"
+MONEYDJ_DOMESTIC_RETURN_URL = (
+    "https://www.moneydj.com/funddj/ys/yp305002.djhtm?"
+    "a=0&b=0&c=0~0&d=0&e=0~0&f=0~0&g=0~0&h=0~0&i=0~0&j=0~0&k=0~0"
+    "&u=2000&v=&nn=&aa=&mm=&d1=&w1=&m1=&ytd=&rr=&rr2=&l=H&m=1"
+)
+MONEYDJ_DOMESTIC_RISK_URL = (
+    "https://www.moneydj.com/funddj/ys/yp305002.djhtm?"
+    "a=0&b=0&c=0~0&d=0&e=0~0&f=0~0&g=0~0&h=0~0&i=0~0&j=0~0&k=0~0"
+    "&u=2000&v=&nn=&aa=&mm=&d1=&w1=&m1=&ytd=&rr=&rr2=&l=H&m=2"
+)
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 YAHOO_TW_QUOTE_URL = "https://tw.stock.yahoo.com/quote/{symbol}"
 
@@ -708,6 +718,28 @@ def parse_megabank_rows(url: str) -> dict[str, list[str]]:
     return rows
 
 
+def moneydj_table_rows(url: str) -> dict[str, list[str]]:
+    text = fetch_text(url, "big5")
+    table_match = re.search(
+        r'<table[^>]+id=["\']oMainTable["\'][\s\S]*?<tbody>([\s\S]*?)</tbody>',
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not table_match:
+        raise RuntimeError(f"MoneyDJ table not found: {url}")
+
+    rows: dict[str, list[str]] = {}
+    for row_html in re.findall(r"<tr[^>]*>([\s\S]*?)</tr>", table_match.group(1), flags=re.IGNORECASE):
+        match = re.search(r"yp010000\.djhtm\?a=([^\"'&>]+)", row_html, flags=re.IGNORECASE)
+        if not match:
+            continue
+        cells = re.findall(r"<t[dh][^>]*>([\s\S]*?)</t[dh]>", row_html, flags=re.IGNORECASE)
+        values = [strip_html(cell) for cell in cells]
+        if values:
+            rows[match.group(1).strip().upper()] = values
+    return rows
+
+
 def clean_megabank_name(value: str) -> tuple[str, str]:
     match = re.match(r"^([A-Z0-9]+)\s+(.+)$", value.strip(), flags=re.IGNORECASE)
     if not match:
@@ -853,6 +885,83 @@ def map_megabank_region(fund_type: str, name: str) -> str:
     return "全球"
 
 
+def normalize_moneydj_domestic_fund(
+    fund_code: str,
+    return_row: list[str],
+    risk_row: list[str] | None,
+) -> dict[str, Any] | None:
+    if len(return_row) < 15:
+        return None
+
+    name = return_row[1].strip()
+    company = return_row[2].strip() if len(return_row) > 2 else ""
+    fund_type = return_row[3].strip() if len(return_row) > 3 else "基金"
+    if not name or not company:
+        return None
+
+    currency = risk_row[4] if risk_row and len(risk_row) > 4 else ""
+    if not is_twd_currency(currency or name):
+        return None
+
+    year_to_date = optional_number(return_row[6])
+    one_month = optional_number(return_row[7])
+    three_month = optional_number(return_row[8])
+    six_month = optional_number(return_row[9])
+    one_year = optional_number(return_row[10])
+    three_year = optional_number(return_row[11])
+    five_year = optional_number(return_row[12])
+
+    risk_type = risk_row[2] if risk_row and len(risk_row) > 2 else fund_type
+    aum = optional_number(risk_row[6]) if risk_row and len(risk_row) > 6 else None
+    volatility = optional_number(risk_row[7]) if risk_row and len(risk_row) > 7 else None
+    sharpe = optional_number(risk_row[8]) if risk_row and len(risk_row) > 8 else None
+    risk = parse_rr(risk_row[10] if risk_row and len(risk_row) > 10 else "", fallback=4)
+
+    return3y_annualized = 0.0
+    if three_year is not None and three_year > -100:
+        return3y_annualized = ((1 + three_year / 100) ** (1 / 3) - 1) * 100
+
+    if volatility is None:
+        volatility = {1: 3.0, 2: 6.0, 3: 11.0, 4: 17.0, 5: 25.0}.get(risk, 17.0)
+    if sharpe is None:
+        sharpe = sharpe_like(return3y_annualized, volatility)
+
+    tags = [risk_type or fund_type, "台幣", f"RR{risk}"]
+    if three_month is not None:
+        tags.append(f"3月 {three_month:.2f}%")
+    if one_year is not None:
+        tags.append(f"1年 {one_year:.2f}%")
+
+    return {
+        "fundId": fund_code,
+        "ticker": fund_code,
+        "name": name,
+        "company": company,
+        "currency": "台幣",
+        "type": map_megabank_type(risk_type or fund_type, name),
+        "region": map_megabank_region(risk_type or fund_type, name),
+        "risk": risk,
+        "return3y": round(return3y_annualized, 2),
+        "return3yCumulative": round(three_year or 0.0, 2),
+        "return3m": round(three_month or 0.0, 2),
+        "return1y": round(one_year or 0.0, 2),
+        "return6m": round(six_month or 0.0, 2),
+        "returnYtd": round(year_to_date or 0.0, 2),
+        "return5y": round(five_year or 0.0, 2),
+        "fee": 0.0,
+        "feeUnavailable": True,
+        "volatility": round(volatility, 2),
+        "sharpe": round(sharpe, 2),
+        "aum": round(aum or 0.0, 2),
+        "nav": round(optional_number(risk_row[3]) or 0.0, 4) if risk_row and len(risk_row) > 3 else None,
+        "navDate": return_row[0],
+        "dividend": "配息" if any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型",
+        "minRsp": 1000,
+        "tags": tags,
+        "moneyDjUrl": f"https://m.moneydj.com/a1.aspx?a={fund_code}",
+    }
+
+
 def normalize_megabank_fund(
     fund_code: str,
     company: str,
@@ -953,6 +1062,30 @@ def build_megabank_tw_funds_payload() -> dict[str, Any]:
     if warnings:
         payload["warnings"] = warnings
     return payload
+
+
+def build_moneydj_tw_funds_payload() -> dict[str, Any]:
+    return_rows = moneydj_table_rows(MONEYDJ_DOMESTIC_RETURN_URL)
+    risk_rows = moneydj_table_rows(MONEYDJ_DOMESTIC_RISK_URL)
+    funds = [
+        fund
+        for fund in (
+            normalize_moneydj_domestic_fund(fund_code, return_row, risk_rows.get(fund_code))
+            for fund_code, return_row in return_rows.items()
+        )
+        if fund
+    ]
+
+    if not funds:
+        raise RuntimeError("MoneyDJ domestic fund tables returned no usable TWD funds")
+
+    enrich_recent_fund_returns(funds)
+    funds.sort(key=lambda fund: fund["return3y"], reverse=True)
+    return {
+        "source": "MoneyDJ 國內基金進階搜尋公開資料",
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "funds": funds,
+    }
 
 
 def parse_iso_datetime(value: str | None) -> datetime:
@@ -1444,7 +1577,11 @@ def enrich_channel_links(
 
 
 def build_combined_tw_funds_payload() -> dict[str, Any]:
-    base = build_megabank_tw_funds_payload()
+    try:
+        base = build_moneydj_tw_funds_payload()
+    except Exception as exc:
+        print(f"{datetime.now().isoformat(timespec='seconds')} MoneyDJ all-table update failed; fallback to MegaBank pages: {exc}", file=sys.stderr)
+        base = build_megabank_tw_funds_payload()
     fubon_lookup = build_fubon_lookup()
     try:
         moneydj_fundrich_lookup = build_moneydj_fundrich_lookup()
@@ -1454,7 +1591,7 @@ def build_combined_tw_funds_payload() -> dict[str, Any]:
     fundrich_lookup = build_fundrich_lookup()
     funds = [enrich_channel_links(fund, fubon_lookup, moneydj_fundrich_lookup, fundrich_lookup) for fund in base["funds"]]
     return {
-        "source": "兆豐基金/MoneyDJ 國內基金公開資料 + 富邦銀行/基富通可買連結",
+        "source": f"{base['source']} + 富邦銀行/基富通可買連結",
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "funds": funds,
     }
