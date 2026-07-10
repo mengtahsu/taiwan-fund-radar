@@ -271,7 +271,9 @@ function filteredFunds() {
     .filter((fund) => {
       const haystack = [fund.name, fund.company, fund.ticker || "", fund.fundId || "", fund.type, fund.region, ...fund.tags].join(" ").toLowerCase();
       const excess2w = excessReturn2w(fund);
-      const typeMatched = typeValue === "all" || (typeValue === "fubon-buyable" ? Boolean(fund.fubonBuyUrl) : fund.type === typeValue);
+      const typeMatched =
+        typeValue === "all" ||
+        (typeValue === "non-etf" ? !["ETF", "ETF連結"].includes(fund.type) : typeValue === "fubon-buyable" ? Boolean(fund.fubonBuyUrl) : fund.type === typeValue);
       return (
         (!q || haystack.includes(q)) &&
         typeMatched &&
@@ -636,7 +638,7 @@ function normalizePayload(payload) {
 
 function resetFilters() {
   els.query.value = "";
-  els.type.value = "all";
+  els.type.value = "non-etf";
   els.region.value = "all";
   els.risk.value = 5;
   els.return.value = 50;
@@ -649,7 +651,7 @@ function resetFilters() {
 
 function applyHighReturnPreset() {
   els.query.value = "";
-  els.type.value = "all";
+  els.type.value = "non-etf";
   els.region.value = "all";
   els.risk.value = 5;
   els.return.value = 8;

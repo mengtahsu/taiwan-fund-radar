@@ -1214,13 +1214,18 @@ def growth_score_for_nav_refresh(fund: dict[str, Any], benchmark: dict[str, floa
     return round(score * 100)
 
 
+def is_buyable_default_fund(fund: dict[str, Any]) -> bool:
+    return str(fund.get("type") or "") not in {"ETF", "ETF連結"}
+
+
 def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
     root = Path(__file__).resolve().parent
     benchmark = load_taiwan_benchmark_returns(root)
     top_limit = int(os.environ.get("RECENT_NAV_TOP_LIMIT", RECENT_NAV_TOP_LIMIT))
     always_refresh_top = int(os.environ.get("RECENT_NAV_ALWAYS_REFRESH_TOP", RECENT_NAV_ALWAYS_REFRESH_TOP))
+    default_funds = [fund for fund in funds if is_buyable_default_fund(fund)]
     score_ranked_funds = sorted(
-        funds,
+        default_funds,
         key=lambda fund: (
             growth_score_for_nav_refresh(fund, benchmark),
             number(fund.get("return3y", 0), "return3y"),
