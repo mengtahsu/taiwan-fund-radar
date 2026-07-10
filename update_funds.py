@@ -721,8 +721,9 @@ def is_twd_currency(value: str | None) -> bool:
 
 def canonical_fund_name(value: str) -> str:
     text = html.unescape(value)
-    text = re.sub(r"[\(（].*?本金.*?[\)）]", "", text)
-    text = re.sub(r"[\(（].*?[\)）]", "", text)
+    text = re.sub(r"[\(（][^()（）]*(?:本金|配息來源|收益平準金|保證收益)[^()（）]*[\)）]", "", text)
+    text = re.sub(r"[\(（]\s*([A-Z]{1,3})\s*[\)）]", r"\1", text, flags=re.IGNORECASE)
+    text = re.sub(r"[\(（]([^（）()]{1,12})[\)）]", r"\1", text)
     replacements = [
         "證券投資信託基金",
         "投資信託基金",
@@ -730,13 +731,16 @@ def canonical_fund_name(value: str) -> str:
         "股份有限公司",
         "證券投資信託",
         "投信",
-        "台幣",
         "新台幣",
+        "新臺幣",
+        "台幣",
+        "臺幣",
         "類型",
         "級別",
         "累積型",
         "配息型",
         "不配息",
+        "配息",
     ]
     for replacement in replacements:
         text = text.replace(replacement, "")
