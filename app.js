@@ -708,6 +708,38 @@ async function loadPurchases() {
   renderPurchases();
 }
 
+async function fetchLatestFundValues() {
+  const response = await fetch("data/funds.json", { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("找不到更新資料。");
+  }
+  const parsed = normalizePayload(await response.json());
+  if (!parsed.funds.every(validateFund)) {
+    throw new Error("更新資料格式不符合欄位需求。");
+  }
+  funds = parsed.funds;
+  sourceMeta = parsed.meta;
+}
+
+async function refreshPurchaseValues() {
+  if (!requireLogin()) {
+    return;
+  }
+  setMessage(els.purchaseMessage, "正在更新買入基金的最新淨值...");
+  try {
+    await loadPurchases();
+    if (!purchases.length) {
+      setMessage(els.purchaseMessage, "目前沒有買入紀錄可更新。");
+      return;
+    }
+    await fetchLatestFundValues();
+    renderPurchases();
+    setMessage(els.purchaseMessage, "已用最新基金資料重算買入紀錄。");
+  } catch (error) {
+    setMessage(els.purchaseMessage, `更新失敗：${error.message}`, true);
+  }
+}
+
 async function savePurchase(event) {
   event.preventDefault();
   if (!requireLogin()) {
@@ -1083,23 +1115,14 @@ els.purchaseForm?.addEventListener("submit", savePurchase);
 els.purchaseFundName?.addEventListener("input", () => {
   els.purchaseFundId.value = "";
 });
-els.refreshPurchases?.addEventListener("click", loadPurchases);
+els.refreshPurchases?.addEventListener("click", refreshPurchaseValues);
 if (els.purchaseDate) {
   els.purchaseDate.value = todayInputValue();
 }
 
 async function loadLatestData() {
   try {
-    const response = await fetch("data/funds.json", { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error("找不到更新資料。");
-    }
-    const parsed = normalizePayload(await response.json());
-    if (!parsed.funds.every(validateFund)) {
-      throw new Error("更新資料格式不符合欄位需求。");
-    }
-    funds = parsed.funds;
-    sourceMeta = parsed.meta;
+    await fetchLatestFundValues();
   } catch (error) {
     sourceMeta = {
       source: "示範資料",
