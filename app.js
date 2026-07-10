@@ -764,7 +764,7 @@ function renderPortfolioStats() {
           ? monthlyRows
               .map((item) => {
                 const profit = item.profit || 0;
-                const percent = summary.invested > 0 && item.valued > 0 ? (profit / summary.invested) * 100 : null;
+                const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
                 const profitClass = profit >= 0 ? "up" : "down";
                 const monthLabel = item.key === "未填日期" ? item.key : item.key.replace("-", "/");
                 const coverageText = `，${compactTwdWan(item.invested)}`;
@@ -786,7 +786,7 @@ function renderPortfolioStats() {
           ? weeklyRows
               .map((item) => {
                 const profit = item.profit || 0;
-                const percent = summary.invested > 0 && item.valued > 0 ? (profit / summary.invested) * 100 : null;
+                const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
                 const profitClass = profit >= 0 ? "up" : "down";
                 const weekLabel = item.date ? item.date.slice(5).replace("-", "/") : item.key;
                 const coverageText = `，${compactTwdWan(item.invested)}`;
