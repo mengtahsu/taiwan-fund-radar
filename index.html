@@ -223,7 +223,10 @@
 
         <section class="purchase-list-section" aria-label="我的買入紀錄">
           <div class="list-header">
-            <h3>買入紀錄</h3>
+            <div>
+              <h3>買入紀錄</h3>
+              <p id="purchaseRefreshStatus" class="refresh-status"></p>
+            </div>
             <button id="refreshPurchasesBtn" type="button">更新淨值</button>
           </div>
           <div id="portfolioStats" class="portfolio-stats"></div>
@@ -248,6 +251,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=tw-funds-20260710-17"></script>
+    <script src="app.js?v=tw-funds-20260710-18"></script>
   </body>
 </html>

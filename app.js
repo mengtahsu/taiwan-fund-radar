@@ -183,6 +183,7 @@ const els = {
   purchaseMessage: document.querySelector("#purchaseMessage"),
   portfolioStats: document.querySelector("#portfolioStats"),
   purchaseList: document.querySelector("#purchaseList"),
+  purchaseRefreshStatus: document.querySelector("#purchaseRefreshStatus"),
   refreshPurchases: document.querySelector("#refreshPurchasesBtn")
 };
 
@@ -725,18 +726,30 @@ async function refreshPurchaseValues() {
   if (!requireLogin()) {
     return;
   }
-  setMessage(els.purchaseMessage, "正在更新買入基金的最新淨值...");
+  const originalText = els.refreshPurchases?.textContent || "更新淨值";
+  if (els.refreshPurchases) {
+    els.refreshPurchases.disabled = true;
+    els.refreshPurchases.textContent = "更新中...";
+  }
+  setMessage(els.purchaseRefreshStatus, "正在更新淨值...");
+  setMessage(els.purchaseMessage, "");
   try {
     await loadPurchases();
     if (!purchases.length) {
-      setMessage(els.purchaseMessage, "目前沒有買入紀錄可更新。");
+      setMessage(els.purchaseRefreshStatus, "目前沒有買入紀錄可更新。");
       return;
     }
     await fetchLatestFundValues();
     renderPurchases();
-    setMessage(els.purchaseMessage, "已用最新基金資料重算買入紀錄。");
+    const dataTime = sourceMeta.updatedAt ? formatTaiwanDateTime(sourceMeta.updatedAt) : "最新資料";
+    setMessage(els.purchaseRefreshStatus, `已更新 ${dataTime}`);
   } catch (error) {
-    setMessage(els.purchaseMessage, `更新失敗：${error.message}`, true);
+    setMessage(els.purchaseRefreshStatus, `更新失敗：${error.message}`, true);
+  } finally {
+    if (els.refreshPurchases) {
+      els.refreshPurchases.disabled = false;
+      els.refreshPurchases.textContent = originalText;
+    }
   }
 }
 
