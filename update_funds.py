@@ -58,6 +58,8 @@ RECENT_NAV_TOP_LIMIT = 120
 RECENT_NAV_REFRESH_LIMIT = 30
 RECENT_NAV_ALWAYS_REFRESH_TOP = 20
 RECENT_NAV_MAX_AGE_HOURS = 72
+MONTHLY_NAV_REFRESH_LIMIT = 10
+MONTHLY_NAV_MONTHS = 24
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
 
@@ -391,6 +393,28 @@ def period_return_from_series(series: list[tuple[datetime, float]], days: int) -
         return None
     period_return = ((end_price / start_price) - 1) * 100
     return round(period_return, 2), start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
+
+
+def month_end_navs_from_series(series: list[tuple[datetime, float]], months: int) -> list[dict[str, Any]]:
+    if not series:
+        return []
+    cutoff = datetime.now() - timedelta(days=max(1, months) * 31)
+    month_rows: dict[str, tuple[datetime, float]] = {}
+    for date, nav in sorted(series, key=lambda item: item[0]):
+        if date < cutoff:
+            continue
+        month_key = date.strftime("%Y-%m")
+        current = month_rows.get(month_key)
+        if current is None or date >= current[0]:
+            month_rows[month_key] = (date, nav)
+    return [
+        {
+            "month": month,
+            "date": date.strftime("%Y-%m-%d"),
+            "nav": round(nav, 4),
+        }
+        for month, (date, nav) in sorted(month_rows.items())
+    ]
 
 
 def chart_prices(data: dict[str, Any]) -> list[float]:
@@ -1322,6 +1346,80 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
     )
 
 
+def load_monthly_nav_cache(root: Path) -> dict[str, Any]:
+    cache_path = root / "data/monthly_nav.json"
+    items: dict[str, Any] = {}
+    next_top_offset = 0
+    if cache_path.exists():
+        try:
+            payload = json.loads(cache_path.read_text(encoding="utf-8"))
+            if isinstance(payload.get("items"), dict):
+                items.update(payload["items"])
+            next_top_offset = int(payload.get("nextTopOffset") or 0)
+        except (OSError, json.JSONDecodeError, ValueError):
+            pass
+    return {
+        "source": "MoneyDJ 歷史淨值月底整理",
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "items": items,
+        "nextTopOffset": max(0, next_top_offset),
+    }
+
+
+def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
+    cache = load_monthly_nav_cache(root)
+    refresh_limit = int(os.environ.get("MONTHLY_NAV_REFRESH_LIMIT", MONTHLY_NAV_REFRESH_LIMIT))
+    candidates = nav_refresh_candidates(funds, cache, max(0, refresh_limit))
+    if not candidates:
+        atomic_write_json(root / "data/monthly_nav.json", cache)
+        return
+
+    months = int(os.environ.get("MONTHLY_NAV_MONTHS", MONTHLY_NAV_MONTHS))
+    max_workers = min(int(os.environ.get("RECENT_NAV_WORKERS", RECENT_NAV_WORKERS)), max(1, refresh_limit))
+
+    def fetch_monthly(fund: dict[str, Any]) -> tuple[str, dict[str, Any] | None, str | None]:
+        fund_id = str(fund.get("fundId") or "")
+        if not fund_id:
+            return str(fund.get("name") or ""), None, "missing fundId"
+        try:
+            series = fetch_moneydj_bcd_nav(fund_id)
+            month_ends = month_end_navs_from_series(series, months)
+            if not month_ends:
+                return fund_id, None, "empty monthly nav"
+            return (
+                fund_id,
+                {
+                    "fundId": fund_id,
+                    "name": fund.get("name"),
+                    "fetchedAt": datetime.now(timezone.utc).isoformat(),
+                    "months": month_ends,
+                },
+                None,
+            )
+        except Exception as exc:
+            return fund_id, None, str(exc)
+
+    errors = 0
+    cache_items = cache.setdefault("items", {})
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(fetch_monthly, fund) for fund in candidates]
+        for future in concurrent.futures.as_completed(futures):
+            fund_id, item, error = future.result()
+            if error or item is None:
+                errors += 1
+                continue
+            cache_items[fund_id] = item
+
+    cache["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    atomic_write_json(root / "data/monthly_nav.json", cache)
+    if errors:
+        print(f"{datetime.now().isoformat(timespec='seconds')} monthly NAV skipped for {errors} funds", file=sys.stderr)
+    print(
+        f"{datetime.now().isoformat(timespec='seconds')} monthly NAV refreshed {len(candidates) - errors}/{len(candidates)} funds; cache has {len(cache_items)} funds",
+        file=sys.stderr,
+    )
+
+
 def fubon_text(item: ET.Element, tag: str) -> str:
     return html.unescape(item.findtext(tag) or "").replace("\u3000", " ").strip()
 
@@ -1864,6 +1962,10 @@ def update_fubon_bank_funds_once(root: Path, output_path: str = "data/funds.json
 
 def update_combined_tw_funds_once(root: Path, output_path: str = "data/funds.json") -> None:
     normalized = normalize_payload(build_combined_tw_funds_payload(), "台灣基金與通路連結")
+    try:
+        update_monthly_nav_history(root, normalized["funds"])
+    except Exception as exc:
+        print(f"{datetime.now().isoformat(timespec='seconds')} monthly NAV update failed: {exc}", file=sys.stderr)
     target = root / output_path
     atomic_write_json(target, normalized)
     print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(normalized['funds'])} Taiwan funds)")

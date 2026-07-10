@@ -133,6 +133,11 @@ let marketMeta = {
   markets: [],
   benchmarks: {}
 };
+let monthlyNavMeta = {
+  source: "月底淨值未載入",
+  updatedAt: null,
+  items: {}
+};
 
 const DISPLAY_LIMIT = 50;
 const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
@@ -486,6 +491,68 @@ function currentFundForPurchase(item) {
   return funds.find((fund) => fundLookupKey(fund) === item.fund_id) || null;
 }
 
+function monthlyNavForPurchase(item) {
+  const items = monthlyNavMeta.items || {};
+  const direct = items[item.fund_id];
+  if (direct) {
+    return direct;
+  }
+  const fund = currentFundForPurchase(item);
+  const fundId = fund?.fundId || "";
+  return fundId ? items[fundId] || null : null;
+}
+
+function monthKeyFromDate(value) {
+  return String(value || "").slice(0, 7) || "未填日期";
+}
+
+function monthlyProfitRowsForPurchase(item) {
+  const amount = Number(item.amount) || 0;
+  const buyNav = Number(item.nav) || 0;
+  const units = amount > 0 && buyNav > 0 ? amount / buyNav : 0;
+  if (units <= 0) {
+    return { rows: [], missing: true };
+  }
+  const sellNav = Number(item.sell_nav) || 0;
+  const isSold = Boolean(item.sell_date && sellNav > 0);
+  const navItem = monthlyNavForPurchase(item);
+  const buyDate = String(item.buy_date || "");
+  const sellDate = String(item.sell_date || "");
+  const points = (navItem?.months || [])
+    .filter((row) => row?.date && Number(row.nav) > 0)
+    .filter((row) => row.date >= buyDate && (!isSold || row.date < sellDate))
+    .map((row) => ({
+      month: row.month || monthKeyFromDate(row.date),
+      date: row.date,
+      nav: Number(row.nav)
+    }));
+
+  if (isSold) {
+    points.push({
+      month: monthKeyFromDate(sellDate),
+      date: sellDate,
+      nav: sellNav
+    });
+  }
+
+  let previousNav = buyNav;
+  const rows = [];
+  points
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .forEach((point) => {
+      const profit = units * (point.nav - previousNav);
+      rows.push({
+        month: point.month,
+        profit,
+        invested: amount,
+        valued: 1
+      });
+      previousNav = point.nav;
+    });
+
+  return { rows, missing: rows.length === 0 };
+}
+
 function purchaseValuation(item) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
@@ -550,21 +617,33 @@ function portfolioSummary() {
     }
     summary.holdings.set(key, existing);
 
-    const monthKey = String(item.buy_date || "").slice(0, 7) || "未填日期";
-    const month = summary.months.get(monthKey) || {
-      key: monthKey,
-      invested: 0,
-      currentValue: 0,
-      valued: 0,
-      count: 0
-    };
-    month.invested += amount;
-    month.count += 1;
-    if (valuation.currentValue !== null) {
-      month.currentValue += valuation.currentValue;
-      month.valued += 1;
+    const monthly = monthlyProfitRowsForPurchase(item);
+    if (monthly.missing) {
+      const monthKey = monthKeyFromDate(item.buy_date);
+      const month = summary.months.get(monthKey) || {
+        key: monthKey,
+        invested: 0,
+        profit: 0,
+        valued: 0,
+        missing: 0
+      };
+      month.invested += amount;
+      month.missing += 1;
+      summary.months.set(monthKey, month);
     }
-    summary.months.set(monthKey, month);
+    monthly.rows.forEach((row) => {
+      const month = summary.months.get(row.month) || {
+        key: row.month,
+        invested: 0,
+        profit: 0,
+        valued: 0,
+        missing: 0
+      };
+      month.invested += row.invested;
+      month.profit += row.profit;
+      month.valued += row.valued;
+      summary.months.set(row.month, month);
+    });
   });
   return summary;
 }
@@ -616,13 +695,14 @@ function renderPortfolioStats() {
         monthlyRows.length
           ? monthlyRows
               .map((item) => {
-                const profit = item.currentValue - item.invested;
+                const profit = item.profit || 0;
                 const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
                 const profitClass = profit >= 0 ? "up" : "down";
                 const monthLabel = item.key === "未填日期" ? item.key : item.key.replace("-", "/");
+                const missingText = item.missing ? `，缺 ${item.missing} 筆月底淨值` : "";
                 return `
                   <p>
-                    <span>${escapeHtml(monthLabel)}：投入 ${twd(item.invested)}</span>
+                    <span>${escapeHtml(monthLabel)}：逐月賺賠${missingText}</span>
                     <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
                   </p>
                 `;
@@ -787,6 +867,29 @@ async function fetchLatestFundValues() {
   sourceMeta = parsed.meta;
 }
 
+async function loadMonthlyNavData() {
+  try {
+    const response = await fetch("data/monthly_nav.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("找不到月底淨值資料。");
+    }
+    const payload = await response.json();
+    monthlyNavMeta = {
+      source: payload.source || "月底淨值資料",
+      updatedAt: payload.updatedAt || null,
+      items: payload.items || {}
+    };
+  } catch (error) {
+    monthlyNavMeta = {
+      source: "月底淨值未載入",
+      updatedAt: null,
+      items: {}
+    };
+  } finally {
+    renderPurchases();
+  }
+}
+
 async function refreshPurchaseValues() {
   if (!requireLogin()) {
     return;
@@ -805,6 +908,7 @@ async function refreshPurchaseValues() {
       return;
     }
     await fetchLatestFundValues();
+    await loadMonthlyNavData();
     renderPurchases();
     const dataTime = sourceMeta.updatedAt ? formatTaiwanDateTime(sourceMeta.updatedAt) : "最新資料";
     setMessage(els.purchaseRefreshStatus, `已更新 ${dataTime}`);
@@ -1303,4 +1407,4 @@ async function loadMarketData() {
 }
 
 initAuth();
-Promise.all([loadLatestData(), loadMarketData()]);
+Promise.all([loadLatestData(), loadMarketData(), loadMonthlyNavData()]);
