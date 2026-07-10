@@ -719,6 +719,9 @@ function portfolioSummary() {
     const monthly = monthlyProfitRowsForPurchase(item);
     if (monthly.missing && !monthly.rows.length) {
       const isActive = !item.sell_date;
+      const fallbackValue = isActive && valuation.currentValue !== null ? valuation.currentValue : null;
+      const fallbackProfit = fallbackValue !== null ? fallbackValue - amount : null;
+      const fallbackDate = fallbackValue !== null ? valuation.fund?.navDate || item.buy_date : item.buy_date;
       const monthKey = monthKeyFromDate(item.buy_date);
       const month = summary.months.get(monthKey) || {
         key: monthKey,
@@ -732,15 +735,20 @@ function portfolioSummary() {
       if (isActive) {
         month.invested += amount;
       }
+      if (fallbackValue !== null) {
+        month.value += fallbackValue;
+        month.profit += fallbackProfit;
+        month.valued += 1;
+      }
       month.missing += 1;
       month.details.push({
         name: item.fund_name,
         invested: isActive ? amount : 0,
-        value: null,
-        profit: null,
+        value: fallbackValue,
+        profit: fallbackProfit,
         startNav: Number(item.nav) || null,
-        endNav: null,
-        date: item.buy_date,
+        endNav: fallbackValue !== null ? valuation.currentNav : null,
+        date: fallbackDate,
         missing: true
       });
       summary.months.set(monthKey, month);
@@ -775,10 +783,13 @@ function portfolioSummary() {
     const weekly = weeklyProfitRowsForPurchase(item);
     if (weekly.missing && !weekly.rows.length) {
       const isActive = !item.sell_date;
+      const fallbackValue = isActive && valuation.currentValue !== null ? valuation.currentValue : null;
+      const fallbackProfit = fallbackValue !== null ? fallbackValue - amount : null;
+      const fallbackDate = fallbackValue !== null ? valuation.fund?.navDate || item.buy_date : item.buy_date;
       const weekKey = weekKeyFromDate(item.buy_date);
       const week = summary.weeks.get(weekKey) || {
         key: weekKey,
-        date: item.buy_date,
+        date: fallbackDate,
         invested: 0,
         value: 0,
         profit: 0,
@@ -789,15 +800,23 @@ function portfolioSummary() {
       if (isActive) {
         week.invested += amount;
       }
+      if (fallbackValue !== null) {
+        week.value += fallbackValue;
+        week.profit += fallbackProfit;
+        week.valued += 1;
+        if (!week.date || fallbackDate > week.date) {
+          week.date = fallbackDate;
+        }
+      }
       week.missing += 1;
       week.details.push({
         name: item.fund_name,
         invested: isActive ? amount : 0,
-        value: null,
-        profit: null,
+        value: fallbackValue,
+        profit: fallbackProfit,
         startNav: Number(item.nav) || null,
-        endNav: null,
-        date: item.buy_date,
+        endNav: fallbackValue !== null ? valuation.currentNav : null,
+        date: fallbackDate,
         missing: true
       });
       summary.weeks.set(weekKey, week);
@@ -847,7 +866,7 @@ function renderPeriodDetails(details, isOpen = false) {
       ${rows
         .map((detail) => {
           const profit = Number(detail.profit);
-          const hasProfit = Number.isFinite(profit);
+          const hasProfit = detail.profit !== null && detail.profit !== undefined && Number.isFinite(profit);
           const profitClass = hasProfit ? (profit >= 0 ? "up" : "down") : "";
           const navText =
             detail.startNav && detail.endNav
