@@ -1,6 +1,6 @@
 {
   "source": "Yahoo Taiwan market data",
-  "updatedAt": "2026-07-10T08:48:38.103966+00:00",
+  "updatedAt": "2026-07-10T08:51:44.952253+00:00",
   "markets": [
     {
       "id": "txf",
@@ -57,13 +57,13 @@
       "label": "Nasdaq 期貨",
       "symbol": "NQ=F",
       "url": "https://tw.stock.yahoo.com/quote/NQ%3DF",
-      "price": 29775.0,
-      "change": -162.0,
-      "changePercent": -0.54,
-      "return2w": 0.17,
-      "return1m": 1.09,
-      "return3m": 21.23,
-      "quoteTime": "2026-07-10T08:38:35Z"
+      "price": 29763.25,
+      "change": -173.75,
+      "changePercent": -0.58,
+      "return2w": 0.13,
+      "return1m": 1.05,
+      "return3m": 21.19,
+      "quoteTime": "2026-07-10T08:41:43Z"
     }
   ],
   "benchmarks": {

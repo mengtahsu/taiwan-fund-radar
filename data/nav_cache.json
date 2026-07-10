@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-10T08:48:32.533385+00:00",
+  "updatedAt": "2026-07-10T08:51:38.496686+00:00",
   "items": {
     "ACDD04-4102": {
       "return2w": 13.34,
@@ -9815,7 +9815,7 @@
       "return2w": -8.6,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:05.977881+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.405403+00:00",
       "return1m": 0.15,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9824,7 +9824,7 @@
       "return2w": -7.56,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:05.977892+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.383440+00:00",
       "return1m": 3.39,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9833,7 +9833,7 @@
       "return2w": -7.89,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:05.984585+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.383427+00:00",
       "return1m": 3.04,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9842,7 +9842,7 @@
       "return2w": -6.4,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:05.992482+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.399127+00:00",
       "return1m": -0.58,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9851,7 +9851,7 @@
       "return2w": -7.56,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:05.992487+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.405397+00:00",
       "return1m": 3.4,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9860,7 +9860,7 @@
       "return2w": -7.87,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:05.992490+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.391802+00:00",
       "return1m": 3.05,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9869,7 +9869,7 @@
       "return2w": -4.18,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:05.992493+00:00",
+      "fetchedAt": "2026-07-10T08:51:38.496321+00:00",
       "return1m": 2.74,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9878,7 +9878,7 @@
       "return2w": -3.13,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:06.002275+00:00",
+      "fetchedAt": "2026-07-10T08:51:38.496358+00:00",
       "return1m": 3.92,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9887,7 +9887,7 @@
       "return2w": -13.18,
       "return2wStartDate": "2026-06-24",
       "return2wEndDate": "2026-07-08",
-      "fetchedAt": "2026-07-10T08:28:06.144891+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.470843+00:00",
       "return1m": -2.16,
       "return1mStartDate": "2026-06-08",
       "return1mEndDate": "2026-07-08"
@@ -9896,7 +9896,7 @@
       "return2w": -10.09,
       "return2wStartDate": "2026-06-24",
       "return2wEndDate": "2026-07-08",
-      "fetchedAt": "2026-07-10T08:28:06.165149+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.494694+00:00",
       "return1m": -0.42,
       "return1mStartDate": "2026-06-08",
       "return1mEndDate": "2026-07-08"
@@ -9905,7 +9905,7 @@
       "return2w": -4.5,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:06.173323+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.493482+00:00",
       "return1m": -3.96,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9914,7 +9914,7 @@
       "return2w": -6.44,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:06.173331+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.488311+00:00",
       "return1m": -0.65,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9923,7 +9923,7 @@
       "return2w": -7.24,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:06.274616+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.597136+00:00",
       "return1m": -0.53,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9932,7 +9932,7 @@
       "return2w": -7.27,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:06.285744+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.534914+00:00",
       "return1m": -4.48,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9941,7 +9941,7 @@
       "return2w": -4.32,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:06.917297+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.399120+00:00",
       "return1m": 2.86,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9950,7 +9950,7 @@
       "return2w": -4.16,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:06.920079+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.391811+00:00",
       "return1m": 2.83,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9959,7 +9959,7 @@
       "return2w": -10.16,
       "return2wStartDate": "2026-06-24",
       "return2wEndDate": "2026-07-08",
-      "fetchedAt": "2026-07-10T08:28:07.078227+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.488305+00:00",
       "return1m": -1.2,
       "return1mStartDate": "2026-06-08",
       "return1mEndDate": "2026-07-08"
@@ -9968,7 +9968,7 @@
       "return2w": -8.62,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:07.089602+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.488315+00:00",
       "return1m": -1.48,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9977,7 +9977,7 @@
       "return2w": -5.09,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:07.093695+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.495786+00:00",
       "return1m": -4.27,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9986,7 +9986,7 @@
       "return2w": -4.88,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:28:07.096363+00:00",
+      "fetchedAt": "2026-07-10T08:51:37.492212+00:00",
       "return1m": 1.56,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -10190,5 +10190,5 @@
       "return1mEndDate": "2026-07-09"
     }
   },
-  "nextTopOffset": 0
+  "nextTopOffset": 20
 }

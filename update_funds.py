@@ -54,9 +54,9 @@ DEFAULT_INTERVAL_SECONDS = 3 * 60 * 60
 RECENT_RETURN_DAYS = 14
 MONTH_RETURN_DAYS = 30
 RECENT_NAV_WORKERS = 10
-RECENT_NAV_TOP_LIMIT = 160
+RECENT_NAV_TOP_LIMIT = 120
 RECENT_NAV_REFRESH_LIMIT = 20
-RECENT_NAV_MAX_AGE_HOURS = 48
+RECENT_NAV_MAX_AGE_HOURS = 72
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
 
@@ -1189,18 +1189,10 @@ def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
     if not high_performance_funds or limit <= 0:
         return []
 
-    missing_month_returns = [fund for fund in high_performance_funds if fund.get("return1m") is None]
-    candidates = missing_month_returns[:limit]
-    if len(candidates) >= limit:
-        return candidates
-
-    selected_ids = {str(fund.get("fundId") or "") for fund in candidates}
     offset = int(cache.get("nextTopOffset") or 0) % len(high_performance_funds)
     wrapped = high_performance_funds[offset:] + high_performance_funds[:offset]
-    remaining = [fund for fund in wrapped if str(fund.get("fundId") or "") not in selected_ids]
-    rotated_candidates = remaining[: min(limit - len(candidates), len(remaining))]
-    candidates.extend(rotated_candidates)
-    cache["nextTopOffset"] = (offset + len(rotated_candidates)) % len(high_performance_funds)
+    candidates = wrapped[: min(limit, len(wrapped))]
+    cache["nextTopOffset"] = (offset + len(candidates)) % len(high_performance_funds)
     return candidates
 
 
