@@ -896,6 +896,7 @@ function renderPurchases() {
               ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
             </div>
             <div class="purchase-actions">
+              <button type="button" data-edit-purchase="${escapeHtml(item.id)}">編輯</button>
               <button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>
               ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
               <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
@@ -907,6 +908,9 @@ function renderPurchases() {
     .join("");
   document.querySelectorAll("[data-delete-purchase]").forEach((button) => {
     button.addEventListener("click", () => deletePurchase(button.dataset.deletePurchase));
+  });
+  document.querySelectorAll("[data-edit-purchase]").forEach((button) => {
+    button.addEventListener("click", () => editPurchase(button.dataset.editPurchase));
   });
   document.querySelectorAll("[data-sell-purchase]").forEach((button) => {
     button.addEventListener("click", () => markPurchaseSold(button.dataset.sellPurchase));
@@ -1089,6 +1093,54 @@ async function deletePurchase(id) {
     return;
   }
   setMessage(els.purchaseMessage, "已刪除。");
+  await loadPurchases();
+}
+
+async function editPurchase(id) {
+  if (!db || !currentUser || !id) {
+    return;
+  }
+  const item = purchases.find((purchase) => purchase.id === id);
+  if (!item) {
+    return;
+  }
+  const fundName = window.prompt("基金名稱", item.fund_name || "");
+  if (!fundName || !fundName.trim()) {
+    return;
+  }
+  const buyDate = window.prompt("買入日期 YYYY-MM-DD", item.buy_date || todayInputValue());
+  if (!buyDate) {
+    return;
+  }
+  const amountText = window.prompt("買入金額", String(item.amount || ""));
+  if (!amountText) {
+    return;
+  }
+  const navText = window.prompt("買入淨值", item.nav ? String(item.nav) : "");
+  const note = window.prompt("備註，可留空", item.note || "");
+  const amount = Number(amountText);
+  const nav = navText ? Number(navText) : null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(buyDate) || !Number.isFinite(amount) || amount <= 0 || (nav !== null && (!Number.isFinite(nav) || nav < 0))) {
+    setMessage(els.purchaseMessage, "買入日期、金額或淨值格式不正確。", true);
+    return;
+  }
+  const nextFundId = String(item.fund_id || "").startsWith("manual:") ? `manual:${fundName.trim()}` : item.fund_id;
+  const { error } = await db
+    .from("fund_purchases")
+    .update({
+      fund_id: nextFundId,
+      fund_name: fundName.trim(),
+      buy_date: buyDate,
+      amount,
+      nav,
+      note: note?.trim() || null
+    })
+    .eq("id", id);
+  if (error) {
+    setMessage(els.purchaseMessage, `更新失敗：${error.message}`, true);
+    return;
+  }
+  setMessage(els.purchaseMessage, "已更新買入紀錄。");
   await loadPurchases();
 }
 
