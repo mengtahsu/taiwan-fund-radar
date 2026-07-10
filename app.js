@@ -409,7 +409,8 @@ function renderBuyLink(fund) {
     return `<a class="buy-link" href="${escapeHtml(fund.fubonBuyUrl)}">富邦 App 申購</a>`;
   }
   if (fund.fundrichAppUrl) {
-    return `<a class="buy-link secondary" href="${escapeHtml(fund.fundrichAppUrl)}">基富通 App 申購</a>`;
+    const label = fund.fundrichSource === "MoneyDJ 申購清單" ? "基富通申購" : "基富通 App 申購";
+    return `<a class="buy-link secondary" href="${escapeHtml(fund.fundrichAppUrl)}">${label}</a>`;
   }
   return "";
 }

@@ -170,6 +170,9 @@ FUBON_PLUS_BUY_URL = "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId
 FUNDRICH_FUND_TABLE_URL = "https://apis.fundrich.com.tw/FRSDataCenter/FundTableInfo"
 FUNDRICH_DETAIL_URL = "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/{fund_id}"
 FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
+MONEYDJ_MOBILE_PLATFORM_URL = "https://m.moneydj.com/jsondata/selectordermobile.aspx"
+MONEYDJ_FUND_BUY_URL = "https://m.moneydj.com/jsondata/funddj/fundjsondata.xdjjson?x=yp76008"
+MONEYDJ_FUNDRICH_PLATFORM_ID = "FundRich"
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 YAHOO_TW_QUOTE_URL = "https://tw.stock.yahoo.com/quote/{symbol}"
 
@@ -747,14 +750,75 @@ def canonical_fund_name(value: str) -> str:
     return re.sub(r"[\s　\-_－—/／、:：\.．]+", "", text).lower()
 
 
+def fund_class_tokens(value: str) -> set[str]:
+    text = html.unescape(value or "")
+    text = re.sub(r"[\(（][^()（）]*(?:本金|配息來源|收益平準金|保證收益)[^()（）]*[\)）]", "", text)
+    tokens = set()
+    patterns = [
+        r"[\(（]\s*([A-Z]{1,3})\s*[\)）]",
+        r"基金\s*([A-Z]{1,3})(?=(?:不配息|配息|月配|季配|累積|後收|類型|級別|$))",
+        r"([A-Z]{1,3})(?=類型|級別)",
+    ]
+    for pattern in patterns:
+        tokens.update(match.lower() for match in re.findall(pattern, text, flags=re.IGNORECASE))
+    return tokens
+
+
+def channel_item_name(item: dict[str, Any]) -> str:
+    return str(item.get("fundrichName") or item.get("name") or "")
+
+
+def distribution_tokens(value: str) -> set[str]:
+    text = html.unescape(value or "")
+    text = re.sub(r"[\(（][^()（）]*(?:本金|配息來源|收益平準金|保證收益)[^()（）]*[\)）]", "", text)
+    tokens = set()
+    is_accumulating = any(keyword in text for keyword in ["不配息", "累積", "累積型"])
+    if is_accumulating:
+        tokens.add("acc")
+    if any(keyword in text for keyword in ["月配", "月配息"]):
+        tokens.add("monthly")
+    elif any(keyword in text for keyword in ["季配", "季配息"]):
+        tokens.add("quarterly")
+    elif any(keyword in text for keyword in ["年配", "年配息"]):
+        tokens.add("yearly")
+    elif "配息" in text and not is_accumulating:
+        tokens.add("distribution")
+    return tokens
+
+
+def fund_classes_compatible(source_name: str, candidate_name: str) -> bool:
+    source_tokens = fund_class_tokens(source_name)
+    candidate_tokens = fund_class_tokens(candidate_name)
+    if source_tokens and not candidate_tokens:
+        return False
+    if source_tokens and candidate_tokens and source_tokens.isdisjoint(candidate_tokens):
+        return False
+    return True
+
+
+def fund_distribution_compatible(source_name: str, candidate_name: str) -> bool:
+    source_tokens = distribution_tokens(source_name)
+    candidate_tokens = distribution_tokens(candidate_name)
+    if source_tokens and not candidate_tokens:
+        return False
+    if source_tokens and candidate_tokens and source_tokens.isdisjoint(candidate_tokens):
+        return False
+    return True
+
+
+def channel_match_compatible(source_name: str, item: dict[str, Any]) -> bool:
+    candidate_name = channel_item_name(item)
+    return fund_classes_compatible(source_name, candidate_name) and fund_distribution_compatible(source_name, candidate_name)
+
+
 def find_channel_match(name: str, channel_items: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
     key = canonical_fund_name(name)
     if not key:
         return None
-    if key in channel_items:
+    if key in channel_items and channel_match_compatible(name, channel_items[key]):
         return channel_items[key]
     for candidate_key, item in channel_items.items():
-        if len(key) >= 5 and (key in candidate_key or candidate_key in key):
+        if len(key) >= 5 and (key in candidate_key or candidate_key in key) and channel_match_compatible(name, item):
             return item
     return None
 
@@ -1319,7 +1383,48 @@ def build_fundrich_lookup() -> dict[str, dict[str, Any]]:
     return lookup
 
 
-def enrich_channel_links(fund: dict[str, Any], fubon_lookup: dict[str, dict[str, Any]], fundrich_lookup: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def moneydj_fund_code(fund: dict[str, Any]) -> str:
+    return str(fund.get("fundId") or "").split("-", 1)[0].strip().upper()
+
+
+def build_moneydj_fundrich_lookup() -> dict[str, dict[str, Any]]:
+    platforms_payload = fetch_json(MONEYDJ_MOBILE_PLATFORM_URL)
+    fund_payload = fetch_json(MONEYDJ_FUND_BUY_URL)
+    platforms = (platforms_payload.get("ResultSet") or {}).get("Result") or []
+    fundrich_platform = next(
+        (item for item in platforms if str(item.get("V1") or "").lower() == MONEYDJ_FUNDRICH_PLATFORM_ID.lower()),
+        None,
+    )
+    if not fundrich_platform:
+        return {}
+    order_template = str(fundrich_platform.get("V4") or "")
+    if "{0}" not in order_template:
+        return {}
+
+    lookup: dict[str, dict[str, Any]] = {}
+    rows = (fund_payload.get("ResultSet") or {}).get("Result") or []
+    for row in rows:
+        if str(row.get("V3") or "").lower() != MONEYDJ_FUNDRICH_PLATFORM_ID.lower():
+            continue
+        fund_code = str(row.get("V1") or "").strip().upper()
+        if not fund_code:
+            continue
+        lookup[fund_code] = {
+            "fundrichFundId": str(row.get("V2") or "").strip(),
+            "fundrichName": f"MoneyDJ {fund_code} FundRich",
+            "fundrichUrl": order_template.replace("{0}", fund_code),
+            "fundrichAppUrl": order_template.replace("{0}", fund_code),
+            "fundrichSource": "MoneyDJ 申購清單",
+        }
+    return lookup
+
+
+def enrich_channel_links(
+    fund: dict[str, Any],
+    fubon_lookup: dict[str, dict[str, Any]],
+    moneydj_fundrich_lookup: dict[str, dict[str, Any]],
+    fundrich_lookup: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
     tags = list(fund.get("tags") or [])
     fubon = find_channel_match(fund["name"], fubon_lookup)
     if fubon:
@@ -1329,7 +1434,7 @@ def enrich_channel_links(fund: dict[str, Any], fubon_lookup: dict[str, dict[str,
         fund["fubonPurchaseTypes"] = fubon.get("fubonPurchaseTypes", [])
         tags.append("富邦銀行可買")
     else:
-        fundrich = find_channel_match(fund["name"], fundrich_lookup)
+        fundrich = moneydj_fundrich_lookup.get(moneydj_fund_code(fund)) or find_channel_match(fund["name"], fundrich_lookup)
         if fundrich:
             fund.update(fundrich)
             fund["channel"] = "基富通"
@@ -1341,8 +1446,13 @@ def enrich_channel_links(fund: dict[str, Any], fubon_lookup: dict[str, dict[str,
 def build_combined_tw_funds_payload() -> dict[str, Any]:
     base = build_megabank_tw_funds_payload()
     fubon_lookup = build_fubon_lookup()
+    try:
+        moneydj_fundrich_lookup = build_moneydj_fundrich_lookup()
+    except Exception as exc:
+        print(f"{datetime.now().isoformat(timespec='seconds')} MoneyDJ FundRich lookup failed: {exc}", file=sys.stderr)
+        moneydj_fundrich_lookup = {}
     fundrich_lookup = build_fundrich_lookup()
-    funds = [enrich_channel_links(fund, fubon_lookup, fundrich_lookup) for fund in base["funds"]]
+    funds = [enrich_channel_links(fund, fubon_lookup, moneydj_fundrich_lookup, fundrich_lookup) for fund in base["funds"]]
     return {
         "source": "兆豐基金/MoneyDJ 國內基金公開資料 + 富邦銀行/基富通可買連結",
         "updatedAt": datetime.now(timezone.utc).isoformat(),
@@ -1479,6 +1589,7 @@ def normalize_fund(item: dict[str, Any]) -> dict[str, Any]:
         "fundrichName",
         "fundrichUrl",
         "fundrichAppUrl",
+        "fundrichSource",
     ]:
         if item.get(key):
             normalized[key] = str(item[key])

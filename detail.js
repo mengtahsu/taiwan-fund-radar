@@ -57,7 +57,8 @@ function renderBuyActions(fund) {
   if (fund.fubonBuyUrl) {
     actions.push(`<a class="buy-link" href="${escapeHtml(fund.fubonBuyUrl)}">富邦 App 申購</a>`);
   } else if (fund.fundrichAppUrl) {
-    actions.push(`<a class="buy-link secondary" href="${escapeHtml(fund.fundrichAppUrl)}">基富通 App 申購</a>`);
+    const label = fund.fundrichSource === "MoneyDJ 申購清單" ? "基富通申購" : "基富通 App 申購";
+    actions.push(`<a class="buy-link secondary" href="${escapeHtml(fund.fundrichAppUrl)}">${label}</a>`);
   }
   if (fund.moneyDjUrl) {
     actions.push(`<a class="source-link" href="${escapeHtml(fund.moneyDjUrl)}" target="_blank" rel="noreferrer">MoneyDJ 原始資料</a>`);
