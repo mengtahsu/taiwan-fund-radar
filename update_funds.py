@@ -177,6 +177,8 @@ FUNDRICH_APP_BUY_URL = "fundrich://checkoutAppCart?funds=[{fund_id}]"
 MONEYDJ_MOBILE_PLATFORM_URL = "https://m.moneydj.com/jsondata/selectordermobile.aspx"
 MONEYDJ_FUND_BUY_URL = "https://m.moneydj.com/jsondata/funddj/fundjsondata.xdjjson?x=yp76008"
 MONEYDJ_FUNDRICH_PLATFORM_ID = "FundRich"
+SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co"
+SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK"
 MONEYDJ_DOMESTIC_RETURN_URL = (
     "https://www.moneydj.com/funddj/ys/yp305002.djhtm?"
     "a=0&b=0&c=0~0&d=0&e=0~0&f=0~0&g=0~0&h=0~0&i=0~0&j=0~0&k=0~0"
@@ -1321,6 +1323,43 @@ def monthly_nav_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
     return candidates
 
 
+def requested_nav_fund_ids() -> list[str]:
+    url = f"{SUPABASE_URL}/rest/v1/fund_nav_requests?select=fund_id&order=requested_at.desc&limit=200"
+    request = Request(
+        url,
+        headers={
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urlopen(request, timeout=12) as response:
+            rows = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:
+        print(f"{datetime.now().isoformat(timespec='seconds')} fund nav requests unavailable: {exc}", file=sys.stderr)
+        return []
+    if not isinstance(rows, list):
+        return []
+    ids = []
+    for row in rows:
+        fund_id = str((row or {}).get("fund_id") or "").strip()
+        if fund_id and not fund_id.startswith("manual:") and fund_id not in ids:
+            ids.append(fund_id)
+    return ids
+
+
+def prioritize_requested_nav_candidates(funds: list[dict[str, Any]], candidates: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    requested_ids = requested_nav_fund_ids()
+    if not requested_ids or limit <= 0:
+        return candidates
+    by_id = {str(fund.get("fundId") or ""): fund for fund in funds if str(fund.get("fundId") or "")}
+    prioritized = [by_id[fund_id] for fund_id in requested_ids if fund_id in by_id]
+    selected = {str(fund.get("fundId") or "") for fund in prioritized}
+    prioritized.extend(fund for fund in candidates if str(fund.get("fundId") or "") not in selected)
+    return prioritized[:limit]
+
+
 def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
     root = Path(__file__).resolve().parent
     cache = load_nav_cache(root)
@@ -1421,6 +1460,7 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
     cache = load_monthly_nav_cache(root)
     refresh_limit = int(os.environ.get("MONTHLY_NAV_REFRESH_LIMIT", MONTHLY_NAV_REFRESH_LIMIT))
     candidates = monthly_nav_candidates(funds, cache, max(0, refresh_limit))
+    candidates = prioritize_requested_nav_candidates(funds, candidates, max(0, refresh_limit))
     if not candidates:
         atomic_write_json(root / "data/monthly_nav.json", cache)
         return

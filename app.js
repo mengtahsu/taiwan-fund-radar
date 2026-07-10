@@ -941,7 +941,34 @@ async function loadPurchases() {
     return;
   }
   purchases = data || [];
+  requestOwnedFundNavHistory();
   renderPurchases();
+}
+
+async function requestOwnedFundNavHistory() {
+  if (!db || !purchases.length) {
+    return;
+  }
+  const requests = [...new Map(
+    purchases
+      .filter((item) => item.fund_id && !String(item.fund_id).startsWith("manual:"))
+      .map((item) => [
+        item.fund_id,
+        {
+          fund_id: item.fund_id,
+          fund_name: item.fund_name,
+          requested_at: new Date().toISOString()
+        }
+      ])
+  ).values()];
+  if (!requests.length) {
+    return;
+  }
+  try {
+    await db.from("fund_nav_requests").upsert(requests, { onConflict: "fund_id" });
+  } catch (_error) {
+    // The request table is optional; purchases must keep working if the migration has not been run.
+  }
 }
 
 async function fetchLatestFundValues() {
