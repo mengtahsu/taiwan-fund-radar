@@ -561,6 +561,7 @@ function periodProfitRowsForPurchase(item, periodType) {
       const profit = units * (point.nav - previousNav);
       rows.push({
         period: point.period,
+        date: point.date,
         profit,
         invested: amount,
         valued: 1
@@ -677,6 +678,7 @@ function portfolioSummary() {
       const weekKey = weekKeyFromDate(item.buy_date);
       const week = summary.weeks.get(weekKey) || {
         key: weekKey,
+        date: item.buy_date,
         invested: 0,
         profit: 0,
         valued: 0,
@@ -689,11 +691,15 @@ function portfolioSummary() {
     weekly.rows.forEach((row) => {
       const week = summary.weeks.get(row.period) || {
         key: row.period,
+        date: row.date,
         invested: 0,
         profit: 0,
         valued: 0,
         missing: 0
       };
+      if (!week.date || row.date > week.date) {
+        week.date = row.date;
+      }
       week.invested += row.invested;
       week.profit += row.profit;
       week.valued += row.valued;
@@ -777,9 +783,10 @@ function renderPortfolioStats() {
                 const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
                 const profitClass = profit >= 0 ? "up" : "down";
                 const missingText = item.missing ? `，缺 ${item.missing} 筆週底淨值` : "";
+                const weekLabel = item.date ? item.date.slice(5).replace("-", "/") : item.key;
                 return `
                   <p>
-                    <span>${escapeHtml(item.key)}：逐週賺賠${missingText}</span>
+                    <span>${escapeHtml(weekLabel)}：逐週賺賠${missingText}</span>
                     <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
                   </p>
                 `;
