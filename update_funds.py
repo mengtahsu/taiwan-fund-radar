@@ -60,6 +60,7 @@ RECENT_NAV_ALWAYS_REFRESH_TOP = 20
 RECENT_NAV_MAX_AGE_HOURS = 72
 MONTHLY_NAV_REFRESH_LIMIT = 10
 MONTHLY_NAV_MONTHS = 24
+WEEKLY_NAV_WEEKS = 52
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
 
@@ -414,6 +415,29 @@ def month_end_navs_from_series(series: list[tuple[datetime, float]], months: int
             "nav": round(nav, 4),
         }
         for month, (date, nav) in sorted(month_rows.items())
+    ]
+
+
+def week_end_navs_from_series(series: list[tuple[datetime, float]], weeks: int) -> list[dict[str, Any]]:
+    if not series:
+        return []
+    cutoff = datetime.now() - timedelta(days=max(1, weeks) * 7)
+    week_rows: dict[str, tuple[datetime, float]] = {}
+    for date, nav in sorted(series, key=lambda item: item[0]):
+        if date < cutoff:
+            continue
+        year, week, _weekday = date.isocalendar()
+        week_key = f"{year}-W{week:02d}"
+        current = week_rows.get(week_key)
+        if current is None or date >= current[0]:
+            week_rows[week_key] = (date, nav)
+    return [
+        {
+            "week": week,
+            "date": date.strftime("%Y-%m-%d"),
+            "nav": round(nav, 4),
+        }
+        for week, (date, nav) in sorted(week_rows.items())
     ]
 
 
@@ -1375,6 +1399,7 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
         return
 
     months = int(os.environ.get("MONTHLY_NAV_MONTHS", MONTHLY_NAV_MONTHS))
+    weeks = int(os.environ.get("WEEKLY_NAV_WEEKS", WEEKLY_NAV_WEEKS))
     max_workers = min(int(os.environ.get("RECENT_NAV_WORKERS", RECENT_NAV_WORKERS)), max(1, refresh_limit))
 
     def fetch_monthly(fund: dict[str, Any]) -> tuple[str, dict[str, Any] | None, str | None]:
@@ -1384,8 +1409,9 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
         try:
             series = fetch_moneydj_bcd_nav(fund_id)
             month_ends = month_end_navs_from_series(series, months)
-            if not month_ends:
-                return fund_id, None, "empty monthly nav"
+            week_ends = week_end_navs_from_series(series, weeks)
+            if not month_ends and not week_ends:
+                return fund_id, None, "empty period nav"
             return (
                 fund_id,
                 {
@@ -1393,6 +1419,7 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
                     "name": fund.get("name"),
                     "fetchedAt": datetime.now(timezone.utc).isoformat(),
                     "months": month_ends,
+                    "weeks": week_ends,
                 },
                 None,
             )

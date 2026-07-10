@@ -749,7 +749,8 @@ textarea {
 }
 
 .holding-breakdown,
-.monthly-breakdown {
+.monthly-breakdown,
+.weekly-breakdown {
   grid-column: 1 / -1;
   display: grid;
   gap: 6px;
@@ -760,35 +761,41 @@ textarea {
 }
 
 .holding-breakdown h4,
-.monthly-breakdown h4 {
+.monthly-breakdown h4,
+.weekly-breakdown h4 {
   margin: 0;
   font-size: 14px;
 }
 
 .holding-breakdown p,
-.monthly-breakdown p {
+.monthly-breakdown p,
+.weekly-breakdown p {
   margin: 0;
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
 }
 
-.monthly-breakdown p {
+.monthly-breakdown p,
+.weekly-breakdown p {
   display: flex;
   justify-content: space-between;
   gap: 12px;
 }
 
-.monthly-breakdown strong {
+.monthly-breakdown strong,
+.weekly-breakdown strong {
   color: var(--ink);
   white-space: nowrap;
 }
 
-.monthly-breakdown strong.up {
+.monthly-breakdown strong.up,
+.weekly-breakdown strong.up {
   color: var(--accent-dark);
 }
 
-.monthly-breakdown strong.down {
+.monthly-breakdown strong.down,
+.weekly-breakdown strong.down {
   color: var(--danger);
 }
 

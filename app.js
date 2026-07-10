@@ -506,7 +506,23 @@ function monthKeyFromDate(value) {
   return String(value || "").slice(0, 7) || "未填日期";
 }
 
-function monthlyProfitRowsForPurchase(item) {
+function weekKeyFromDate(value) {
+  if (!value) {
+    return "未填日期";
+  }
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) {
+    return "未填日期";
+  }
+  const target = new Date(date.valueOf());
+  const day = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((target - yearStart) / 86400000 + 1) / 7);
+  return `${target.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+
+function periodProfitRowsForPurchase(item, periodType) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
   const units = amount > 0 && buyNav > 0 ? amount / buyNav : 0;
@@ -518,18 +534,20 @@ function monthlyProfitRowsForPurchase(item) {
   const navItem = monthlyNavForPurchase(item);
   const buyDate = String(item.buy_date || "");
   const sellDate = String(item.sell_date || "");
-  const points = (navItem?.months || [])
+  const periodKey = periodType === "week" ? "week" : "month";
+  const sourceRows = periodType === "week" ? navItem?.weeks || [] : navItem?.months || [];
+  const points = sourceRows
     .filter((row) => row?.date && Number(row.nav) > 0)
     .filter((row) => row.date >= buyDate && (!isSold || row.date < sellDate))
     .map((row) => ({
-      month: row.month || monthKeyFromDate(row.date),
+      period: row[periodKey] || monthKeyFromDate(row.date),
       date: row.date,
       nav: Number(row.nav)
     }));
 
   if (isSold) {
     points.push({
-      month: monthKeyFromDate(sellDate),
+      period: periodType === "week" ? weekKeyFromDate(sellDate) : monthKeyFromDate(sellDate),
       date: sellDate,
       nav: sellNav
     });
@@ -542,7 +560,7 @@ function monthlyProfitRowsForPurchase(item) {
     .forEach((point) => {
       const profit = units * (point.nav - previousNav);
       rows.push({
-        month: point.month,
+        period: point.period,
         profit,
         invested: amount,
         valued: 1
@@ -551,6 +569,14 @@ function monthlyProfitRowsForPurchase(item) {
     });
 
   return { rows, missing: rows.length === 0 };
+}
+
+function monthlyProfitRowsForPurchase(item) {
+  return periodProfitRowsForPurchase(item, "month");
+}
+
+function weeklyProfitRowsForPurchase(item) {
+  return periodProfitRowsForPurchase(item, "week");
 }
 
 function purchaseValuation(item) {
@@ -593,7 +619,8 @@ function portfolioSummary() {
     currentValue: 0,
     valuedCount: 0,
     holdings: new Map(),
-    months: new Map()
+    months: new Map(),
+    weeks: new Map()
   };
   purchases.forEach((item) => {
     const amount = Number(item.amount) || 0;
@@ -632,8 +659,8 @@ function portfolioSummary() {
       summary.months.set(monthKey, month);
     }
     monthly.rows.forEach((row) => {
-      const month = summary.months.get(row.month) || {
-        key: row.month,
+      const month = summary.months.get(row.period) || {
+        key: row.period,
         invested: 0,
         profit: 0,
         valued: 0,
@@ -642,7 +669,35 @@ function portfolioSummary() {
       month.invested += row.invested;
       month.profit += row.profit;
       month.valued += row.valued;
-      summary.months.set(row.month, month);
+      summary.months.set(row.period, month);
+    });
+
+    const weekly = weeklyProfitRowsForPurchase(item);
+    if (weekly.missing) {
+      const weekKey = weekKeyFromDate(item.buy_date);
+      const week = summary.weeks.get(weekKey) || {
+        key: weekKey,
+        invested: 0,
+        profit: 0,
+        valued: 0,
+        missing: 0
+      };
+      week.invested += amount;
+      week.missing += 1;
+      summary.weeks.set(weekKey, week);
+    }
+    weekly.rows.forEach((row) => {
+      const week = summary.weeks.get(row.period) || {
+        key: row.period,
+        invested: 0,
+        profit: 0,
+        valued: 0,
+        missing: 0
+      };
+      week.invested += row.invested;
+      week.profit += row.profit;
+      week.valued += row.valued;
+      summary.weeks.set(row.period, week);
     });
   });
   return summary;
@@ -664,6 +719,7 @@ function renderPortfolioStats() {
     .sort((a, b) => b.invested - a.invested)
     .slice(0, 3);
   const monthlyRows = [...summary.months.values()].sort((a, b) => b.key.localeCompare(a.key));
+  const weeklyRows = [...summary.weeks.values()].sort((a, b) => b.key.localeCompare(a.key));
   els.portfolioStats.innerHTML = `
     <div class="portfolio-stat">
       <span>投入金額</span>
@@ -703,6 +759,27 @@ function renderPortfolioStats() {
                 return `
                   <p>
                     <span>${escapeHtml(monthLabel)}：逐月賺賠${missingText}</span>
+                    <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
+                  </p>
+                `;
+              })
+              .join("")
+          : "<p>尚無資料</p>"
+      }
+    </div>
+    <div class="weekly-breakdown">
+      <h4>每週賺賠</h4>
+      ${
+        weeklyRows.length
+          ? weeklyRows
+              .map((item) => {
+                const profit = item.profit || 0;
+                const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
+                const profitClass = profit >= 0 ? "up" : "down";
+                const missingText = item.missing ? `，缺 ${item.missing} 筆週底淨值` : "";
+                return `
+                  <p>
+                    <span>${escapeHtml(item.key)}：逐週賺賠${missingText}</span>
                     <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
                   </p>
                 `;
