@@ -653,17 +653,13 @@ function renderPurchases() {
         const valuation = purchaseValuation(item);
         const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
         const matchedFund = valuation.fund;
-        const matchedText = matchedFund
-          ? `對應 ${escapeHtml(matchedFund.fundId || matchedFund.ticker || "-")} / ${escapeHtml(matchedFund.type)} / 最新 ${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"} ${matchedFund.navDate ? `(${escapeHtml(matchedFund.navDate)})` : ""}`
-          : "未對到基金清單，請確認名稱或從基金卡片重新記錄";
+        const currentNavText = `${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"}${matchedFund?.navDate ? ` / ${escapeHtml(matchedFund.navDate)}` : ""}`;
         return `
           <article class="purchase-item">
             <div>
               <h4>${escapeHtml(item.fund_name)}</h4>
-              <p>${matchedText}</p>
-              <p>${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 買入淨值 ${moneyNumber(item.nav)}</p>
-              <p>單位 ${valuation.units ? moneyNumber(valuation.units) : "-"} / 最新淨值 ${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"}</p>
-              <p>估算現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profit === null ? "-" : `${twd(valuation.profit)} (${formatPercent(valuation.profitPercent || 0)})`}</strong></p>
+              <p>購買 ${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 買入淨值 ${moneyNumber(item.nav)}</p>
+              <p>現在淨值 ${currentNavText} / 現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
               ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
             </div>
             <button type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
