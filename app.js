@@ -586,7 +586,7 @@ function periodProfitRowsForPurchase(item, periodType) {
   let previousNav = buyNav;
   let previousPeriod = periodType === "week" ? weekKeyFromDate(buyDate) : monthKeyFromDate(buyDate);
   let hasGap = false;
-  const rows = [];
+  const rowsByPeriod = new Map();
   points
     .sort((a, b) => String(a.date).localeCompare(String(b.date)))
     .forEach((point) => {
@@ -597,17 +597,23 @@ function periodProfitRowsForPurchase(item, periodType) {
         return;
       }
       const profit = units * (point.nav - previousNav);
-      rows.push({
+      const row = rowsByPeriod.get(point.period) || {
         period: point.period,
         date: point.date,
-        profit,
+        profit: 0,
         invested: amount,
         valued: 1
-      });
+      };
+      row.profit += profit;
+      if (!row.date || point.date > row.date) {
+        row.date = point.date;
+      }
+      rowsByPeriod.set(point.period, row);
       previousNav = point.nav;
       previousPeriod = point.period;
     });
 
+  const rows = [...rowsByPeriod.values()];
   return { rows, missing: rows.length === 0 || hasGap };
 }
 
