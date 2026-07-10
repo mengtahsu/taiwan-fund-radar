@@ -54,7 +54,7 @@ DEFAULT_INTERVAL_SECONDS = 3 * 60 * 60
 RECENT_RETURN_DAYS = 14
 MONTH_RETURN_DAYS = 30
 RECENT_NAV_WORKERS = 10
-RECENT_NAV_TOP_LIMIT = 80
+RECENT_NAV_TOP_LIMIT = 160
 RECENT_NAV_REFRESH_LIMIT = 20
 RECENT_NAV_MAX_AGE_HOURS = 48
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
@@ -1140,8 +1140,23 @@ def apply_nav_cache(funds: list[dict[str, Any]], cache: dict[str, Any]) -> None:
     items = cache.get("items") or {}
     max_age_hours = float(os.environ.get("RECENT_NAV_MAX_AGE_HOURS", RECENT_NAV_MAX_AGE_HOURS))
     fresh_after = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+
+    def cached_for_fund(fund_id: str) -> dict[str, Any] | None:
+        cached = items.get(fund_id)
+        if cached:
+            return cached
+        prefix = f"{fund_id}-"
+        candidates = [
+            item
+            for key, item in items.items()
+            if isinstance(key, str) and key.startswith(prefix) and isinstance(item, dict)
+        ]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda item: parse_iso_datetime(item.get("fetchedAt")))
+
     for fund in funds:
-        cached = items.get(str(fund.get("fundId") or ""))
+        cached = cached_for_fund(str(fund.get("fundId") or ""))
         if not cached or cached.get("return2w") is None:
             continue
         if parse_iso_datetime(cached.get("fetchedAt")) < fresh_after:
