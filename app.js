@@ -518,7 +518,6 @@ function renderFunds() {
           <div class="stats">
             <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
             <div class="stat"><span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong></div>
-            <div class="stat"><span>${fund.nav ? "最新淨值" : fund.price ? "最新價格" : "基金規模"}</span><strong>${formatPrice(fund)}</strong></div>
             ${benchmarkStatus(fund, "2w")}
             ${benchmarkStatus(fund, "1m")}
           </div>
