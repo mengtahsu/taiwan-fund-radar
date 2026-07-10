@@ -8,10 +8,18 @@ create table if not exists public.fund_purchases (
   buy_date date not null,
   amount numeric not null check (amount > 0),
   nav numeric check (nav is null or nav >= 0),
+  sell_date date,
+  sell_nav numeric check (sell_nav is null or sell_nav >= 0),
+  sell_amount numeric check (sell_amount is null or sell_amount >= 0),
   note text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.fund_purchases
+  add column if not exists sell_date date,
+  add column if not exists sell_nav numeric check (sell_nav is null or sell_nav >= 0),
+  add column if not exists sell_amount numeric check (sell_amount is null or sell_amount >= 0);
 
 create index if not exists fund_purchases_user_date_idx
   on public.fund_purchases (user_id, buy_date desc, created_at desc);

@@ -491,23 +491,29 @@ function purchaseValuation(item) {
   const buyNav = Number(item.nav) || 0;
   const fund = currentFundForPurchase(item);
   const currentNav = Number(fund?.nav) || 0;
+  const sellNav = Number(item.sell_nav) || 0;
+  const sellAmount = Number(item.sell_amount) || 0;
+  const isSold = Boolean(item.sell_date);
+  const valueNav = isSold ? sellNav : currentNav;
   const units = amount > 0 && buyNav > 0 ? amount / buyNav : 0;
-  if (units <= 0 || currentNav <= 0) {
+  if (units <= 0 || (sellAmount <= 0 && valueNav <= 0)) {
     return {
       fund,
-      currentNav,
+      currentNav: valueNav,
       units,
+      isSold,
       currentValue: null,
       profit: null,
       profitPercent: null
     };
   }
-  const currentValue = units * currentNav;
+  const currentValue = isSold && sellAmount > 0 ? sellAmount : units * valueNav;
   const profit = currentValue - amount;
   return {
     fund,
-    currentNav,
+    currentNav: valueNav,
     units,
+    isSold,
     currentValue,
     profit,
     profitPercent: amount > 0 ? (profit / amount) * 100 : null
@@ -585,11 +591,11 @@ function renderPortfolioStats() {
       <strong>${twd(summary.invested)}</strong>
     </div>
     <div class="portfolio-stat">
-      <span>估算現值</span>
+      <span>估算/實收總值</span>
       <strong>${summary.valuedCount ? twd(summary.currentValue) : "-"}</strong>
     </div>
     <div class="portfolio-stat">
-      <span>未實現損益</span>
+      <span>總賺賠</span>
       <strong class="${profitClass}">${summary.valuedCount ? `${twd(profit)} ${profitPercent === null ? "" : `(${formatPercent(profitPercent)})`}` : "-"}</strong>
     </div>
     <div class="portfolio-stat">
@@ -707,16 +713,23 @@ function renderPurchases() {
         const valuation = purchaseValuation(item);
         const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
         const matchedFund = valuation.fund;
-        const currentNavText = `${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"}${matchedFund?.navDate ? ` / ${escapeHtml(matchedFund.navDate)}` : ""}`;
+        const currentNavText = `${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"}${!valuation.isSold && matchedFund?.navDate ? ` / ${escapeHtml(matchedFund.navDate)}` : ""}`;
+        const valueLine = valuation.isSold
+          ? `賣出 ${escapeHtml(item.sell_date)} / 賣出淨值 ${currentNavText} / 實收 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 賺賠`
+          : `現在淨值 ${currentNavText} / 現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益`;
         return `
           <article class="purchase-item">
             <div>
               <h4>${escapeHtml(item.fund_name)}</h4>
               <p>購買 ${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 買入淨值 ${moneyNumber(item.nav)}</p>
-              <p>現在淨值 ${currentNavText} / 現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
+              <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
               ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
             </div>
-            <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+            <div class="purchase-actions">
+              <button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>
+              ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
+              <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+            </div>
           </article>
         `;
       }
@@ -724,6 +737,12 @@ function renderPurchases() {
     .join("");
   document.querySelectorAll("[data-delete-purchase]").forEach((button) => {
     button.addEventListener("click", () => deletePurchase(button.dataset.deletePurchase));
+  });
+  document.querySelectorAll("[data-sell-purchase]").forEach((button) => {
+    button.addEventListener("click", () => markPurchaseSold(button.dataset.sellPurchase));
+  });
+  document.querySelectorAll("[data-clear-sale]").forEach((button) => {
+    button.addEventListener("click", () => clearPurchaseSale(button.dataset.clearSale));
   });
 }
 
@@ -735,9 +754,16 @@ async function loadPurchases() {
   }
   let { data, error } = await db
     .from("fund_purchases")
-    .select("id,fund_id,fund_name,buy_date,amount,nav,note,created_at")
+    .select("id,fund_id,fund_name,buy_date,amount,nav,sell_date,sell_nav,sell_amount,note,created_at")
     .order("buy_date", { ascending: false })
     .order("created_at", { ascending: false });
+  if (error && /sell_/i.test(error.message || "")) {
+    ({ data, error } = await db
+      .from("fund_purchases")
+      .select("id,fund_id,fund_name,buy_date,amount,nav,note,created_at")
+      .order("buy_date", { ascending: false })
+      .order("created_at", { ascending: false }));
+  }
   if (error) {
     purchases = [];
     renderPurchases();
@@ -842,6 +868,69 @@ async function deletePurchase(id) {
     return;
   }
   setMessage(els.purchaseMessage, "已刪除。");
+  await loadPurchases();
+}
+
+async function markPurchaseSold(id) {
+  if (!db || !currentUser || !id) {
+    return;
+  }
+  const item = purchases.find((purchase) => purchase.id === id);
+  if (!item) {
+    return;
+  }
+  const valuation = purchaseValuation(item);
+  const defaultDate = item.sell_date || todayInputValue();
+  const sellDate = window.prompt("賣出日期 YYYY-MM-DD", defaultDate);
+  if (!sellDate) {
+    return;
+  }
+  const defaultNav = item.sell_nav || valuation.currentNav || "";
+  const sellNavText = window.prompt("賣出淨值", defaultNav ? String(defaultNav) : "");
+  if (!sellNavText) {
+    return;
+  }
+  const sellNav = Number(sellNavText);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(sellDate) || !Number.isFinite(sellNav) || sellNav <= 0) {
+    setMessage(els.purchaseMessage, "賣出日期或賣出淨值格式不正確。", true);
+    return;
+  }
+  const { error } = await db
+    .from("fund_purchases")
+    .update({
+      sell_date: sellDate,
+      sell_nav: sellNav,
+      sell_amount: null
+    })
+    .eq("id", id);
+  if (error) {
+    setMessage(els.purchaseMessage, `賣出紀錄失敗：${error.message}`, true);
+    return;
+  }
+  setMessage(els.purchaseMessage, "已記錄賣出。");
+  await loadPurchases();
+}
+
+async function clearPurchaseSale(id) {
+  if (!db || !currentUser || !id) {
+    return;
+  }
+  if (!window.confirm("確定要取消這筆賣出紀錄？")) {
+    return;
+  }
+  const { error } = await db
+    .from("fund_purchases")
+    .update({
+      sell_date: null,
+      sell_nav: null,
+      sell_amount: null
+    })
+    .eq("id", id);
+  if (error) {
+    setMessage(els.purchaseMessage, `取消賣出失敗：${error.message}`, true);
+    return;
+  }
+  setMessage(els.purchaseMessage, "已取消賣出。");
   await loadPurchases();
 }
 

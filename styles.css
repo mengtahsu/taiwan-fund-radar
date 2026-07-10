@@ -814,6 +814,13 @@ textarea {
   font-weight: 700;
 }
 
+.purchase-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .purchase-item strong.up {
   color: var(--accent-dark);
 }
@@ -1021,6 +1028,14 @@ footer a {
 
   .portfolio-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .purchase-item {
+    grid-template-columns: 1fr;
+  }
+
+  .purchase-actions {
+    justify-content: flex-start;
   }
 }
 
