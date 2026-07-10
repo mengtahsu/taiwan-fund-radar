@@ -560,11 +560,13 @@ function periodProfitRowsForPurchase(item, periodType) {
     return { rows: [], missing: true };
   }
   const sellNav = Number(item.sell_nav) || 0;
-  const isSold = Boolean(item.sell_date && sellNav > 0);
+  const isSold = Boolean(item.sell_date);
+  const hasSellNav = sellNav > 0;
   const navItem = monthlyNavForPurchase(item);
   const buyDate = String(item.buy_date || "");
   const sellDate = String(item.sell_date || "");
   const periodKey = periodType === "week" ? "week" : "month";
+  const sellPeriod = isSold ? (periodType === "week" ? weekKeyFromDate(sellDate) : monthKeyFromDate(sellDate)) : "";
   const sourceRows = periodType === "week" ? navItem?.weeks || [] : navItem?.months || [];
   const points = sourceRows
     .filter((row) => row?.date && Number(row.nav) > 0)
@@ -575,9 +577,9 @@ function periodProfitRowsForPurchase(item, periodType) {
       nav: Number(row.nav)
     }));
 
-  if (isSold) {
+  if (isSold && hasSellNav) {
     points.push({
-      period: periodType === "week" ? weekKeyFromDate(sellDate) : monthKeyFromDate(sellDate),
+      period: sellPeriod,
       date: sellDate,
       nav: sellNav
     });
@@ -601,10 +603,13 @@ function periodProfitRowsForPurchase(item, periodType) {
         period: point.period,
         date: point.date,
         profit: 0,
-        invested: amount,
+        invested: isSold && point.period === sellPeriod ? 0 : amount,
         valued: 1
       };
       row.profit += profit;
+      if (isSold && point.period === sellPeriod) {
+        row.invested = 0;
+      }
       if (!row.date || point.date > row.date) {
         row.date = point.date;
       }
@@ -614,7 +619,7 @@ function periodProfitRowsForPurchase(item, periodType) {
     });
 
   const rows = [...rowsByPeriod.values()];
-  return { rows, missing: rows.length === 0 || hasGap };
+  return { rows, missing: rows.length === 0 || hasGap || (isSold && !hasSellNav) };
 }
 
 function monthlyProfitRowsForPurchase(item) {
@@ -662,6 +667,7 @@ function purchaseValuation(item) {
 function portfolioSummary() {
   const summary = {
     invested: 0,
+    costBasis: 0,
     currentValue: 0,
     valuedCount: 0,
     holdings: new Map(),
@@ -671,27 +677,34 @@ function portfolioSummary() {
   purchases.forEach((item) => {
     const amount = Number(item.amount) || 0;
     const valuation = purchaseValuation(item);
-    summary.invested += amount;
+    const isActive = !valuation.isSold;
+    summary.costBasis += amount;
+    if (isActive) {
+      summary.invested += amount;
+    }
     if (valuation.currentValue !== null) {
       summary.currentValue += valuation.currentValue;
       summary.valuedCount += 1;
     }
-    const key = item.fund_id || item.fund_name;
-    const existing = summary.holdings.get(key) || {
-      name: item.fund_name,
-      invested: 0,
-      currentValue: 0,
-      valued: 0
-    };
-    existing.invested += amount;
-    if (valuation.currentValue !== null) {
-      existing.currentValue += valuation.currentValue;
-      existing.valued += 1;
+    if (isActive) {
+      const key = item.fund_id || item.fund_name;
+      const existing = summary.holdings.get(key) || {
+        name: item.fund_name,
+        invested: 0,
+        currentValue: 0,
+        valued: 0
+      };
+      existing.invested += amount;
+      if (valuation.currentValue !== null) {
+        existing.currentValue += valuation.currentValue;
+        existing.valued += 1;
+      }
+      summary.holdings.set(key, existing);
     }
-    summary.holdings.set(key, existing);
 
     const monthly = monthlyProfitRowsForPurchase(item);
-    if (monthly.missing) {
+    if (monthly.missing && !monthly.rows.length) {
+      const isActive = !item.sell_date;
       const monthKey = monthKeyFromDate(item.buy_date);
       const month = summary.months.get(monthKey) || {
         key: monthKey,
@@ -700,7 +713,9 @@ function portfolioSummary() {
         valued: 0,
         missing: 0
       };
-      month.invested += amount;
+      if (isActive) {
+        month.invested += amount;
+      }
       month.missing += 1;
       summary.months.set(monthKey, month);
     }
@@ -719,7 +734,8 @@ function portfolioSummary() {
     });
 
     const weekly = weeklyProfitRowsForPurchase(item);
-    if (weekly.missing) {
+    if (weekly.missing && !weekly.rows.length) {
+      const isActive = !item.sell_date;
       const weekKey = weekKeyFromDate(item.buy_date);
       const week = summary.weeks.get(weekKey) || {
         key: weekKey,
@@ -729,7 +745,9 @@ function portfolioSummary() {
         valued: 0,
         missing: 0
       };
-      week.invested += amount;
+      if (isActive) {
+        week.invested += amount;
+      }
       week.missing += 1;
       summary.weeks.set(weekKey, week);
     }
@@ -763,8 +781,8 @@ function renderPortfolioStats() {
     return;
   }
   const summary = portfolioSummary();
-  const profit = summary.currentValue - summary.invested;
-  const profitPercent = summary.invested > 0 && summary.valuedCount > 0 ? (profit / summary.invested) * 100 : null;
+  const profit = summary.currentValue - summary.costBasis;
+  const profitPercent = summary.costBasis > 0 && summary.valuedCount > 0 ? (profit / summary.costBasis) * 100 : null;
   const profitClass = profit >= 0 ? "up" : "down";
   const topHoldings = [...summary.holdings.values()]
     .sort((a, b) => b.invested - a.invested)
