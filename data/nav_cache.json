@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-10T08:51:38.496686+00:00",
+  "updatedAt": "2026-07-10T09:05:13.794467+00:00",
   "items": {
     "ACDD04-4102": {
       "return2w": 13.34,
@@ -9815,7 +9815,7 @@
       "return2w": -8.6,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.405403+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.689443+00:00",
       "return1m": 0.15,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9824,7 +9824,7 @@
       "return2w": -7.56,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.383440+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.593920+00:00",
       "return1m": 3.39,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9833,7 +9833,7 @@
       "return2w": -7.89,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.383427+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.676231+00:00",
       "return1m": 3.04,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9851,7 +9851,7 @@
       "return2w": -7.56,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.405397+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.588863+00:00",
       "return1m": 3.4,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9860,7 +9860,7 @@
       "return2w": -7.87,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.391802+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.684401+00:00",
       "return1m": 3.05,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9869,7 +9869,7 @@
       "return2w": -4.18,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:38.496321+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.610503+00:00",
       "return1m": 2.74,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9878,7 +9878,7 @@
       "return2w": -3.13,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:38.496358+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.625558+00:00",
       "return1m": 3.92,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9896,7 +9896,7 @@
       "return2w": -10.09,
       "return2wStartDate": "2026-06-24",
       "return2wEndDate": "2026-07-08",
-      "fetchedAt": "2026-07-10T08:51:37.494694+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.799726+00:00",
       "return1m": -0.42,
       "return1mStartDate": "2026-06-08",
       "return1mEndDate": "2026-07-08"
@@ -9941,7 +9941,7 @@
       "return2w": -4.32,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.399120+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.610499+00:00",
       "return1m": 2.86,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9950,7 +9950,7 @@
       "return2w": -4.16,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.391811+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.599997+00:00",
       "return1m": 2.83,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9959,7 +9959,7 @@
       "return2w": -10.16,
       "return2wStartDate": "2026-06-24",
       "return2wEndDate": "2026-07-08",
-      "fetchedAt": "2026-07-10T08:51:37.488305+00:00",
+      "fetchedAt": "2026-07-10T09:05:13.794183+00:00",
       "return1m": -1.2,
       "return1mStartDate": "2026-06-08",
       "return1mEndDate": "2026-07-08"
@@ -9986,7 +9986,7 @@
       "return2w": -4.88,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.492212+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.706822+00:00",
       "return1m": 1.56,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -9995,19 +9995,19 @@
       "return2w": 1.73,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:13.566092+00:00",
       "return1m": 13.5,
       "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:48:10.314212+00:00"
+      "return1mEndDate": "2026-07-09"
     },
     "ACYT162": {
       "return2w": 1.59,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:13.585039+00:00",
       "return1m": 13.35,
       "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:48:10.315030+00:00"
+      "return1mEndDate": "2026-07-09"
     },
     "ACJS13": {
       "return2w": -5.96,
@@ -10085,7 +10085,7 @@
       "return2w": -5.77,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:48:31.659912+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.786229+00:00",
       "return1m": 3.69,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -10103,7 +10103,7 @@
       "return2w": -3.43,
       "return2wStartDate": "2026-06-25",
       "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:48:31.662383+00:00",
+      "fetchedAt": "2026-07-10T09:05:12.847506+00:00",
       "return1m": -0.34,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
@@ -10188,7 +10188,133 @@
       "return1m": 0.24,
       "return1mStartDate": "2026-06-09",
       "return1mEndDate": "2026-07-09"
+    },
+    "ACYT164": {
+      "return2w": 1.73,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.610493+00:00",
+      "return1m": 13.54,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACII94": {
+      "return2w": -6.73,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.619013+00:00",
+      "return1m": 7.05,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACFH73": {
+      "return2w": -11.72,
+      "return2wStartDate": "2026-06-24",
+      "return2wEndDate": "2026-07-08",
+      "fetchedAt": "2026-07-10T09:05:12.640645+00:00",
+      "return1m": -1.81,
+      "return1mStartDate": "2026-06-08",
+      "return1mEndDate": "2026-07-08"
+    },
+    "ACCS07": {
+      "return2w": -4.93,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.668113+00:00",
+      "return1m": -0.9,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACCA286": {
+      "return2w": -1.82,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.674109+00:00",
+      "return1m": 7.7,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACGC75": {
+      "return2w": -4.33,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.684406+00:00",
+      "return1m": 7.38,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACFH15": {
+      "return2w": -5.7,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.687276+00:00",
+      "return1m": 2.07,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACCS02": {
+      "return2w": -5.01,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.786237+00:00",
+      "return1m": -0.62,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACYT09": {
+      "return2w": -4.8,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.794620+00:00",
+      "return1m": 3.82,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACGC79": {
+      "return2w": -4.1,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.795840+00:00",
+      "return1m": -1.55,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACTI02": {
+      "return2w": -4.75,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.796946+00:00",
+      "return1m": 0.27,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACTS113": {
+      "return2w": -3.65,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.797946+00:00",
+      "return1m": 3.68,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
+    },
+    "ACCY118": {
+      "return2w": -5.66,
+      "return2wStartDate": "2026-06-24",
+      "return2wEndDate": "2026-07-08",
+      "fetchedAt": "2026-07-10T09:05:12.870464+00:00",
+      "return1m": -1.07,
+      "return1mStartDate": "2026-06-08",
+      "return1mEndDate": "2026-07-08"
+    },
+    "AC0052": {
+      "return2w": -1.74,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "fetchedAt": "2026-07-10T09:05:12.872249+00:00",
+      "return1m": 2.56,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09"
     }
   },
-  "nextTopOffset": 20
+  "nextTopOffset": 30
 }

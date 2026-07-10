@@ -55,7 +55,8 @@ RECENT_RETURN_DAYS = 14
 MONTH_RETURN_DAYS = 30
 RECENT_NAV_WORKERS = 10
 RECENT_NAV_TOP_LIMIT = 120
-RECENT_NAV_REFRESH_LIMIT = 20
+RECENT_NAV_REFRESH_LIMIT = 30
+RECENT_NAV_ALWAYS_REFRESH_TOP = 20
 RECENT_NAV_MAX_AGE_HOURS = 72
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
@@ -1174,25 +1175,72 @@ def apply_nav_cache(funds: list[dict[str, Any]], cache: dict[str, Any]) -> None:
             fund["return1mEndDate"] = cached["return1mEndDate"]
 
 
+def clamp(value: float, minimum: float, maximum: float) -> float:
+    return min(max(value, minimum), maximum)
+
+
+def load_taiwan_benchmark_returns(root: Path) -> dict[str, float]:
+    markets_path = root / "data/markets.json"
+    if not markets_path.exists():
+        return {}
+    try:
+        payload = json.loads(markets_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    for market in payload.get("markets", []):
+        if market.get("id") == "twii":
+            return {
+                "return2w": number(market.get("return2w", 0), "twii.return2w"),
+                "return1m": number(market.get("return1m", 0), "twii.return1m"),
+            }
+    return {}
+
+
+def growth_score_for_nav_refresh(fund: dict[str, Any], benchmark: dict[str, float]) -> int:
+    return_3m_score = clamp(number(fund.get("return3m", 0), "return3m") / 60, 0, 1)
+    if fund.get("return2w") is None or benchmark.get("return2w") is None:
+        excess_2w_score = 0.45
+    else:
+        excess_2w_score = clamp((number(fund["return2w"], "return2w") - benchmark["return2w"] + 10) / 25, 0, 1)
+    if fund.get("return1m") is None or benchmark.get("return1m") is None:
+        excess_1m_score = 0.45
+    else:
+        excess_1m_score = clamp((number(fund["return1m"], "return1m") - benchmark["return1m"] + 12) / 30, 0, 1)
+    momentum_score = return_3m_score * 0.45 + excess_2w_score * 0.3 + excess_1m_score * 0.25
+    return_score = clamp(number(fund.get("return3y", 0), "return3y") / 80, 0, 1)
+    sharpe_score = clamp(number(fund.get("sharpe", 0), "sharpe") / 2, 0, 1)
+    risk_fit = 1 - max(0, int(number(fund.get("risk", 5), "risk")) - 5) / 4
+    score = return_score * 0.25 + momentum_score * 0.45 + sharpe_score * 0.2 + risk_fit * 0.1
+    return round(score * 100)
+
+
 def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
+    root = Path(__file__).resolve().parent
+    benchmark = load_taiwan_benchmark_returns(root)
     top_limit = int(os.environ.get("RECENT_NAV_TOP_LIMIT", RECENT_NAV_TOP_LIMIT))
-    high_performance_funds = sorted(
+    always_refresh_top = int(os.environ.get("RECENT_NAV_ALWAYS_REFRESH_TOP", RECENT_NAV_ALWAYS_REFRESH_TOP))
+    score_ranked_funds = sorted(
         funds,
         key=lambda fund: (
+            growth_score_for_nav_refresh(fund, benchmark),
             number(fund.get("return3y", 0), "return3y"),
             number(fund.get("return3m", 0), "return3m"),
-            number(fund.get("return1y", 0), "return1y"),
         ),
         reverse=True,
-    )[:top_limit]
+    )
+    high_performance_funds = score_ranked_funds[:top_limit]
 
     if not high_performance_funds or limit <= 0:
         return []
 
+    always_refresh = score_ranked_funds[: min(always_refresh_top, limit, len(score_ranked_funds))]
+    selected_ids = {str(fund.get("fundId") or "") for fund in always_refresh}
     offset = int(cache.get("nextTopOffset") or 0) % len(high_performance_funds)
     wrapped = high_performance_funds[offset:] + high_performance_funds[:offset]
-    candidates = wrapped[: min(limit, len(wrapped))]
-    cache["nextTopOffset"] = (offset + len(candidates)) % len(high_performance_funds)
+    rotating_candidates = [fund for fund in wrapped if str(fund.get("fundId") or "") not in selected_ids]
+    rotating_limit = max(0, limit - len(always_refresh))
+    candidates = always_refresh + rotating_candidates[: min(rotating_limit, len(rotating_candidates))]
+    cache["nextTopOffset"] = (offset + rotating_limit) % len(high_performance_funds)
     return candidates
 
 
