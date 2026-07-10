@@ -137,6 +137,7 @@ let marketMeta = {
 const DISPLAY_LIMIT = 50;
 const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK";
+const SITE_URL = "https://mengtahsu.github.io/taiwan-fund-radar/";
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let currentUser = null;
@@ -630,7 +631,13 @@ async function signUp() {
   }
   const email = els.authEmail.value.trim();
   const password = els.authPassword.value;
-  const { error } = await db.auth.signUp({ email, password });
+  const { error } = await db.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${SITE_URL}#portfolio`
+    }
+  });
   setMessage(els.authMessage, error ? `註冊失敗：${error.message}` : "註冊完成，請依 Supabase 設定確認 email 後登入。", Boolean(error));
 }
 
