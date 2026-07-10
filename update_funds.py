@@ -58,7 +58,7 @@ RECENT_NAV_TOP_LIMIT = 120
 RECENT_NAV_REFRESH_LIMIT = 30
 RECENT_NAV_ALWAYS_REFRESH_TOP = 20
 RECENT_NAV_MAX_AGE_HOURS = 72
-MONTHLY_NAV_REFRESH_LIMIT = 10
+MONTHLY_NAV_REFRESH_LIMIT = 20
 MONTHLY_NAV_MONTHS = 24
 WEEKLY_NAV_WEEKS = 52
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
@@ -1297,6 +1297,30 @@ def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
     return candidates
 
 
+def monthly_nav_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
+    if limit <= 0:
+        return []
+    root = Path(__file__).resolve().parent
+    benchmark = load_taiwan_benchmark_returns(root)
+    default_funds = [fund for fund in funds if is_buyable_default_fund(fund) and str(fund.get("fundId") or "")]
+    ranked_funds = sorted(
+        default_funds,
+        key=lambda fund: (
+            growth_score_for_nav_refresh(fund, benchmark),
+            number(fund.get("return3y", 0), "return3y"),
+            str(fund.get("fundId") or ""),
+        ),
+        reverse=True,
+    )
+    if not ranked_funds:
+        return []
+    offset = int(cache.get("nextAllOffset") or 0) % len(ranked_funds)
+    wrapped = ranked_funds[offset:] + ranked_funds[:offset]
+    candidates = wrapped[: min(limit, len(wrapped))]
+    cache["nextAllOffset"] = (offset + len(candidates)) % len(ranked_funds)
+    return candidates
+
+
 def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
     root = Path(__file__).resolve().parent
     cache = load_nav_cache(root)
@@ -1374,12 +1398,14 @@ def load_monthly_nav_cache(root: Path) -> dict[str, Any]:
     cache_path = root / "data/monthly_nav.json"
     items: dict[str, Any] = {}
     next_top_offset = 0
+    next_all_offset = 0
     if cache_path.exists():
         try:
             payload = json.loads(cache_path.read_text(encoding="utf-8"))
             if isinstance(payload.get("items"), dict):
                 items.update(payload["items"])
             next_top_offset = int(payload.get("nextTopOffset") or 0)
+            next_all_offset = int(payload.get("nextAllOffset") or 0)
         except (OSError, json.JSONDecodeError, ValueError):
             pass
     return {
@@ -1387,13 +1413,14 @@ def load_monthly_nav_cache(root: Path) -> dict[str, Any]:
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "items": items,
         "nextTopOffset": max(0, next_top_offset),
+        "nextAllOffset": max(0, next_all_offset),
     }
 
 
 def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
     cache = load_monthly_nav_cache(root)
     refresh_limit = int(os.environ.get("MONTHLY_NAV_REFRESH_LIMIT", MONTHLY_NAV_REFRESH_LIMIT))
-    candidates = nav_refresh_candidates(funds, cache, max(0, refresh_limit))
+    candidates = monthly_nav_candidates(funds, cache, max(0, refresh_limit))
     if not candidates:
         atomic_write_json(root / "data/monthly_nav.json", cache)
         return
