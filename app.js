@@ -1104,8 +1104,9 @@ async function editPurchase(id) {
   if (!item) {
     return;
   }
-  const fundName = window.prompt("基金名稱", item.fund_name || "");
-  if (!fundName || !fundName.trim()) {
+  const isManualFund = String(item.fund_id || "").startsWith("manual:");
+  const fundName = isManualFund ? window.prompt("基金名稱", item.fund_name || "") : item.fund_name;
+  if (!fundName || !String(fundName).trim()) {
     return;
   }
   const buyDate = window.prompt("買入日期 YYYY-MM-DD", item.buy_date || todayInputValue());
@@ -1124,7 +1125,11 @@ async function editPurchase(id) {
     setMessage(els.purchaseMessage, "買入日期、金額或淨值格式不正確。", true);
     return;
   }
-  const nextFundId = String(item.fund_id || "").startsWith("manual:") ? `manual:${fundName.trim()}` : item.fund_id;
+  if (item.sell_date && buyDate > item.sell_date) {
+    setMessage(els.purchaseMessage, "買入日期不能晚於賣出日期。", true);
+    return;
+  }
+  const nextFundId = isManualFund ? `manual:${fundName.trim()}` : item.fund_id;
   const { error } = await db
     .from("fund_purchases")
     .update({
