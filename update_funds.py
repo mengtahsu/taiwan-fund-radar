@@ -1215,7 +1215,7 @@ def growth_score_for_nav_refresh(fund: dict[str, Any], benchmark: dict[str, floa
 
 
 def is_buyable_default_fund(fund: dict[str, Any]) -> bool:
-    return str(fund.get("type") or "") not in {"ETF", "ETF連結"}
+    return str(fund.get("type") or "") != "ETF"
 
 
 def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:

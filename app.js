@@ -301,7 +301,7 @@ function filteredFunds() {
       const excess2w = excessReturn2w(fund);
       const typeMatched =
         typeValue === "all" ||
-        (typeValue === "non-etf" ? !["ETF", "ETF連結"].includes(fund.type) : typeValue === "fubon-buyable" ? Boolean(fund.fubonBuyUrl) : fund.type === typeValue);
+        (typeValue === "non-etf" ? fund.type !== "ETF" : typeValue === "fubon-buyable" ? Boolean(fund.fubonBuyUrl) : fund.type === typeValue);
       return (
         (!q || haystack.includes(q)) &&
         typeMatched &&
@@ -668,12 +668,13 @@ async function savePurchase(event) {
   if (!requireLogin()) {
     return;
   }
-  const fundId = els.purchaseFundId.value.trim();
-  const fundName = els.purchaseFundName.value.trim();
+  const typedFundName = els.purchaseFundName.value.trim();
+  const fundId = els.purchaseFundId.value.trim() || (typedFundName ? `manual:${typedFundName}` : "");
+  const fundName = typedFundName;
   const amount = Number(els.purchaseAmount.value);
   const nav = els.purchaseNav.value ? Number(els.purchaseNav.value) : null;
   if (!fundId || !fundName) {
-    setMessage(els.purchaseMessage, "請先從基金卡片按「記錄買入」。", true);
+    setMessage(els.purchaseMessage, "請先選基金，或直接輸入基金名稱。", true);
     return;
   }
   if (!els.purchaseDate.value || !Number.isFinite(amount) || amount <= 0) {
@@ -1031,6 +1032,9 @@ els.signIn?.addEventListener("click", signIn);
 els.signUp?.addEventListener("click", signUp);
 els.signOut?.addEventListener("click", signOut);
 els.purchaseForm?.addEventListener("submit", savePurchase);
+els.purchaseFundName?.addEventListener("input", () => {
+  els.purchaseFundId.value = "";
+});
 els.refreshPurchases?.addEventListener("click", loadPurchases);
 if (els.purchaseDate) {
   els.purchaseDate.value = todayInputValue();
