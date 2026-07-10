@@ -604,9 +604,12 @@ function periodProfitRowsForPurchase(item, periodType) {
         date: point.date,
         profit: 0,
         invested: isSold && point.period === sellPeriod ? 0 : amount,
+        startNav: previousNav,
+        endNav: point.nav,
         valued: 1
       };
       row.profit += profit;
+      row.endNav = point.nav;
       if (isSold && point.period === sellPeriod) {
         row.invested = 0;
       }
@@ -718,12 +721,22 @@ function portfolioSummary() {
         invested: 0,
         profit: 0,
         valued: 0,
-        missing: 0
+        missing: 0,
+        details: []
       };
       if (isActive) {
         month.invested += amount;
       }
       month.missing += 1;
+      month.details.push({
+        name: item.fund_name,
+        invested: isActive ? amount : 0,
+        profit: null,
+        startNav: Number(item.nav) || null,
+        endNav: null,
+        date: item.buy_date,
+        missing: true
+      });
       summary.months.set(monthKey, month);
     }
     monthly.rows.forEach((row) => {
@@ -732,11 +745,21 @@ function portfolioSummary() {
         invested: 0,
         profit: 0,
         valued: 0,
-        missing: 0
+        missing: 0,
+        details: []
       };
       month.invested += row.invested;
       month.profit += row.profit;
       month.valued += row.valued;
+      month.details.push({
+        name: item.fund_name,
+        invested: row.invested,
+        profit: row.profit,
+        startNav: row.startNav,
+        endNav: row.endNav,
+        date: row.date,
+        missing: false
+      });
       summary.months.set(row.period, month);
     });
 
@@ -750,12 +773,22 @@ function portfolioSummary() {
         invested: 0,
         profit: 0,
         valued: 0,
-        missing: 0
+        missing: 0,
+        details: []
       };
       if (isActive) {
         week.invested += amount;
       }
       week.missing += 1;
+      week.details.push({
+        name: item.fund_name,
+        invested: isActive ? amount : 0,
+        profit: null,
+        startNav: Number(item.nav) || null,
+        endNav: null,
+        date: item.buy_date,
+        missing: true
+      });
       summary.weeks.set(weekKey, week);
     }
     weekly.rows.forEach((row) => {
@@ -765,7 +798,8 @@ function portfolioSummary() {
         invested: 0,
         profit: 0,
         valued: 0,
-        missing: 0
+        missing: 0,
+        details: []
       };
       if (!week.date || row.date > week.date) {
         week.date = row.date;
@@ -773,10 +807,49 @@ function portfolioSummary() {
       week.invested += row.invested;
       week.profit += row.profit;
       week.valued += row.valued;
+      week.details.push({
+        name: item.fund_name,
+        invested: row.invested,
+        profit: row.profit,
+        startNav: row.startNav,
+        endNav: row.endNav,
+        date: row.date,
+        missing: false
+      });
       summary.weeks.set(row.period, week);
     });
   });
   return summary;
+}
+
+function renderPeriodDetails(details, isOpen = false) {
+  if (!details?.length) {
+    return "";
+  }
+  const rows = [...details].sort((a, b) => Math.abs(Number(b.profit) || 0) - Math.abs(Number(a.profit) || 0));
+  return `
+    <details class="period-detail"${isOpen ? " open" : ""}>
+      <summary>明細</summary>
+      ${rows
+        .map((detail) => {
+          const profit = Number(detail.profit);
+          const hasProfit = Number.isFinite(profit);
+          const profitClass = hasProfit ? (profit >= 0 ? "up" : "down") : "";
+          const navText =
+            detail.startNav && detail.endNav
+              ? `${moneyNumber(detail.startNav)} -> ${moneyNumber(detail.endNav)}`
+              : "缺淨值";
+          return `
+            <div>
+              <span>${escapeHtml(detail.name || "未命名基金")}</span>
+              <small>${compactTwdWan(detail.invested)} / ${navText}${detail.date ? ` / ${escapeHtml(detail.date)}` : ""}</small>
+              <strong class="${profitClass}">${hasProfit ? twd(profit) : "缺資料"}</strong>
+            </div>
+          `;
+        })
+        .join("")}
+    </details>
+  `;
 }
 
 function renderPortfolioStats() {
@@ -834,10 +907,13 @@ function renderPortfolioStats() {
                 const monthLabel = item.key === "未填日期" ? item.key : item.key.replace("-", "/");
                 const coverageText = `，${compactTwdWan(item.invested)}`;
                 return `
-                  <p>
-                    <span>${escapeHtml(monthLabel)}：${coverageText.slice(1)}</span>
-                    <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
-                  </p>
+                  <div class="period-row">
+                    <p>
+                      <span>${escapeHtml(monthLabel)}：${coverageText.slice(1)}</span>
+                      <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
+                    </p>
+                    ${renderPeriodDetails(item.details, item.key === monthlyRows[0]?.key)}
+                  </div>
                 `;
               })
               .join("")
@@ -856,10 +932,13 @@ function renderPortfolioStats() {
                 const weekLabel = item.date ? item.date.slice(5).replace("-", "/") : item.key;
                 const coverageText = `，${compactTwdWan(item.invested)}`;
                 return `
-                  <p>
-                    <span>${escapeHtml(weekLabel)}：${coverageText.slice(1)}</span>
-                    <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
-                  </p>
+                  <div class="period-row">
+                    <p>
+                      <span>${escapeHtml(weekLabel)}：${coverageText.slice(1)}</span>
+                      <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
+                    </p>
+                    ${renderPeriodDetails(item.details, item.key === weeklyRows[0]?.key)}
+                  </div>
                 `;
               })
               .join("")

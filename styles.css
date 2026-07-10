@@ -783,6 +783,41 @@ textarea {
   gap: 12px;
 }
 
+.period-row {
+  display: grid;
+  gap: 4px;
+}
+
+.period-detail {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.period-detail summary {
+  width: max-content;
+  cursor: pointer;
+  color: var(--accent-dark);
+}
+
+.period-detail div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+}
+
+.period-detail span,
+.period-detail small {
+  min-width: 0;
+}
+
+.period-detail small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+
 .monthly-breakdown strong,
 .weekly-breakdown strong {
   color: var(--ink);
