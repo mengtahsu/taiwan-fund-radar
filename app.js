@@ -592,11 +592,14 @@ function periodProfitRowsForPurchase(item, periodType) {
   points
     .sort((a, b) => String(a.date).localeCompare(String(b.date)))
     .forEach((point) => {
+      const isSalePoint = isSold && point.period === sellPeriod && point.date === sellDate;
       if (!periodsAreContinuous(previousPeriod, point.period, periodType)) {
         hasGap = true;
-        previousNav = point.nav;
-        previousPeriod = point.period;
-        return;
+        if (!isSalePoint) {
+          previousNav = point.nav;
+          previousPeriod = point.period;
+          return;
+        }
       }
       const profit = units * (point.nav - previousNav);
       const periodValue = isSold && point.period === sellPeriod ? 0 : units * point.nav;
@@ -779,6 +782,32 @@ function portfolioSummary() {
       });
       summary.months.set(row.period, month);
     });
+    const buyMonthKey = monthKeyFromDate(item.buy_date);
+    if (monthly.rows.length && !monthly.rows.some((row) => row.period === buyMonthKey)) {
+      const month = summary.months.get(buyMonthKey) || {
+        key: buyMonthKey,
+        invested: 0,
+        value: 0,
+        profit: 0,
+        valued: 0,
+        missing: 0,
+        details: []
+      };
+      month.invested += amount;
+      month.value += amount;
+      month.valued += 1;
+      month.details.push({
+        name: item.fund_name,
+        invested: amount,
+        value: amount,
+        profit: 0,
+        startNav: Number(item.nav) || null,
+        endNav: Number(item.nav) || null,
+        date: item.buy_date,
+        missing: false
+      });
+      summary.months.set(buyMonthKey, month);
+    }
 
     const weekly = weeklyProfitRowsForPurchase(item);
     if (weekly.missing && !weekly.rows.length) {
@@ -851,6 +880,33 @@ function portfolioSummary() {
       });
       summary.weeks.set(row.period, week);
     });
+    const buyWeekKey = weekKeyFromDate(item.buy_date);
+    if (weekly.rows.length && !weekly.rows.some((row) => row.period === buyWeekKey)) {
+      const week = summary.weeks.get(buyWeekKey) || {
+        key: buyWeekKey,
+        date: item.buy_date,
+        invested: 0,
+        value: 0,
+        profit: 0,
+        valued: 0,
+        missing: 0,
+        details: []
+      };
+      week.invested += amount;
+      week.value += amount;
+      week.valued += 1;
+      week.details.push({
+        name: item.fund_name,
+        invested: amount,
+        value: amount,
+        profit: 0,
+        startNav: Number(item.nav) || null,
+        endNav: Number(item.nav) || null,
+        date: item.buy_date,
+        missing: false
+      });
+      summary.weeks.set(buyWeekKey, week);
+    }
   });
   return summary;
 }
