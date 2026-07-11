@@ -1158,7 +1158,13 @@ function renderPeriodRow(item, periodType) {
   return `
     <div class="period-row">
       <p>
-        <span>${escapeHtml(label)}：本${escapeHtml(investedText)} /<br>現${escapeHtml(valueText)}</span>
+        <span class="period-text">
+          <span class="period-prefix">${escapeHtml(label)}：</span>
+          <span class="period-amounts">
+            <span>本${escapeHtml(investedText)} /</span>
+            <span>現${escapeHtml(valueText)}</span>
+          </span>
+        </span>
         ${periodDetailButton(detailKey, profitLabel, profitClass)}
       </p>
     </div>

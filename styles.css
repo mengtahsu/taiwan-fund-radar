@@ -828,6 +828,20 @@ textarea {
   line-height: 1.35;
 }
 
+.period-text {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: start;
+}
+
+.period-prefix {
+  white-space: nowrap;
+}
+
+.period-amounts {
+  display: grid;
+}
+
 .period-row {
   display: grid;
   gap: 4px;
