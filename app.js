@@ -448,11 +448,27 @@ function riskClass(risk) {
 
 function renderFundName(fund) {
   const name = escapeHtml(fund.name);
-  const moneyDjId = String(fund.fundId || "").split("-", 1)[0].trim();
-  if (!moneyDjId) {
+  const url = moneyDjFundUrl(fund.fundId);
+  if (!url) {
     return name;
   }
-  const url = `https://m.moneydj.com/a1.aspx?a=${encodeURIComponent(moneyDjId)}`;
+  return `<a class="fund-name-link" href="${url}">${name}</a>`;
+}
+
+function moneyDjFundUrl(fundId) {
+  const moneyDjId = String(fundId || "").split("-", 1)[0].trim();
+  if (!moneyDjId) {
+    return "";
+  }
+  return `https://m.moneydj.com/a1.aspx?a=${encodeURIComponent(moneyDjId)}`;
+}
+
+function renderPurchaseFundName(item, matchedFund) {
+  const name = escapeHtml(item.fund_name || "");
+  const url = moneyDjFundUrl(matchedFund?.fundId || item.fund_id);
+  if (!url) {
+    return name;
+  }
   return `<a class="fund-name-link" href="${url}">${name}</a>`;
 }
 
@@ -1459,7 +1475,7 @@ function renderPurchases() {
     return `
       <article class="purchase-item${valuation.isSold ? " sold" : ""}">
         <div>
-          <h4>${escapeHtml(item.fund_name)}</h4>
+          <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
           <p>購買 ${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 買入淨值 ${moneyNumber(item.nav)}</p>
           <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
           ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
