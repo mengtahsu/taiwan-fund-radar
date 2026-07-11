@@ -184,7 +184,6 @@ const els = {
   dataStatus: document.querySelector("#dataStatus"),
   marketList: document.querySelector("#marketList"),
   reset: document.querySelector("#resetBtn"),
-  highReturn: document.querySelector("#highReturnBtn"),
   authStatus: document.querySelector("#authStatus"),
   authForm: document.querySelector("#authForm"),
   accountPanel: document.querySelector("#accountPanel"),
@@ -2174,19 +2173,6 @@ function resetFilters() {
   renderFunds();
 }
 
-function applyHighReturnPreset() {
-  els.query.value = "";
-  els.type.value = "non-etf";
-  els.region.value = "all";
-  els.risk.value = 5;
-  els.return.value = 8;
-  els.beatBenchmark.checked = true;
-  els.sort.value = "excess2w";
-  document.querySelector("input[name='goal'][value='growth']").checked = true;
-  syncLabels();
-  renderFunds();
-}
-
 [els.query, els.type, els.region, els.risk, els.return, els.beatBenchmark, els.sort].forEach((el) => {
   el.addEventListener("input", () => {
     syncLabels();
@@ -2203,7 +2189,6 @@ document.addEventListener("keydown", (event) => {
 
 document.querySelectorAll("input[name='goal']").forEach((input) => input.addEventListener("change", renderFunds));
 els.reset.addEventListener("click", resetFilters);
-els.highReturn.addEventListener("click", applyHighReturnPreset);
 els.signIn?.addEventListener("click", signIn);
 els.signUp?.addEventListener("click", signUp);
 els.signOut?.addEventListener("click", signOut);

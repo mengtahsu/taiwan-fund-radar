@@ -104,20 +104,6 @@ button.primary {
   color: #fff;
 }
 
-.wide-action {
-  width: 100%;
-  margin-top: 12px;
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.filter-note {
-  margin: 10px 0 4px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
 main {
   padding: 0 clamp(18px, 4vw, 56px) 56px;
 }
