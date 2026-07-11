@@ -861,6 +861,14 @@ textarea {
   color: var(--danger);
 }
 
+.period-history-button {
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+  border-color: var(--line);
+  background: #fff;
+}
+
 .period-modal {
   position: fixed;
   inset: 0;
@@ -960,6 +968,21 @@ textarea {
 
 .period-detail-row strong.down {
   color: var(--danger);
+}
+
+.period-year {
+  border-top: 1px solid var(--line);
+}
+
+.period-year summary {
+  cursor: pointer;
+  padding: 12px 0;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.period-year .period-row {
+  padding-left: 10px;
 }
 
 .purchase-item {

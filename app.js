@@ -163,6 +163,7 @@ let portfolioPeriodSnapshots = {
 let portfolioSnapshotsDirty = false;
 let portfolioSnapshotsSaving = false;
 let periodDetailStore = new Map();
+let periodHistoryStore = new Map();
 
 const els = {
   query: document.querySelector("#queryInput"),
@@ -1120,6 +1121,61 @@ function periodDetailButton(key, label, className) {
   return `<button class="period-profit-button ${className}" type="button" data-period-detail="${escapeHtml(key)}">${label}</button>`;
 }
 
+function periodDisplayLabel(item, periodType) {
+  if (periodType === "week") {
+    return item.date ? item.date.slice(5).replace("-", "/") : item.key;
+  }
+  return item.key === "未填日期" ? item.key : item.key.replace("-", "/");
+}
+
+function periodHistoryYear(item, periodType) {
+  if (periodType === "week") {
+    return String(item.date || item.key || "").slice(0, 4) || "未填日期";
+  }
+  return String(item.key || "").slice(0, 4) || "未填日期";
+}
+
+function renderPeriodRow(item, periodType) {
+  const profit = item.profit || 0;
+  const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
+  const profitClass = profit >= 0 ? "up" : "down";
+  const label = periodDisplayLabel(item, periodType);
+  const periodText = `本${compactTwdWan(item.invested)} / 現${item.valued ? compactTwdWan(item.value) : "缺"}`;
+  const detailKey = `${periodType}:${item.key}`;
+  const profitLabel = item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-";
+  periodDetailStore.set(detailKey, {
+    title: `${label} 明細`,
+    details: item.details || []
+  });
+  return `
+    <div class="period-row">
+      <p>
+        <span>${escapeHtml(label)}：${periodText}</span>
+        ${periodDetailButton(detailKey, profitLabel, profitClass)}
+      </p>
+    </div>
+  `;
+}
+
+function renderPeriodHistoryContent(rows, periodType) {
+  const groups = new Map();
+  rows.forEach((item) => {
+    const year = periodHistoryYear(item, periodType);
+    const items = groups.get(year) || [];
+    items.push(item);
+    groups.set(year, items);
+  });
+  return [...groups.entries()]
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([year, items], index) => `
+      <details class="period-year" ${index === 0 ? "open" : ""}>
+        <summary>${escapeHtml(year)} 年（${items.length} 筆）</summary>
+        ${items.map((item) => renderPeriodRow(item, periodType)).join("")}
+      </details>
+    `)
+    .join("");
+}
+
 function ensurePeriodDetailModal() {
   let modal = document.querySelector("#periodDetailModal");
   if (modal) {
@@ -1137,6 +1193,11 @@ function ensurePeriodDetailModal() {
     </div>
   `;
   modal.addEventListener("click", (event) => {
+    const detailButton = event.target.closest("[data-period-detail]");
+    if (detailButton) {
+      showPeriodDetailModal(detailButton.dataset.periodDetail);
+      return;
+    }
     if (event.target === modal || event.target.closest(".period-modal-close")) {
       hidePeriodDetailModal();
     }
@@ -1153,6 +1214,17 @@ function showPeriodDetailModal(key) {
   const modal = ensurePeriodDetailModal();
   modal.querySelector("#periodDetailTitle").textContent = data.title;
   modal.querySelector(".period-modal-body").innerHTML = renderPeriodDetailsContent(data.details);
+  modal.hidden = false;
+}
+
+function showPeriodHistoryModal(key) {
+  const data = periodHistoryStore.get(key);
+  if (!data) {
+    return;
+  }
+  const modal = ensurePeriodDetailModal();
+  modal.querySelector("#periodDetailTitle").textContent = data.title;
+  modal.querySelector(".period-modal-body").innerHTML = data.html;
   modal.hidden = false;
 }
 
@@ -1275,13 +1347,24 @@ function renderPortfolioStats() {
   const topHoldings = [...summary.holdings.values()]
     .sort((a, b) => b.invested - a.invested)
     .slice(0, 3);
-  const monthlyRows = [...summary.months.values()]
-    .sort((a, b) => b.key.localeCompare(a.key))
-    .slice(0, PERIOD_DISPLAY_LIMIT);
-  const weeklyRows = [...summary.weeks.values()]
-    .sort((a, b) => b.key.localeCompare(a.key))
-    .slice(0, PERIOD_DISPLAY_LIMIT);
+  const monthlyAllRows = [...summary.months.values()].sort((a, b) => b.key.localeCompare(a.key));
+  const weeklyAllRows = [...summary.weeks.values()].sort((a, b) => b.key.localeCompare(a.key));
+  const monthlyRows = monthlyAllRows.slice(0, PERIOD_DISPLAY_LIMIT);
+  const weeklyRows = weeklyAllRows.slice(0, PERIOD_DISPLAY_LIMIT);
   periodDetailStore = new Map();
+  periodHistoryStore = new Map();
+  if (monthlyAllRows.length > PERIOD_DISPLAY_LIMIT) {
+    periodHistoryStore.set("month", {
+      title: "每月歷史",
+      html: renderPeriodHistoryContent(monthlyAllRows, "month")
+    });
+  }
+  if (weeklyAllRows.length > PERIOD_DISPLAY_LIMIT) {
+    periodHistoryStore.set("week", {
+      title: "每週歷史",
+      html: renderPeriodHistoryContent(weeklyAllRows, "week")
+    });
+  }
   els.portfolioStats.innerHTML = `
     <div class="portfolio-stat">
       <span>投入金額</span>
@@ -1311,65 +1394,26 @@ function renderPortfolioStats() {
       <h4>每月賺賠</h4>
       ${
         monthlyRows.length
-          ? monthlyRows
-              .map((item) => {
-                const profit = item.profit || 0;
-                const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
-                const profitClass = profit >= 0 ? "up" : "down";
-                const monthLabel = item.key === "未填日期" ? item.key : item.key.replace("-", "/");
-                const periodText = `本${compactTwdWan(item.invested)} / 現${item.valued ? compactTwdWan(item.value) : "缺"}`;
-                const detailKey = `month:${item.key}`;
-                const profitLabel = item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-";
-                periodDetailStore.set(detailKey, {
-                  title: `${monthLabel} 明細`,
-                  details: item.details || []
-                });
-                return `
-                  <div class="period-row">
-                    <p>
-                      <span>${escapeHtml(monthLabel)}：${periodText}</span>
-                      ${periodDetailButton(detailKey, profitLabel, profitClass)}
-                    </p>
-                  </div>
-                `;
-              })
-              .join("")
+          ? monthlyRows.map((item) => renderPeriodRow(item, "month")).join("")
           : "<p>尚無資料</p>"
       }
+      ${monthlyAllRows.length > PERIOD_DISPLAY_LIMIT ? `<button class="period-history-button" type="button" data-period-history="month">看全部每月歷史（${monthlyAllRows.length} 筆）</button>` : ""}
     </div>
     <div class="weekly-breakdown">
       <h4>每週賺賠</h4>
       ${
         weeklyRows.length
-          ? weeklyRows
-              .map((item) => {
-                const profit = item.profit || 0;
-                const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
-                const profitClass = profit >= 0 ? "up" : "down";
-                const weekLabel = item.date ? item.date.slice(5).replace("-", "/") : item.key;
-                const periodText = `本${compactTwdWan(item.invested)} / 現${item.valued ? compactTwdWan(item.value) : "缺"}`;
-                const detailKey = `week:${item.key}`;
-                const profitLabel = item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-";
-                periodDetailStore.set(detailKey, {
-                  title: `${weekLabel} 明細`,
-                  details: item.details || []
-                });
-                return `
-                  <div class="period-row">
-                    <p>
-                      <span>${escapeHtml(weekLabel)}：${periodText}</span>
-                      ${periodDetailButton(detailKey, profitLabel, profitClass)}
-                    </p>
-                  </div>
-                `;
-              })
-              .join("")
+          ? weeklyRows.map((item) => renderPeriodRow(item, "week")).join("")
           : "<p>尚無資料</p>"
       }
+      ${weeklyAllRows.length > PERIOD_DISPLAY_LIMIT ? `<button class="period-history-button" type="button" data-period-history="week">看全部每週歷史（${weeklyAllRows.length} 筆）</button>` : ""}
     </div>
   `;
   document.querySelectorAll("[data-period-detail]").forEach((button) => {
     button.addEventListener("click", () => showPeriodDetailModal(button.dataset.periodDetail));
+  });
+  document.querySelectorAll("[data-period-history]").forEach((button) => {
+    button.addEventListener("click", () => showPeriodHistoryModal(button.dataset.periodHistory));
   });
 }
 
