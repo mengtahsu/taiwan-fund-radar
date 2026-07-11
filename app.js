@@ -145,6 +145,11 @@ const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK";
 const SITE_URL = "https://mengtahsu.github.io/taiwan-fund-radar/";
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const isPortfolioView = new URLSearchParams(window.location.search).get("view") === "portfolio";
+
+if (isPortfolioView) {
+  document.body.classList.add("portfolio-view");
+}
 
 let currentUser = null;
 let purchases = [];
@@ -1124,6 +1129,90 @@ function hidePeriodDetailModal() {
   }
 }
 
+function ensureSellModal() {
+  let modal = document.querySelector("#sellModal");
+  if (modal) {
+    return modal;
+  }
+  modal = document.createElement("div");
+  modal.id = "sellModal";
+  modal.className = "period-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <form class="sell-modal-panel" role="dialog" aria-modal="true" aria-labelledby="sellModalTitle">
+      <button class="period-modal-close" type="button" aria-label="關閉">×</button>
+      <h3 id="sellModalTitle">記錄賣出</h3>
+      <p class="sell-modal-fund"></p>
+      <label>
+        賣出日期
+        <input class="sell-date-input" type="date" required>
+      </label>
+      <label>
+        賣出淨值
+        <input class="sell-nav-input" type="number" min="0" step="0.0001" inputmode="decimal" required>
+      </label>
+      <div class="button-row">
+        <button class="primary" type="submit">儲存賣出</button>
+        <button class="sell-modal-cancel" type="button">取消</button>
+      </div>
+    </form>
+  `;
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.closest(".period-modal-close") || event.target.closest(".sell-modal-cancel")) {
+      hideSellModal();
+    }
+  });
+  modal.querySelector("form").addEventListener("submit", submitSellModal);
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function showSellModal(item) {
+  const valuation = purchaseValuation(item);
+  const modal = ensureSellModal();
+  modal.dataset.purchaseId = item.id;
+  modal.querySelector(".sell-modal-fund").textContent = item.fund_name || "";
+  modal.querySelector(".sell-date-input").value = item.sell_date || todayInputValue();
+  modal.querySelector(".sell-nav-input").value = item.sell_nav || valuation.currentNav || "";
+  modal.hidden = false;
+  modal.querySelector(".sell-date-input").focus();
+}
+
+function hideSellModal() {
+  const modal = document.querySelector("#sellModal");
+  if (modal) {
+    modal.hidden = true;
+  }
+}
+
+async function submitSellModal(event) {
+  event.preventDefault();
+  const modal = ensureSellModal();
+  const id = modal.dataset.purchaseId;
+  const sellDate = modal.querySelector(".sell-date-input").value;
+  const sellNav = Number(modal.querySelector(".sell-nav-input").value);
+  if (!id || !/^\d{4}-\d{2}-\d{2}$/.test(sellDate) || !Number.isFinite(sellNav) || sellNav <= 0) {
+    setMessage(els.purchaseMessage, "賣出日期或賣出淨值格式不正確。", true);
+    return;
+  }
+  const { error } = await db
+    .from("fund_purchases")
+    .update({
+      sell_date: sellDate,
+      sell_nav: sellNav,
+      sell_amount: null
+    })
+    .eq("id", id);
+  if (error) {
+    setMessage(els.purchaseMessage, `賣出紀錄失敗：${error.message}`, true);
+    return;
+  }
+  hideSellModal();
+  setMessage(els.purchaseMessage, "已記錄賣出。");
+  markPortfolioSnapshotsDirty();
+  await loadPurchases();
+}
+
 function renderPortfolioStats() {
   if (!els.portfolioStats) {
     return;
@@ -1611,7 +1700,7 @@ async function editPurchase(id) {
   await loadPurchases();
 }
 
-async function markPurchaseSold(id) {
+function markPurchaseSold(id) {
   if (!db || !currentUser || !id) {
     return;
   }
@@ -1619,37 +1708,7 @@ async function markPurchaseSold(id) {
   if (!item) {
     return;
   }
-  const valuation = purchaseValuation(item);
-  const defaultDate = item.sell_date || todayInputValue();
-  const sellDate = window.prompt("賣出日期 YYYY-MM-DD", defaultDate);
-  if (!sellDate) {
-    return;
-  }
-  const defaultNav = item.sell_nav || valuation.currentNav || "";
-  const sellNavText = window.prompt("賣出淨值", defaultNav ? String(defaultNav) : "");
-  if (!sellNavText) {
-    return;
-  }
-  const sellNav = Number(sellNavText);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(sellDate) || !Number.isFinite(sellNav) || sellNav <= 0) {
-    setMessage(els.purchaseMessage, "賣出日期或賣出淨值格式不正確。", true);
-    return;
-  }
-  const { error } = await db
-    .from("fund_purchases")
-    .update({
-      sell_date: sellDate,
-      sell_nav: sellNav,
-      sell_amount: null
-    })
-    .eq("id", id);
-  if (error) {
-    setMessage(els.purchaseMessage, `賣出紀錄失敗：${error.message}`, true);
-    return;
-  }
-  setMessage(els.purchaseMessage, "已記錄賣出。");
-  markPortfolioSnapshotsDirty();
-  await loadPurchases();
+  showSellModal(item);
 }
 
 async function clearPurchaseSale(id) {
@@ -1696,7 +1755,7 @@ async function signUp() {
     email,
     password,
     options: {
-      emailRedirectTo: `${SITE_URL}#portfolio`
+      emailRedirectTo: `${SITE_URL}?view=portfolio`
     }
   });
   setMessage(els.authMessage, error ? `註冊失敗：${error.message}` : "註冊完成，請依 Supabase 設定確認 email 後登入。", Boolean(error));
@@ -1991,6 +2050,7 @@ function applyHighReturnPreset() {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     hidePeriodDetailModal();
+    hideSellModal();
   }
 });
 

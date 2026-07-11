@@ -625,6 +625,16 @@ legend {
   margin-top: 32px;
 }
 
+body.portfolio-view .hero,
+body.portfolio-view .workspace,
+body.portfolio-view .compare-section {
+  display: none;
+}
+
+body.portfolio-view .portfolio-section {
+  margin-top: 0;
+}
+
 .section-heading,
 .list-header,
 .button-row {
@@ -678,6 +688,11 @@ button:disabled {
 .account-panel {
   display: grid;
   gap: 10px;
+}
+
+.auth-form[hidden],
+.account-panel[hidden] {
+  display: none;
 }
 
 .auth-form label,
@@ -835,7 +850,8 @@ textarea {
   display: none;
 }
 
-.period-modal-panel {
+.period-modal-panel,
+.sell-modal-panel {
   width: min(560px, 100%);
   max-height: min(76vh, 680px);
   overflow: auto;
@@ -846,9 +862,29 @@ textarea {
   box-shadow: 0 24px 80px rgba(14, 24, 22, 0.28);
 }
 
-.period-modal-panel h3 {
+.period-modal-panel h3,
+.sell-modal-panel h3 {
   margin: 0 40px 12px 0;
   font-size: 18px;
+}
+
+.sell-modal-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.sell-modal-panel label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sell-modal-fund {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 900;
 }
 
 .period-modal-close {
