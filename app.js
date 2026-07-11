@@ -140,6 +140,7 @@ let monthlyNavMeta = {
 };
 
 const DISPLAY_LIMIT = 50;
+const PERIOD_DISPLAY_LIMIT = 12;
 const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK";
 const SITE_URL = "https://mengtahsu.github.io/taiwan-fund-radar/";
@@ -147,6 +148,15 @@ const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 
 let currentUser = null;
 let purchases = [];
+let portfolioPeriodSnapshots = {
+  loaded: false,
+  supported: true,
+  sourceUpdatedAt: null,
+  months: new Map(),
+  weeks: new Map()
+};
+let portfolioSnapshotsDirty = false;
+let portfolioSnapshotsSaving = false;
 
 const els = {
   query: document.querySelector("#queryInput"),
@@ -674,7 +684,8 @@ function purchaseValuation(item) {
   };
 }
 
-function portfolioSummary() {
+function portfolioSummary(options = {}) {
+  const includePeriods = options.includePeriods !== false;
   const summary = {
     invested: 0,
     valuedCostBasis: 0,
@@ -717,6 +728,10 @@ function portfolioSummary() {
         existing.valued += 1;
       }
       summary.holdings.set(key, existing);
+    }
+
+    if (!includePeriods) {
+      return;
     }
 
     const monthly = monthlyProfitRowsForPurchase(item);
@@ -911,6 +926,133 @@ function portfolioSummary() {
   return summary;
 }
 
+function portfolioSnapshotSource() {
+  return monthlyNavMeta.updatedAt || sourceMeta.updatedAt || "no-source-time";
+}
+
+function resetPortfolioSnapshots() {
+  portfolioPeriodSnapshots = {
+    loaded: false,
+    supported: true,
+    sourceUpdatedAt: null,
+    months: new Map(),
+    weeks: new Map()
+  };
+}
+
+function periodMapFromSnapshotRows(rows, periodType) {
+  return new Map(
+    rows
+      .filter((row) => row.period_type === periodType)
+      .map((row) => [
+        row.period_key,
+        {
+          key: row.period_key,
+          date: row.period_date || null,
+          invested: Number(row.invested) || 0,
+          value: Number(row.value) || 0,
+          profit: Number(row.profit) || 0,
+          valued: Number(row.valued) || 0,
+          missing: Number(row.missing) || 0,
+          details: Array.isArray(row.details) ? row.details : []
+        }
+      ])
+  );
+}
+
+async function loadPortfolioPeriodSnapshots() {
+  if (!db || !currentUser) {
+    resetPortfolioSnapshots();
+    return;
+  }
+  try {
+    const { data, error } = await db
+      .from("portfolio_period_snapshots")
+      .select("period_type,period_key,period_date,invested,value,profit,valued,missing,details,source_updated_at")
+      .eq("user_id", currentUser.id);
+    if (error) {
+      throw error;
+    }
+    const rows = data || [];
+    portfolioPeriodSnapshots = {
+      loaded: true,
+      supported: true,
+      sourceUpdatedAt: rows[0]?.source_updated_at || null,
+      months: periodMapFromSnapshotRows(rows, "month"),
+      weeks: periodMapFromSnapshotRows(rows, "week")
+    };
+  } catch (_error) {
+    portfolioPeriodSnapshots = {
+      loaded: false,
+      supported: false,
+      sourceUpdatedAt: null,
+      months: new Map(),
+      weeks: new Map()
+    };
+  }
+}
+
+function snapshotRowsFromSummary(summary) {
+  const sourceUpdatedAt = portfolioSnapshotSource();
+  const rows = [];
+  const pushRows = (periodType, periods) => {
+    periods.forEach((item) => {
+      rows.push({
+        user_id: currentUser.id,
+        period_type: periodType,
+        period_key: item.key,
+        period_date: item.date || null,
+        invested: item.invested || 0,
+        value: item.value || 0,
+        profit: item.profit || 0,
+        valued: item.valued || 0,
+        missing: item.missing || 0,
+        details: item.details || [],
+        source_updated_at: sourceUpdatedAt
+      });
+    });
+  };
+  pushRows("month", summary.months);
+  pushRows("week", summary.weeks);
+  return rows;
+}
+
+async function savePortfolioPeriodSnapshots(summary) {
+  if (!db || !currentUser || !portfolioPeriodSnapshots.supported || portfolioSnapshotsSaving) {
+    return;
+  }
+  portfolioSnapshotsSaving = true;
+  const rows = snapshotRowsFromSummary(summary);
+  try {
+    const deleteResult = await db.from("portfolio_period_snapshots").delete().eq("user_id", currentUser.id);
+    if (deleteResult.error) {
+      throw deleteResult.error;
+    }
+    for (let index = 0; index < rows.length; index += 500) {
+      const { error } = await db.from("portfolio_period_snapshots").insert(rows.slice(index, index + 500));
+      if (error) {
+        throw error;
+      }
+    }
+    portfolioPeriodSnapshots = {
+      loaded: true,
+      supported: true,
+      sourceUpdatedAt: portfolioSnapshotSource(),
+      months: new Map(summary.months),
+      weeks: new Map(summary.weeks)
+    };
+    portfolioSnapshotsDirty = false;
+  } catch (_error) {
+    portfolioPeriodSnapshots.supported = false;
+  } finally {
+    portfolioSnapshotsSaving = false;
+  }
+}
+
+function markPortfolioSnapshotsDirty() {
+  portfolioSnapshotsDirty = true;
+}
+
 function renderPeriodDetails(details, isOpen = false) {
   if (!details?.length) {
     return "";
@@ -949,7 +1091,19 @@ function renderPortfolioStats() {
     els.portfolioStats.innerHTML = "";
     return;
   }
-  const summary = portfolioSummary();
+  const currentSnapshotSource = portfolioSnapshotSource();
+  const canUseSnapshots =
+    portfolioPeriodSnapshots.loaded &&
+    portfolioPeriodSnapshots.sourceUpdatedAt === currentSnapshotSource &&
+    !portfolioSnapshotsDirty &&
+    (portfolioPeriodSnapshots.months.size > 0 || portfolioPeriodSnapshots.weeks.size > 0);
+  const summary = portfolioSummary({ includePeriods: !canUseSnapshots });
+  if (canUseSnapshots) {
+    summary.months = new Map(portfolioPeriodSnapshots.months);
+    summary.weeks = new Map(portfolioPeriodSnapshots.weeks);
+  } else {
+    void savePortfolioPeriodSnapshots(summary);
+  }
   const profit = summary.realizedProfit + summary.unrealizedProfit;
   const profitPercent =
     summary.valuedCostBasis > 0 && summary.valuedCount > 0 ? (profit / summary.valuedCostBasis) * 100 : null;
@@ -957,8 +1111,12 @@ function renderPortfolioStats() {
   const topHoldings = [...summary.holdings.values()]
     .sort((a, b) => b.invested - a.invested)
     .slice(0, 3);
-  const monthlyRows = [...summary.months.values()].sort((a, b) => b.key.localeCompare(a.key));
-  const weeklyRows = [...summary.weeks.values()].sort((a, b) => b.key.localeCompare(a.key));
+  const monthlyRows = [...summary.months.values()]
+    .sort((a, b) => b.key.localeCompare(a.key))
+    .slice(0, PERIOD_DISPLAY_LIMIT);
+  const weeklyRows = [...summary.weeks.values()]
+    .sort((a, b) => b.key.localeCompare(a.key))
+    .slice(0, PERIOD_DISPLAY_LIMIT);
   els.portfolioStats.innerHTML = `
     <div class="portfolio-stat">
       <span>投入金額</span>
@@ -1167,6 +1325,7 @@ function renderPurchases() {
 async function loadPurchases() {
   if (!db || !currentUser) {
     purchases = [];
+    resetPortfolioSnapshots();
     renderPurchases();
     return;
   }
@@ -1189,6 +1348,7 @@ async function loadPurchases() {
     return;
   }
   purchases = data || [];
+  await loadPortfolioPeriodSnapshots();
   requestOwnedFundNavHistory();
   renderPurchases();
 }
@@ -1321,6 +1481,7 @@ async function savePurchase(event) {
   els.purchaseAmount.value = "";
   els.purchaseNote.value = "";
   setMessage(els.purchaseMessage, "已儲存。");
+  markPortfolioSnapshotsDirty();
   await loadPurchases();
 }
 
@@ -1337,6 +1498,7 @@ async function deletePurchase(id) {
     return;
   }
   setMessage(els.purchaseMessage, "已刪除。");
+  markPortfolioSnapshotsDirty();
   await loadPurchases();
 }
 
@@ -1390,6 +1552,7 @@ async function editPurchase(id) {
     return;
   }
   setMessage(els.purchaseMessage, "已更新買入紀錄。");
+  markPortfolioSnapshotsDirty();
   await loadPurchases();
 }
 
@@ -1430,6 +1593,7 @@ async function markPurchaseSold(id) {
     return;
   }
   setMessage(els.purchaseMessage, "已記錄賣出。");
+  markPortfolioSnapshotsDirty();
   await loadPurchases();
 }
 
@@ -1453,6 +1617,7 @@ async function clearPurchaseSale(id) {
     return;
   }
   setMessage(els.purchaseMessage, "已取消賣出。");
+  markPortfolioSnapshotsDirty();
   await loadPurchases();
 }
 
