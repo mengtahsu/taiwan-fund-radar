@@ -1829,12 +1829,22 @@ function visibleTags(tags) {
   });
 }
 
+function compactTag(tag) {
+  const text = String(tag || "").trim();
+  if (text === "國內股票開放型一般股票型") {
+    return "國內股票";
+  }
+  if (text.startsWith("國內股票開放型")) {
+    return text.replace("國內股票開放型", "國內").slice(0, 8);
+  }
+  return text;
+}
+
 function navTag(fund) {
   if (typeof fund.nav !== "number" || !Number.isFinite(fund.nav) || fund.nav <= 0) {
     return "";
   }
-  const date = fund.navDate ? ` ${fund.navDate}` : "";
-  return `<span class="pill nav-pill">淨值 ${moneyNumber(fund.nav)}${escapeHtml(date)}</span>`;
+  return `<span class="pill nav-pill">淨值 ${moneyNumber(fund.nav)}</span>`;
 }
 
 function renderMetrics(list) {
@@ -1927,10 +1937,9 @@ function renderFunds() {
             <div class="score" title="${scoreTitle()}">${fund.score}</div>
           </div>
           <div class="pill-row">
-            <span class="pill ${riskClass(fund.risk)}">RR ${fund.risk}</span>
             <span class="pill">${escapeHtml(fund.dividend)}</span>
             ${navTag(fund)}
-            ${visibleTags(fund.tags).map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}
+            ${visibleTags(fund.tags).map((tag) => `<span class="pill">${escapeHtml(compactTag(tag))}</span>`).join("")}
           </div>
           <div class="stats">
             <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
