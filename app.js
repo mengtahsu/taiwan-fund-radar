@@ -1125,6 +1125,13 @@ function periodDisplayLabel(item, periodType) {
   if (periodType === "week") {
     return item.date ? item.date.slice(5).replace("-", "/") : item.key;
   }
+  return item.key === "未填日期" ? item.key : item.key.slice(5);
+}
+
+function periodDetailTitleLabel(item, periodType) {
+  if (periodType === "week") {
+    return item.date || item.key;
+  }
   return item.key === "未填日期" ? item.key : item.key.replace("-", "/");
 }
 
@@ -1140,17 +1147,18 @@ function renderPeriodRow(item, periodType) {
   const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
   const profitClass = profit >= 0 ? "up" : "down";
   const label = periodDisplayLabel(item, periodType);
-  const periodText = `本${compactTwdWan(item.invested)} / 現${item.valued ? compactTwdWan(item.value) : "缺"}`;
+  const investedText = compactTwdWan(item.invested);
+  const valueText = item.valued ? compactTwdWan(item.value) : "缺";
   const detailKey = `${periodType}:${item.key}`;
   const profitLabel = item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-";
   periodDetailStore.set(detailKey, {
-    title: `${label} 明細`,
+    title: `${periodDetailTitleLabel(item, periodType)} 明細`,
     details: item.details || []
   });
   return `
     <div class="period-row">
       <p>
-        <span>${escapeHtml(label)}：${periodText}</span>
+        <span>${escapeHtml(label)}：本${escapeHtml(investedText)} /<br>現${escapeHtml(valueText)}</span>
         ${periodDetailButton(detailKey, profitLabel, profitClass)}
       </p>
     </div>

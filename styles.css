@@ -819,8 +819,13 @@ textarea {
 .monthly-breakdown p,
 .weekly-breakdown p {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.period-row span {
+  line-height: 1.35;
 }
 
 .period-row {
