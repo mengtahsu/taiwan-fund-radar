@@ -698,6 +698,7 @@ button:disabled {
 .auth-form label,
 .purchase-form label {
   margin: 8px 0;
+  min-width: 0;
 }
 
 .button-row {
@@ -717,7 +718,22 @@ button:disabled {
 }
 
 input[type="date"] {
+  display: block;
+  min-width: 0;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  -webkit-appearance: none;
+  appearance: none;
   max-width: 100%;
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: center;
+}
+
+.purchase-form label {
+  overflow: hidden;
 }
 
 textarea {
