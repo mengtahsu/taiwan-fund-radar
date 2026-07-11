@@ -1374,6 +1374,18 @@ function setPurchaseFund(fund) {
   if (!requireLogin()) {
     return;
   }
+  if (!isPortfolioView) {
+    window.sessionStorage.setItem(
+      "pendingPurchaseFund",
+      JSON.stringify({
+        fundId: fundLookupKey(fund),
+        name: fund.name,
+        nav: typeof fund.nav === "number" && fund.nav > 0 ? fund.nav : null
+      })
+    );
+    window.location.href = "?view=portfolio";
+    return;
+  }
   els.purchaseFundId.value = fundLookupKey(fund);
   els.purchaseFundName.value = fund.name;
   els.purchaseDate.value = els.purchaseDate.value || todayInputValue();
@@ -1381,8 +1393,31 @@ function setPurchaseFund(fund) {
     els.purchaseNav.value = fund.nav;
   }
   setMessage(els.purchaseMessage, "");
-  document.querySelector("#portfolio")?.scrollIntoView({ behavior: "smooth", block: "start" });
   els.purchaseAmount.focus();
+}
+
+function applyPendingPurchaseFund() {
+  if (!isPortfolioView || !els.purchaseFundId || !els.purchaseFundName) {
+    return;
+  }
+  const raw = window.sessionStorage.getItem("pendingPurchaseFund");
+  if (!raw) {
+    return;
+  }
+  window.sessionStorage.removeItem("pendingPurchaseFund");
+  try {
+    const fund = JSON.parse(raw);
+    els.purchaseFundId.value = fund.fundId || "";
+    els.purchaseFundName.value = fund.name || "";
+    els.purchaseDate.value = els.purchaseDate.value || todayInputValue();
+    if (fund.nav) {
+      els.purchaseNav.value = fund.nav;
+    }
+    setMessage(els.purchaseMessage, "");
+    els.purchaseAmount.focus();
+  } catch (_error) {
+    // Ignore stale session data.
+  }
 }
 
 function renderPurchases() {
@@ -2068,6 +2103,7 @@ els.refreshPurchases?.addEventListener("click", refreshPurchaseValues);
 if (els.purchaseDate) {
   els.purchaseDate.value = todayInputValue();
 }
+applyPendingPurchaseFund();
 
 async function loadLatestData() {
   try {
