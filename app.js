@@ -508,6 +508,23 @@ function moneyNumber(value) {
   return number.toLocaleString("zh-TW", { maximumFractionDigits: 4 });
 }
 
+function wholeMoneyNumber(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return "-";
+  }
+  return Math.round(number).toLocaleString("zh-TW");
+}
+
+function compactDate(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^(?:\d{4}[-/])?(\d{1,2})[-/](\d{1,2})$/);
+  if (!match) {
+    return text;
+  }
+  return `${match[1].padStart(2, "0")}-${match[2].padStart(2, "0")}`;
+}
+
 function twd(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) {
@@ -1468,15 +1485,17 @@ function renderPurchases() {
     const valuation = purchaseValuation(item);
     const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
     const matchedFund = valuation.fund;
-    const currentNavText = `${valuation.currentNav ? moneyNumber(valuation.currentNav) : "-"}${!valuation.isSold && matchedFund?.navDate ? ` / ${escapeHtml(matchedFund.navDate)}` : ""}`;
+    const currentDate = valuation.isSold ? item.sell_date : matchedFund?.navDate;
+    const currentNavText = valuation.currentNav ? moneyNumber(valuation.currentNav) : "-";
+    const currentAmountText = valuation.currentValue === null ? "-" : wholeMoneyNumber(valuation.currentValue);
     const valueLine = valuation.isSold
-      ? `賣出 ${escapeHtml(item.sell_date)} / 賣出淨值 ${currentNavText} / 實收 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 賺賠`
-      : `現在淨值 ${currentNavText} / 現值 ${valuation.currentValue === null ? "-" : twd(valuation.currentValue)} / 損益`;
+      ? `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 淨值 ${currentNavText} / 賺賠`
+      : `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 淨值 ${currentNavText} / 損益`;
     return `
       <article class="purchase-item${valuation.isSold ? " sold" : ""}">
         <div>
           <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
-          <p>購買 ${escapeHtml(item.buy_date)} / 金額 ${moneyNumber(item.amount)} / 買入淨值 ${moneyNumber(item.nav)}</p>
+          <p>${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${moneyNumber(item.nav)}</p>
           <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
           ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
         </div>
