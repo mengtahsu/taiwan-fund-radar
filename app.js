@@ -458,7 +458,8 @@ function renderFundName(fund) {
 
 function renderBuyLink(fund) {
   if (fund.fubonBuyUrl) {
-    return `<a class="buy-link" href="${escapeHtml(fund.fubonBuyUrl)}">富邦 App 申購</a>`;
+    const navHint = typeof fund.nav === "number" && Number.isFinite(fund.nav) ? `，先核對淨值 ${moneyNumber(fund.nav)}${fund.navDate ? ` / ${fund.navDate}` : ""}` : "";
+    return `<a class="buy-link" href="${escapeHtml(fund.fubonBuyUrl)}" title="請在富邦確認基金名稱與淨值${escapeHtml(navHint)}">富邦 App 申購</a>`;
   }
   if (fund.fundrichAppUrl) {
     const label = fund.fundrichSource === "MoneyDJ 申購清單" ? "基富通申購" : "基富通 App 申購";
@@ -1828,6 +1829,14 @@ function visibleTags(tags) {
   });
 }
 
+function navTag(fund) {
+  if (typeof fund.nav !== "number" || !Number.isFinite(fund.nav) || fund.nav <= 0) {
+    return "";
+  }
+  const date = fund.navDate ? ` ${fund.navDate}` : "";
+  return `<span class="pill nav-pill">淨值 ${moneyNumber(fund.nav)}${escapeHtml(date)}</span>`;
+}
+
 function renderMetrics(list) {
   const total = list.length;
   const avgReturn = total ? list.reduce((sum, fund) => sum + fund.return3y, 0) / total : 0;
@@ -1920,6 +1929,7 @@ function renderFunds() {
           <div class="pill-row">
             <span class="pill ${riskClass(fund.risk)}">RR ${fund.risk}</span>
             <span class="pill">${escapeHtml(fund.dividend)}</span>
+            ${navTag(fund)}
             ${visibleTags(fund.tags).map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}
           </div>
           <div class="stats">

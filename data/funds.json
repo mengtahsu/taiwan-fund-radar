@@ -1,6 +1,6 @@
 {
   "source": "MoneyDJ 國內基金進階搜尋公開資料 + 富邦銀行/基富通可買連結",
-  "updatedAt": "2026-07-10T10:54:23.907718+00:00",
+  "updatedAt": "2026-07-11T06:38:11.807358+00:00",
   "funds": [
     {
       "name": "群益臺灣加權指數單日正向2倍基金",
@@ -134,8 +134,7 @@
         "台幣",
         "RR5",
         "3月 62.03%",
-        "1年 270.09%",
-        "富邦銀行可買"
+        "1年 270.09%"
       ],
       "ticker": "ACFP71",
       "fundId": "ACFP71",
@@ -153,14 +152,7 @@
       "return6m": 103.26,
       "returnYtd": 123.63,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP71",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP71"
     },
     {
       "name": "安聯台灣科技基金",
@@ -203,6 +195,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3103",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3103",
+      "fubonMatchedName": "安聯台灣科技基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -453,6 +446,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3619",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3619",
+      "fubonMatchedName": "野村台灣運籌基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -544,6 +538,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3632",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3632",
+      "fubonMatchedName": "野村鴻運基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -770,6 +765,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1813",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1813",
+      "fubonMatchedName": "復華全球物聯網科技臺",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -861,6 +857,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3120",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3120",
+      "fubonMatchedName": "安聯台灣智慧基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1132,6 +1129,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "4405",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=4405",
+      "fubonMatchedName": "富邦新台商證投信基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1178,6 +1176,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3603",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3603",
+      "fubonMatchedName": "野村成長基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1224,6 +1223,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1263",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
+      "fubonMatchedName": "富邦基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1353,6 +1353,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0611",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0611",
+      "fubonMatchedName": "統一奔騰基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1399,6 +1400,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0403",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0403",
+      "fubonMatchedName": "元大多多基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1445,6 +1447,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1802",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1802",
+      "fubonMatchedName": "復華高成長基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1619,6 +1622,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0204",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0204",
+      "fubonMatchedName": "瀚亞高科技基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1703,6 +1707,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0407",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0407",
+      "fubonMatchedName": "元大經貿基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1794,6 +1799,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0914",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0914",
+      "fubonMatchedName": "第一金電子基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -1840,6 +1846,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0408",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0408",
+      "fubonMatchedName": "元大新主流基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -2006,7 +2013,7 @@
         "RR5",
         "3月 28.10%",
         "1年 209.27%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACGC08",
       "fundId": "ACGC08",
@@ -2019,12 +2026,14 @@
       "returnYtd": 93.56,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACGC08",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T2506Y1#TWD",
-      "fundrichName": "MoneyDJ ACGC08 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACGC08,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACGC08,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "2003",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2003",
+      "fubonMatchedName": "永豐中小基金Ａ類型",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "合庫台灣高科技基金",
@@ -2090,7 +2099,7 @@
         "RR5",
         "3月 26.90%",
         "1年 207.54%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACIC08",
       "fundId": "ACIC08",
@@ -2109,12 +2118,14 @@
       "returnYtd": 95.22,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACIC08",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3207Y5#TWD",
-      "fundrichName": "MoneyDJ ACIC08 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC08,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC08,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3607",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3607",
+      "fubonMatchedName": "野村中小基金",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "台新台灣中小基金",
@@ -2182,6 +2193,12 @@
       "navDate": "07/09",
       "return3yCumulative": 311.97,
       "return3m": 25.03,
+      "return2w": -4.63,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "return1m": -1.86,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09",
       "return1y": 184.57,
       "return6m": 84.31,
       "returnYtd": 83.44,
@@ -2221,6 +2238,12 @@
       "navDate": "07/09",
       "return3yCumulative": 309.49,
       "return3m": 24.98,
+      "return2w": -4.63,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "return1m": -1.87,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09",
       "return1y": 184.05,
       "return6m": 84.12,
       "returnYtd": 83.28,
@@ -2229,6 +2252,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3309",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3309",
+      "fubonMatchedName": "國泰小龍基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -2252,8 +2276,7 @@
         "台幣",
         "RR5",
         "3月 33.73%",
-        "1年 130.29%",
-        "富邦銀行可買"
+        "1年 130.29%"
       ],
       "ticker": "AC0052",
       "fundId": "AC0052",
@@ -2271,14 +2294,7 @@
       "return6m": 56.31,
       "returnYtd": 66.56,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=AC0052",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=AC0052"
     },
     {
       "name": "台新2000高科技基金-A不配息",
@@ -2360,6 +2376,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1814",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1814",
+      "fubonMatchedName": "復華亞太神龍科技臺",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -2400,6 +2417,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3626",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3626",
+      "fubonMatchedName": "野村高科技台幣累積前",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -2471,6 +2489,12 @@
       "navDate": "07/09",
       "return3yCumulative": 302.03,
       "return3m": 26.78,
+      "return2w": -6.33,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "return1m": -5.38,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09",
       "return1y": 179.31,
       "return6m": 84.33,
       "returnYtd": 83.96,
@@ -2524,6 +2548,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0602",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0602",
+      "fubonMatchedName": "統一全天候基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -2680,6 +2705,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0406",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0406",
+      "fubonMatchedName": "元大高科技基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -2736,7 +2762,7 @@
         "RR5",
         "3月 16.66%",
         "1年 177.83%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACIC06",
       "fundId": "ACIC06",
@@ -2749,12 +2775,14 @@
       "returnYtd": 77.48,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACIC06",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3205Y9#TWD",
-      "fundrichName": "MoneyDJ ACIC06 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC06,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC06,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3605",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3605",
+      "fubonMatchedName": "野村Ｅ科技基金",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "景順台灣科技基金",
@@ -2836,6 +2864,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1205",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1205",
+      "fubonMatchedName": "富邦精準基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -2860,7 +2889,7 @@
         "RR5",
         "3月 17.17%",
         "1年 158.60%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "AC0029",
       "fundId": "AC0029",
@@ -2873,12 +2902,14 @@
       "returnYtd": 70.11,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=AC0029",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T1010Y5#TWD",
-      "fundrichName": "MoneyDJ AC0029 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=AC0029,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=AC0029,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "1253",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1253",
+      "fubonMatchedName": "富邦精銳中小基金Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "富邦長紅基金",
@@ -2915,6 +2946,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1206",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1206",
+      "fubonMatchedName": "富邦長紅基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -2939,7 +2971,7 @@
         "RR4",
         "3月 46.98%",
         "1年 193.92%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACFH15",
       "fundId": "ACFH15",
@@ -2958,12 +2990,14 @@
       "returnYtd": 91.42,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFH15",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T2216Y7#TWD",
-      "fundrichName": "MoneyDJ ACFH15 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACFH15,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACFH15,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "1812",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1812",
+      "fubonMatchedName": "復華全方位基金Ａ類型",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "瀚亞中小型股基金",
@@ -3000,6 +3034,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0211",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0211",
+      "fubonMatchedName": "瀚亞中小型股基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -3032,6 +3067,12 @@
       "navDate": "07/09",
       "return3yCumulative": 292.21,
       "return3m": 25.21,
+      "return2w": -3.77,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "return1m": -3.0,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09",
       "return1y": 186.67,
       "return6m": 77.61,
       "returnYtd": 76.09,
@@ -3079,6 +3120,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3306",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3306",
+      "fubonMatchedName": "國泰科技生化基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -3189,6 +3231,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0404",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0404",
+      "fubonMatchedName": "元大卓越基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -3306,6 +3349,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3305",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3305",
+      "fubonMatchedName": "國泰大中華基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -3431,8 +3475,7 @@
         "台幣",
         "RR5",
         "3月 40.52%",
-        "1年 155.94%",
-        "富邦銀行可買"
+        "1年 155.94%"
       ],
       "ticker": "ACFP132",
       "fundId": "ACFP132",
@@ -3444,14 +3487,7 @@
       "return6m": 91.48,
       "returnYtd": 101.59,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP132",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP132"
     },
     {
       "name": "瀚亞外銷基金A不配息(台幣)",
@@ -3472,7 +3508,7 @@
         "RR4",
         "3月 25.63%",
         "1年 171.82%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCP04",
       "fundId": "ACCP04",
@@ -3485,12 +3521,14 @@
       "returnYtd": 86.54,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCP04",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0705Y1#TWD",
-      "fundrichName": "MoneyDJ ACCP04 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCP04,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCP04,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "0205",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0205",
+      "fubonMatchedName": "瀚亞外銷基金Ａ類型台",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "玉山金滿意基金-A累積型",
@@ -3558,14 +3596,21 @@
       "navDate": "07/09",
       "return3yCumulative": 278.73,
       "return3m": 29.01,
+      "return2w": -5.48,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "return1m": -1.44,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09",
       "return1y": 170.95,
       "return6m": 73.81,
       "returnYtd": 70.47,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS73",
       "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
+      "fubonFundId": "1231",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1231",
+      "fubonMatchedName": "富邦台灣永續成長股",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -3590,7 +3635,7 @@
         "RR4",
         "3月 55.77%",
         "1年 180.03%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACYT162",
       "fundId": "ACYT162",
@@ -3609,12 +3654,14 @@
       "returnYtd": 126.67,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACYT162",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T05B5B7#TWD",
-      "fundrichName": "MoneyDJ ACYT162 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACYT162,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACYT162,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "0457",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0457",
+      "fubonMatchedName": "元大台高股息優龍頭Ｂ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "元大台灣高股息優質龍頭基金A不配息(本基金之配息來源可能為收益平準金且並無保證收益及配息)",
@@ -3635,7 +3682,7 @@
         "RR4",
         "3月 55.80%",
         "1年 179.66%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACYT161",
       "fundId": "ACYT161",
@@ -3654,12 +3701,14 @@
       "returnYtd": 126.56,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACYT161",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T05B5A9#TWD",
-      "fundrichName": "MoneyDJ ACYT161 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACYT161,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACYT161,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "0456",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0456",
+      "fubonMatchedName": "元大台高股息優龍頭Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "野村積極成長基金",
@@ -3696,6 +3745,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3620",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3620",
+      "fubonMatchedName": "野村積極成長基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -3759,7 +3809,7 @@
         "RR4",
         "3月 28.56%",
         "1年 178.46%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACIC01",
       "fundId": "ACIC01",
@@ -3772,12 +3822,14 @@
       "returnYtd": 86.44,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACIC01",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3201Y8#TWD",
-      "fundrichName": "MoneyDJ ACIC01 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC01,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC01,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3601",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3601",
+      "fubonMatchedName": "野村優質基金",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "國泰台灣高股息基金-A不配息(台幣)(本基金並無保證收益及配息)",
@@ -3798,7 +3850,7 @@
         "RR4",
         "3月 30.82%",
         "1年 153.01%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCY149",
       "fundId": "ACCY149",
@@ -3817,12 +3869,14 @@
       "returnYtd": 78.61,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCY149",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3786A8#TWD",
-      "fundrichName": "MoneyDJ ACCY149 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCY149,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCY149,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3327",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3327",
+      "fubonMatchedName": "國泰台灣高股息台幣Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "國泰台灣高股息基金-B配息(台幣)(本基金並無保證收益及配息)",
@@ -3843,7 +3897,7 @@
         "RR4",
         "3月 30.85%",
         "1年 153.10%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCY151",
       "fundId": "ACCY151",
@@ -3862,12 +3916,14 @@
       "returnYtd": 78.64,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCY151",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3786B6#TWD",
-      "fundrichName": "MoneyDJ ACCY151 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCY151,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCY151,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3328",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3328",
+      "fubonMatchedName": "國泰台灣高股息台幣Ｂ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "元大多福基金",
@@ -3904,6 +3960,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0401",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0401",
+      "fubonMatchedName": "元大多福基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -3935,6 +3992,12 @@
       "navDate": "07/09",
       "return3yCumulative": 276.49,
       "return3m": 28.51,
+      "return2w": -5.84,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "return1m": -4.35,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09",
       "return1y": 161.02,
       "return6m": 82.09,
       "returnYtd": 84.75,
@@ -4046,6 +4109,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1008",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1008",
+      "fubonMatchedName": "玉山科技島基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -4118,6 +4182,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3301",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3301",
+      "fubonMatchedName": "國泰國泰基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -4158,6 +4223,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0603",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0603",
+      "fubonMatchedName": "統一黑馬基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -4237,6 +4303,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0208",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0208",
+      "fubonMatchedName": "瀚亞菁華基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -4502,6 +4569,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2601",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2601",
+      "fubonMatchedName": "摩根台灣金磚基金累積",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -4534,6 +4602,12 @@
       "navDate": "07/08",
       "return3yCumulative": 264.31,
       "return3m": 28.66,
+      "return2w": -12.29,
+      "return2wStartDate": "2026-06-24",
+      "return2wEndDate": "2026-07-08",
+      "return1m": -1.49,
+      "return1mStartDate": "2026-06-08",
+      "return1mEndDate": "2026-07-08",
       "return1y": 159.65,
       "return6m": 72.76,
       "returnYtd": 73.53,
@@ -4542,6 +4616,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0619",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0619",
+      "fubonMatchedName": "統一大中華中小基金新",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -4620,6 +4695,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1806",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1806",
+      "fubonMatchedName": "復華中小精選基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -4875,8 +4951,7 @@
         "台幣",
         "RR4",
         "3月 32.35%",
-        "1年 118.77%",
-        "富邦銀行可買"
+        "1年 118.77%"
       ],
       "ticker": "ACFP39",
       "fundId": "ACFP39",
@@ -4888,14 +4963,7 @@
       "return6m": 53.31,
       "returnYtd": 62.04,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP39",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP39"
     },
     {
       "name": "群益長安基金",
@@ -4993,7 +5061,7 @@
         "RR5",
         "3月 16.92%",
         "1年 178.91%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS04",
       "fundId": "ACJS04",
@@ -5006,13 +5074,12 @@
       "returnYtd": 85.15,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS04",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2004Y7#TWD",
+      "fundrichName": "MoneyDJ ACJS04 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS04,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS04,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "中國信託臺灣ESG永續關鍵半導體ETF基金",
@@ -5369,7 +5436,7 @@
         "RR4",
         "3月 19.91%",
         "1年 180.69%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACGC01",
       "fundId": "ACGC01",
@@ -5382,12 +5449,14 @@
       "returnYtd": 75.95,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACGC01",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T2501Y2#TWD",
-      "fundrichName": "MoneyDJ ACGC01 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACGC01,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACGC01,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "2001",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2001",
+      "fubonMatchedName": "永豐永豐基金Ａ類型",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "元大二○○一基金",
@@ -5565,6 +5634,12 @@
       "navDate": "07/09",
       "return3yCumulative": 244.51,
       "return3m": 36.8,
+      "return2w": -2.37,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "return1m": -2.77,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09",
       "return1y": 150.07,
       "return6m": 83.63,
       "returnYtd": 88.04,
@@ -5604,6 +5679,12 @@
       "navDate": "07/09",
       "return3yCumulative": 243.96,
       "return3m": 35.83,
+      "return2w": -5.39,
+      "return2wStartDate": "2026-06-25",
+      "return2wEndDate": "2026-07-09",
+      "return1m": -3.13,
+      "return1mStartDate": "2026-06-09",
+      "return1mEndDate": "2026-07-09",
       "return1y": 152.53,
       "return6m": 95.68,
       "returnYtd": 97.76,
@@ -5651,6 +5732,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3303",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3303",
+      "fubonMatchedName": "國泰中小成長基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -5855,8 +5937,7 @@
         "台幣",
         "RR4",
         "3月 32.22%",
-        "1年 115.63%",
-        "富邦銀行可買"
+        "1年 115.63%"
       ],
       "ticker": "AC0057",
       "fundId": "AC0057",
@@ -5868,14 +5949,7 @@
       "return6m": 54.31,
       "returnYtd": 62.63,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=AC0057",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=AC0057"
     },
     {
       "name": "第一金小型精選基金A類型(台幣)",
@@ -5896,7 +5970,7 @@
         "RR5",
         "3月 35.51%",
         "1年 183.75%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACNC13",
       "fundId": "ACNC13",
@@ -5909,12 +5983,14 @@
       "returnYtd": 95.3,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACNC13",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0313Y4#TWD",
-      "fundrichName": "MoneyDJ ACNC13 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACNC13,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACNC13,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "0913",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0913",
+      "fubonMatchedName": "第一金小型精選基金Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "第一金亞洲科技基金",
@@ -5957,6 +6033,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0916",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0916",
+      "fubonMatchedName": "第一金亞洲科技基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -6114,6 +6191,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2404",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2404",
+      "fubonMatchedName": "匯豐龍騰電子基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -6399,6 +6477,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2007",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2007",
+      "fubonMatchedName": "永豐領航科技基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -6460,8 +6539,7 @@
         "台幣",
         "RR4",
         "3月 30.08%",
-        "1年 109.00%",
-        "富邦銀行可買"
+        "1年 109.00%"
       ],
       "ticker": "ACFP87",
       "fundId": "ACFP87",
@@ -6473,14 +6551,7 @@
       "return6m": 49.96,
       "returnYtd": 58.08,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP87",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP87"
     },
     {
       "name": "凱基台商天下基金",
@@ -6860,6 +6931,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1006",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1006",
+      "fubonMatchedName": "玉山店頭市場基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -6995,6 +7067,12 @@
       "navDate": "07/08",
       "return3yCumulative": 207.4,
       "return3m": 33.28,
+      "return2w": -12.74,
+      "return2wStartDate": "2026-06-24",
+      "return2wEndDate": "2026-07-08",
+      "return1m": -0.63,
+      "return1mStartDate": "2026-06-08",
+      "return1mEndDate": "2026-07-08",
       "return1y": 195.3,
       "return6m": 93.08,
       "returnYtd": 102.58,
@@ -7003,6 +7081,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1815",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1815",
+      "fubonMatchedName": "復華亞太成長基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -7082,6 +7161,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1208",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1208",
+      "fubonMatchedName": "富邦高成長基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -7154,6 +7234,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1210",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1210",
+      "fubonMatchedName": "富邦台灣心基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -7210,7 +7291,7 @@
         "RR4",
         "3月 34.33%",
         "1年 86.72%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACKH29",
       "fundId": "ACKH29",
@@ -7223,12 +7304,14 @@
       "returnYtd": 56.38,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACKH29",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3236Y4#TWD",
-      "fundrichName": "MoneyDJ ACKH29 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACKH29,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACKH29,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3631",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3631",
+      "fubonMatchedName": "野村台灣高股息基金",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "瀚亞美國高科技基金不配息(台幣)",
@@ -7249,7 +7332,7 @@
         "RR4",
         "3月 37.24%",
         "1年 98.77%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCP16",
       "fundId": "ACCP16",
@@ -7262,12 +7345,14 @@
       "returnYtd": 56.22,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCP16",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0718Y4#TWD",
-      "fundrichName": "MoneyDJ ACCP16 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCP16,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCP16,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "0218",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0218",
+      "fubonMatchedName": "瀚亞美國高科技基金Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "野村平衡基金-累積型(台幣)",
@@ -7733,6 +7818,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0613",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0613",
+      "fubonMatchedName": "統一亞太基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -7842,8 +7928,9 @@
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS07",
       "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
+      "fubonFundId": "4404",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=4404",
+      "fubonMatchedName": "富邦高科技證投信基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -7955,6 +8042,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0405",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0405",
+      "fubonMatchedName": "元大店頭基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -7995,6 +8083,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3621",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3621",
+      "fubonMatchedName": "野村鴻利基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -8309,8 +8398,7 @@
         "台幣",
         "RR5",
         "3月 13.43%",
-        "1年 96.89%",
-        "富邦銀行可買"
+        "1年 96.89%"
       ],
       "ticker": "ACFP61",
       "fundId": "ACFP61",
@@ -8322,14 +8410,7 @@
       "return6m": 27.12,
       "returnYtd": 35.59,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP61",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP61"
     },
     {
       "name": "富邦MIT主流基金",
@@ -8350,7 +8431,7 @@
         "RR4",
         "3月 16.28%",
         "1年 90.20%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS30",
       "fundId": "ACJS30",
@@ -8363,13 +8444,12 @@
       "returnYtd": 41.96,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS30",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2036Y9#TWD",
+      "fundrichName": "MoneyDJ ACJS30 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS30,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS30,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "兆豐電子基金",
@@ -8739,7 +8819,7 @@
         "RR4",
         "3月 28.28%",
         "1年 118.03%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS06",
       "fundId": "ACJS06",
@@ -8752,13 +8832,12 @@
       "returnYtd": 76.16,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS06",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2005Y4#TWD",
+      "fundrichName": "MoneyDJ ACJS06 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS06,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS06,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "群益創新科技基金N類型",
@@ -8827,6 +8906,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2907",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2907",
+      "fubonMatchedName": "群益創新科技基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -9155,8 +9235,7 @@
         "台幣",
         "RR4",
         "3月 24.72%",
-        "1年 69.19%",
-        "富邦銀行可買"
+        "1年 69.19%"
       ],
       "ticker": "ACFP133",
       "fundId": "ACFP133",
@@ -9168,14 +9247,7 @@
       "return6m": 27.02,
       "returnYtd": 30.14,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP133",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP133"
     },
     {
       "name": "富蘭克林華美AI新科技基金(台幣)",
@@ -9283,6 +9355,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2901",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2901",
+      "fubonMatchedName": "群益中小型股基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -9401,6 +9474,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1811",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1811",
+      "fubonMatchedName": "復華台灣好收益基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -9661,6 +9735,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2004",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2004",
+      "fubonMatchedName": "永豐趨勢平衡基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -9827,7 +9902,7 @@
         "RR4",
         "3月 27.57%",
         "1年 95.64%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACFP130",
       "fundId": "ACFP130",
@@ -9840,12 +9915,14 @@
       "returnYtd": 59.1,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP130",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T1089B7#TWD",
-      "fundrichName": "MoneyDJ ACFP130 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACFP130,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACFP130,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "1226",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1226",
+      "fubonMatchedName": "富邦台灣高股息Ｂ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "富邦台灣高股息基金A不配息(本基金並無保證收益及配息)",
@@ -9866,7 +9943,7 @@
         "RR4",
         "3月 27.52%",
         "1年 94.80%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACFP129",
       "fundId": "ACFP129",
@@ -9879,12 +9956,14 @@
       "returnYtd": 59.1,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP129",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T1089A9#TWD",
-      "fundrichName": "MoneyDJ ACFP129 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACFP129,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACFP129,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "1225",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1225",
+      "fubonMatchedName": "富邦台灣高股息Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "復華數位經濟基金",
@@ -10265,6 +10344,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3334",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3334",
+      "fubonMatchedName": "國泰新興市場基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -10344,6 +10424,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1808",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1808",
+      "fubonMatchedName": "復華全球平衡基金臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -10917,8 +10998,7 @@
         "台幣",
         "RR5",
         "3月 33.01%",
-        "1年 46.48%",
-        "富邦銀行可買"
+        "1年 46.48%"
       ],
       "ticker": "ACFP79",
       "fundId": "ACFP79",
@@ -10930,14 +11010,7 @@
       "return6m": 22.79,
       "returnYtd": 25.01,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP79",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP79"
     },
     {
       "name": "國泰中國新興戰略基金(台幣)",
@@ -10974,6 +11047,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3339",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3339",
+      "fubonMatchedName": "國泰中國新興戰略基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -11014,6 +11088,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3336",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3336",
+      "fubonMatchedName": "國泰中國內需增長基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -11755,7 +11830,7 @@
         "RR4",
         "3月 36.54%",
         "1年 64.99%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "AC0056",
       "fundId": "AC0056",
@@ -11768,13 +11843,11 @@
       "returnYtd": 49.77,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=AC0056",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "0439",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0439",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "YUI090",
+      "fundrichName": "元大台灣高股息優質龍頭證券投資信託基金-新台幣(B)配息",
+      "fundrichUrl": "https://www.fundrich.com.tw/fundCenter/fundOverview/fundContent/YUI090",
+      "fundrichAppUrl": "fundrich://checkoutAppCart?funds=[YUI090]"
     },
     {
       "name": "群益東方盛世基金",
@@ -11999,6 +12072,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1115",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1115",
+      "fubonMatchedName": "景順全球科技基金年配",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -12261,7 +12335,7 @@
         "RR4",
         "3月 22.62%",
         "1年 91.91%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS61",
       "fundId": "ACJS61",
@@ -12274,13 +12348,12 @@
       "returnYtd": 57.18,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS61",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2067A4#TWD",
+      "fundrichName": "MoneyDJ ACJS61 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS61,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS61,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "富邦亞洲機會基金",
@@ -12301,7 +12374,7 @@
         "RR5",
         "3月 11.01%",
         "1年 77.87%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS24",
       "fundId": "ACJS24",
@@ -12314,13 +12387,12 @@
       "returnYtd": 40.84,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS24",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2029Y4#TWD",
+      "fundrichName": "MoneyDJ ACJS24 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS24,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS24,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "玉山金平衡基金-A累積型(本基金有相當比重投資於非投資等級之高風險債券)",
@@ -12396,6 +12468,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "4002",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=4002",
+      "fubonMatchedName": "華南永昌永昌基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -12585,6 +12658,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3117",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3117",
+      "fubonMatchedName": "安聯中華新思路臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -12641,7 +12715,7 @@
         "RR4",
         "3月 22.35%",
         "1年 80.11%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS26",
       "fundId": "ACJS26",
@@ -12654,13 +12728,12 @@
       "returnYtd": 57.96,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS26",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2031Y0#TWD",
+      "fundrichName": "MoneyDJ ACJS26 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS26,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS26,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "宏利全球科技基金-NA不配息(台幣)",
@@ -13059,6 +13132,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2904",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2904",
+      "fubonMatchedName": "群益店頭市場基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -13186,7 +13260,7 @@
         "RR5",
         "3月 32.06%",
         "1年 111.24%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS49",
       "fundId": "ACJS49",
@@ -13199,13 +13273,12 @@
       "returnYtd": 46.55,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS49",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2055A9#TWD",
+      "fundrichName": "MoneyDJ ACJS49 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS49,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS49,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "富邦中國內需動力基金",
@@ -13226,7 +13299,7 @@
         "RR5",
         "3月 25.24%",
         "1年 78.34%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS31",
       "fundId": "ACJS31",
@@ -13239,13 +13312,12 @@
       "returnYtd": 25.64,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS31",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2037Y7#TWD",
+      "fundrichName": "MoneyDJ ACJS31 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS31,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS31,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "富蘭克林華美亞太平衡基金-分配型(台幣)(本基金有相當比重投資於非投資等級之高風險債券且基金之配息來源可能為本金)",
@@ -13525,7 +13597,7 @@
         "RR3",
         "3月 11.76%",
         "1年 48.87%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACIC10",
       "fundId": "ACIC10",
@@ -13538,12 +13610,14 @@
       "returnYtd": 25.49,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACIC10",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3209A1#TWD",
-      "fundrichName": "MoneyDJ ACIC10 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC10,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC10,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3609",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3609",
+      "fubonMatchedName": "野村全球高股息",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "元大全球股票入息基金A不配息(台幣)(本基金之配息來源可能為本金且並無保證收益及配息)",
@@ -13602,8 +13676,7 @@
         "台幣",
         "RR4",
         "3月 34.67%",
-        "1年 56.52%",
-        "富邦銀行可買"
+        "1年 56.52%"
       ],
       "ticker": "ACFP136",
       "fundId": "ACFP136",
@@ -13615,14 +13688,7 @@
       "return6m": 38.0,
       "returnYtd": 42.1,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP136",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP136"
     },
     {
       "name": "元大全球股票入息基金B配息(台幣)(本基金之配息來源可能為本金且並無保證收益及配息)",
@@ -13681,8 +13747,7 @@
         "台幣",
         "RR4",
         "3月 18.69%",
-        "1年 42.10%",
-        "富邦銀行可買"
+        "1年 42.10%"
       ],
       "ticker": "ACFP66",
       "fundId": "ACFP66",
@@ -13694,14 +13759,7 @@
       "return6m": 16.52,
       "returnYtd": 18.2,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP66",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP66"
     },
     {
       "name": "第一金全球大趨勢基金(台幣)",
@@ -13880,6 +13938,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2941",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2941",
+      "fubonMatchedName": "群益美國新創亮點臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -14167,7 +14226,7 @@
         "RR5",
         "3月 11.83%",
         "1年 59.55%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCP24",
       "fundId": "ACCP24",
@@ -14180,12 +14239,14 @@
       "returnYtd": 26.47,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCP24",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0727Y5#TWD",
-      "fundrichName": "MoneyDJ ACCP24 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCP24,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCP24,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "0225",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0225",
+      "fubonMatchedName": "瀚亞亞太高股息基金Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "統一大龍騰中國基金(台幣)",
@@ -14332,6 +14393,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1222",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1222",
+      "fubonMatchedName": "富邦大中華成長基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -14372,6 +14434,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1009",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1009",
+      "fubonMatchedName": "玉山大中華基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -14508,6 +14571,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3323",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3323",
+      "fubonMatchedName": "國泰中港台基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -14665,6 +14729,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3644",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3644",
+      "fubonMatchedName": "野村中國機會基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -14767,7 +14832,7 @@
         "RR5",
         "3月 14.35%",
         "1年 85.19%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACIC18",
       "fundId": "ACIC18",
@@ -14780,12 +14845,14 @@
       "returnYtd": 36.44,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACIC18",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3217A4#TWD",
-      "fundrichName": "MoneyDJ ACIC18 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC18,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC18,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3617",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3617",
+      "fubonMatchedName": "野村亞太高股息基金",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "野村亞太高股息基金-季配型(台幣)(本基金之配息來源可能為本金且並無保證收益及配息)",
@@ -14822,6 +14889,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3637",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3637",
+      "fubonMatchedName": "野村亞太高股息季配",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -14862,6 +14930,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1003",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1003",
+      "fubonMatchedName": "玉山新興趨勢組合基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -14885,8 +14954,7 @@
         "台幣",
         "RR4",
         "3月 24.93%",
-        "1年 34.90%",
-        "富邦銀行可買"
+        "1年 34.90%"
       ],
       "ticker": "ACFP98",
       "fundId": "ACFP98",
@@ -14898,14 +14966,7 @@
       "return6m": 25.42,
       "returnYtd": 27.58,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP98",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP98"
     },
     {
       "name": "台中銀中國精選成長基金(台幣)",
@@ -15139,7 +15200,7 @@
         "RR5",
         "3月 39.14%",
         "1年 142.81%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACII61",
       "fundId": "ACII61",
@@ -15152,12 +15213,14 @@
       "returnYtd": 52.98,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACII61",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0127A8#TWD",
-      "fundrichName": "MoneyDJ ACII61 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACII61,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACII61,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "2514",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2514",
+      "fubonMatchedName": "兆豐中國內需Ａ股台",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "富邦日本東証基金(本基金採匯率避險)",
@@ -15177,8 +15240,7 @@
         "台幣",
         "RR5",
         "3月 7.75%",
-        "1年 45.20%",
-        "富邦銀行可買"
+        "1年 45.20%"
       ],
       "ticker": "ACFP62",
       "fundId": "ACFP62",
@@ -15190,14 +15252,7 @@
       "return6m": 15.7,
       "returnYtd": 19.27,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP62",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP62"
     },
     {
       "name": "復華新興債股動力組合基金(台幣)",
@@ -15454,6 +15509,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3118",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3118",
+      "fubonMatchedName": "安聯全球新興市場基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -16187,8 +16243,7 @@
         "台幣",
         "RR4",
         "3月 29.81%",
-        "1年 45.15%",
-        "富邦銀行可買"
+        "1年 45.15%"
       ],
       "ticker": "ACFP137",
       "fundId": "ACFP137",
@@ -16200,14 +16255,7 @@
       "return6m": 18.19,
       "returnYtd": 21.17,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP137",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP137"
     },
     {
       "name": "安聯四季成長組合基金-R累積型(台幣)",
@@ -16338,7 +16386,7 @@
         "RR4",
         "3月 15.24%",
         "1年 48.50%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCY164",
       "fundId": "ACCY164",
@@ -16351,12 +16399,14 @@
       "returnYtd": 20.87,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCY164",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3788A4#TWD",
-      "fundrichName": "MoneyDJ ACCY164 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCY164,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCY164,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3326",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3326",
+      "fubonMatchedName": "國泰美國ＥＳＧ基金台",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "瀚亞理財通基金B配息(台幣)(本基金配息來源可能為本金)",
@@ -16448,7 +16498,7 @@
         "RR4",
         "3月 20.21%",
         "1年 48.91%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCP15",
       "fundId": "ACCP15",
@@ -16461,12 +16511,14 @@
       "returnYtd": 30.93,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCP15",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0717Y6#TWD",
-      "fundrichName": "MoneyDJ ACCP15 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCP15,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCP15,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "0217",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0217",
+      "fubonMatchedName": "瀚亞理財通基金Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "台新中國精選中小基金(台幣)",
@@ -16652,6 +16704,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1026",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1026",
+      "fubonMatchedName": "玉山中國中小臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -16676,7 +16729,7 @@
         "RR5",
         "3月 9.57%",
         "1年 53.79%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACJF96",
       "fundId": "ACJF96",
@@ -16689,12 +16742,14 @@
       "returnYtd": 23.2,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJF96",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T1125Y1#TWD",
-      "fundrichName": "MoneyDJ ACJF96 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJF96,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJF96,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "2628",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2628",
+      "fubonMatchedName": "摩根新興３５基金累積",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "富蘭克林華美多重資產收益基金-A累積型(台幣)(本基金有相當比重投資於非投資等級之高風險債券且基金之配息來源可能為本金)",
@@ -16887,6 +16942,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3622",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3622",
+      "fubonMatchedName": "野村環球基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -17202,7 +17258,7 @@
         "RR5",
         "3月 38.31%",
         "1年 108.45%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACML32",
       "fundId": "ACML32",
@@ -17215,12 +17271,14 @@
       "returnYtd": 43.86,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACML32",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0832Y3#TWD",
-      "fundrichName": "MoneyDJ ACML32 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACML32,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACML32,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "1025",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1025",
+      "fubonMatchedName": "玉山中國品牌臺幣",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "玉山策略成長ETF組合基金-R累積型(台幣)",
@@ -17422,7 +17480,7 @@
         "RR4",
         "3月 9.23%",
         "1年 21.59%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACJF92",
       "fundId": "ACJF92",
@@ -17435,12 +17493,14 @@
       "returnYtd": 6.63,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJF92",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T1119Y4#TWD",
-      "fundrichName": "MoneyDJ ACJF92 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJF92,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJF92,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "2625",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2625",
+      "fubonMatchedName": "摩根全球創新成長累",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "群益新興金鑽基金(台幣)",
@@ -17719,8 +17779,7 @@
         "台幣",
         "RR5",
         "3月 23.27%",
-        "1年 93.00%",
-        "富邦銀行可買"
+        "1年 93.00%"
       ],
       "ticker": "ACFP103",
       "fundId": "ACFP103",
@@ -17732,14 +17791,7 @@
       "return6m": 53.24,
       "returnYtd": 60.78,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP103",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP103"
     },
     {
       "name": "柏瑞ESG量化全球股票收益基金I不配息(台幣)",
@@ -18241,6 +18293,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3122",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3122",
+      "fubonMatchedName": "安聯中國策略基金臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -19019,6 +19072,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2918",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2918",
+      "fubonMatchedName": "群益華夏盛世基金臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -19113,8 +19167,7 @@
         "台幣",
         "RR4",
         "3月 3.45%",
-        "1年 27.38%",
-        "富邦銀行可買"
+        "1年 27.38%"
       ],
       "ticker": "ACFP93",
       "fundId": "ACFP93",
@@ -19126,14 +19179,7 @@
       "return6m": 6.09,
       "returnYtd": 7.8,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP93",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP93"
     },
     {
       "name": "復華全球資產證券化基金A不配息(台幣)",
@@ -19596,6 +19642,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2420",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2420",
+      "fubonMatchedName": "匯豐全球關鍵資源基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -19729,8 +19776,7 @@
         "台幣",
         "RR5",
         "3月 11.57%",
-        "1年 67.74%",
-        "富邦銀行可買"
+        "1年 67.74%"
       ],
       "ticker": "ACFP116",
       "fundId": "ACFP116",
@@ -19742,14 +19788,7 @@
       "return6m": 12.49,
       "returnYtd": 21.36,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP116",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP116"
     },
     {
       "name": "野村鑫平衡組合基金-累積型(台幣)",
@@ -19770,7 +19809,7 @@
         "RR4",
         "3月 6.47%",
         "1年 41.19%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACIC12",
       "fundId": "ACIC12",
@@ -19783,12 +19822,14 @@
       "returnYtd": 18.53,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACIC12",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3211Y7#TWD",
-      "fundrichName": "MoneyDJ ACIC12 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC12,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC12,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3610",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3610",
+      "fubonMatchedName": "野村鑫平衡組合",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "安聯四季雙收入息組合基金-R累積型(台幣)(本基金並無保證收益及配息)",
@@ -20006,6 +20047,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2627",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2627",
+      "fubonMatchedName": "摩根絕對日本基金累積",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -20046,6 +20088,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3124",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3124",
+      "fubonMatchedName": "安聯中國東協基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -20541,8 +20584,7 @@
         "台幣",
         "RR5",
         "3月 14.67%",
-        "1年 69.00%",
-        "富邦銀行可買"
+        "1年 69.00%"
       ],
       "ticker": "ACFP59",
       "fundId": "ACFP59",
@@ -20554,14 +20596,7 @@
       "return6m": 16.93,
       "returnYtd": 20.07,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP59",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP59"
     },
     {
       "name": "摩根新興日本基金",
@@ -20967,6 +21002,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3321",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3321",
+      "fubonMatchedName": "國泰全球基礎建設基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -21384,8 +21420,7 @@
         "台幣",
         "RR4",
         "3月 9.23%",
-        "1年 96.75%",
-        "富邦銀行可買"
+        "1年 96.75%"
       ],
       "ticker": "ACFP139",
       "fundId": "ACFP139",
@@ -21397,14 +21432,7 @@
       "return6m": 33.39,
       "returnYtd": 36.16,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP139",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP139"
     },
     {
       "name": "中國信託樂齡收益平衡基金-A累積型(台幣)(本基金有相當比重投資於非投資等級之高風險債券且本基金之配息來源可能為本金)",
@@ -21629,6 +21657,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3608",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3608",
+      "fubonMatchedName": "野村全球品牌",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -21865,8 +21894,7 @@
         "台幣",
         "RR4",
         "3月 17.17%",
-        "1年 78.21%",
-        "富邦銀行可買"
+        "1年 78.21%"
       ],
       "ticker": "ACFP134",
       "fundId": "ACFP134",
@@ -21878,14 +21906,7 @@
       "return6m": 24.51,
       "returnYtd": 31.77,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP134",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP134"
     },
     {
       "name": "柏瑞亞洲亮點股票基金A不配息(台幣)",
@@ -22110,6 +22131,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2916",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2916",
+      "fubonMatchedName": "群益中國新機會新臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -22402,6 +22424,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1004",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1004",
+      "fubonMatchedName": "玉山全球資源基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -22552,6 +22575,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1017",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1017",
+      "fubonMatchedName": "玉山全球中小基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -23558,8 +23582,7 @@
         "台幣",
         "RR4",
         "3月 11.07%",
-        "1年 27.01%",
-        "富邦銀行可買"
+        "1年 27.01%"
       ],
       "ticker": "ACFP138",
       "fundId": "ACFP138",
@@ -23571,14 +23594,7 @@
       "return6m": 9.19,
       "returnYtd": 12.02,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP138",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP138"
     },
     {
       "name": "復華滬深300A股基金",
@@ -23631,7 +23647,7 @@
         "RR4",
         "3月 7.65%",
         "1年 44.46%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACDD15",
       "fundId": "ACDD15",
@@ -23644,12 +23660,14 @@
       "returnYtd": 18.36,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACDD15",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3615Y9#TWD",
-      "fundrichName": "MoneyDJ ACDD15 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACDD15,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACDD15,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3108",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3108",
+      "fubonMatchedName": "安聯全球綠能趨勢Ａ",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "貝萊德享退休系列2040目標日期組合基金",
@@ -24023,6 +24041,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3123",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3123",
+      "fubonMatchedName": "安聯全球油礦金趨勢",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -24432,6 +24451,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2932",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2932",
+      "fubonMatchedName": "群益東協成長基金臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -24526,8 +24546,7 @@
         "台幣",
         "RR5",
         "3月 5.04%",
-        "1年 35.49%",
-        "富邦銀行可買"
+        "1年 35.49%"
       ],
       "ticker": "ACFP35",
       "fundId": "ACFP35",
@@ -24539,14 +24558,7 @@
       "return6m": 1.54,
       "returnYtd": 6.0,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP35",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP35"
     },
     {
       "name": "合庫全球核心基礎建設收益基金-B配息(台幣)(本基金之配息來源可能為本金)",
@@ -25467,6 +25479,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3104",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3104",
+      "fubonMatchedName": "安聯全球生技趨勢基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -26279,7 +26292,7 @@
         "RR3",
         "3月 4.07%",
         "1年 23.30%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACJF93",
       "fundId": "ACJF93",
@@ -26292,12 +26305,14 @@
       "returnYtd": 8.47,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJF93",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T1120A2#TWD",
-      "fundrichName": "MoneyDJ ACJF93 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJF93,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJF93,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "2633",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2633",
+      "fubonMatchedName": "摩根亞太高息平衡累",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "摩根亞太高息平衡基金-季配型(本基金之配息來源可能為本金且並無保證收益及配息)",
@@ -26499,7 +26514,7 @@
         "RR3",
         "3月 12.18%",
         "1年 43.12%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACML16",
       "fundId": "ACML16",
@@ -26512,12 +26527,14 @@
       "returnYtd": 7.39,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACML16",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0816Y6#TWD",
-      "fundrichName": "MoneyDJ ACML16 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACML16,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACML16,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "1016",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1016",
+      "fubonMatchedName": "玉山全球醫療生化基金",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "東方匯理新興市場非投資等級債券基金-N2累積型(台幣)(本基金之配息來源可能為本金)",
@@ -27012,6 +27029,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "1024",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1024",
+      "fubonMatchedName": "玉山拉丁美洲基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -27075,7 +27093,7 @@
         "RR4",
         "3月 -3.43%",
         "1年 18.82%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCJ07",
       "fundId": "ACCJ07",
@@ -27088,12 +27106,14 @@
       "returnYtd": 9.22,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCJ07",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0498A3#TWD",
-      "fundrichName": "MoneyDJ ACCJ07 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCJ07,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCJ07,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "2421",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2421",
+      "fubonMatchedName": "匯豐全球基礎建設台幣",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "匯豐全球基礎建設收益基金-月分配型(台幣)(本基金配息來源可能為本金及收益平準金)",
@@ -27114,7 +27134,7 @@
         "RR4",
         "3月 -3.52%",
         "1年 18.80%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACCJ09",
       "fundId": "ACCJ09",
@@ -27127,13 +27147,12 @@
       "returnYtd": 9.15,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCJ09",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "2421",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2421",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T0498B1#TWD",
+      "fundrichName": "MoneyDJ ACCJ09 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCJ09,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCJ09,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "匯豐全球基礎建設收益基金-N月分配型(台幣)(本基金配息來源可能為本金及收益平準金)",
@@ -27153,8 +27172,7 @@
         "台幣",
         "RR4",
         "3月 -3.52%",
-        "1年 18.80%",
-        "富邦銀行可買"
+        "1年 18.80%"
       ],
       "ticker": "ACCJ13",
       "fundId": "ACCJ13",
@@ -27166,14 +27184,7 @@
       "return6m": 8.75,
       "returnYtd": 9.15,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCJ13",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "2421",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2421",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCJ13"
     },
     {
       "name": "匯豐全球基礎建設收益基金-N不配息(台幣)(本基金配息來源可能為本金及收益平準金)",
@@ -27611,6 +27622,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2614",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2614",
+      "fubonMatchedName": "摩根環球股票收益累積",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -28107,7 +28119,7 @@
         "RR5",
         "3月 6.37%",
         "1年 54.53%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACJF116",
       "fundId": "ACJF116",
@@ -28120,12 +28132,14 @@
       "returnYtd": 12.59,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJF116",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T1142Y6#TWD",
-      "fundrichName": "MoneyDJ ACJF116 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJF116,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJF116,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "2616",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2616",
+      "fubonMatchedName": "摩根中國Ａ股基金",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "國泰新興非投資等級債券基金-B配息(台幣)(基金之配息來源可能為本金)",
@@ -28398,7 +28412,7 @@
         "RR4",
         "3月 5.79%",
         "1年 21.33%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACFP26",
       "fundId": "ACFP26",
@@ -28411,13 +28425,12 @@
       "returnYtd": 11.39,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP26",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T1026Y1#TWD",
+      "fundrichName": "MoneyDJ ACFP26 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACFP26,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACFP26,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "群益全球關鍵生技基金(台幣)",
@@ -28454,6 +28467,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2915",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2915",
+      "fubonMatchedName": "群益全球關鍵生技基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -29195,7 +29209,7 @@
         "RR4",
         "3月 3.36%",
         "1年 22.18%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACIC15",
       "fundId": "ACIC15",
@@ -29208,12 +29222,14 @@
       "returnYtd": 9.58,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACIC15",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T3214A1#TWD",
-      "fundrichName": "MoneyDJ ACIC15 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC15,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACIC15,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "3614",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3614",
+      "fubonMatchedName": "野村全球不動產",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "群益全球地產入息基金NB月配型(台幣)(本基金有相當比例投資於非投資等級之高風險債券及配息來源可能為本金且基金並無保證收益及配息)",
@@ -29573,6 +29589,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "2624",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=2624",
+      "fubonMatchedName": "摩根全球平衡基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -29613,6 +29630,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3208",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3208",
+      "fubonMatchedName": "柏瑞拉丁美洲",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -29653,6 +29671,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3646",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3646",
+      "fubonMatchedName": "野村巴西基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -30048,6 +30067,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3633",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3633",
+      "fubonMatchedName": "野村全球生技醫療基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -30411,6 +30431,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "3625",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=3625",
+      "fubonMatchedName": "野村泰國基金",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -30671,6 +30692,7 @@
       "channel": "台北富邦銀行",
       "fubonFundId": "0237",
       "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=0237",
+      "fubonMatchedName": "瀚亞巴西基金新臺幣",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -32486,8 +32508,7 @@
         "台幣",
         "RR4",
         "3月 45.74%",
-        "1年 100.42%",
-        "富邦銀行可買"
+        "1年 100.42%"
       ],
       "ticker": "ACFP156",
       "fundId": "ACFP156",
@@ -32499,14 +32520,7 @@
       "return6m": 66.56,
       "returnYtd": 70.38,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP156",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP156"
     },
     {
       "name": "富達台灣成長基金-TISA類型",
@@ -32595,8 +32609,7 @@
         "國內股票開放型指數型",
         "台幣",
         "RR4",
-        "3月 38.56%",
-        "富邦銀行可買"
+        "3月 38.56%"
       ],
       "ticker": "ACFP170",
       "fundId": "ACFP170",
@@ -32608,14 +32621,7 @@
       "return6m": 59.99,
       "returnYtd": 67.78,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP170",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP170"
     },
     {
       "name": "台新日本半導體ETF基金(基金之配息來源可能為收益平準金)",
@@ -33123,8 +33129,9 @@
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS107",
       "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
+      "fubonFundId": "1233",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1233",
+      "fubonMatchedName": "富邦全球關鍵半導體台",
       "fubonPurchaseTypes": [
         "單筆申購",
         "定期定額"
@@ -36496,7 +36503,7 @@
         "RR4",
         "3月 19.42%",
         "1年 52.09%",
-        "基富通可買"
+        "富邦銀行可買"
       ],
       "ticker": "ACCS131",
       "fundId": "ACCS131",
@@ -36509,12 +36516,14 @@
       "returnYtd": 21.52,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACCS131",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T0603A8#TWD",
-      "fundrichName": "MoneyDJ ACCS131 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCS131,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACCS131,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "channel": "台北富邦銀行",
+      "fubonFundId": "1116",
+      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1116",
+      "fubonMatchedName": "景順全球科技基金累台",
+      "fubonPurchaseTypes": [
+        "單筆申購",
+        "定期定額"
+      ]
     },
     {
       "name": "景順全球科技基金-M8月配型(台幣)(基金之配息來源可能為本金)",
@@ -37171,7 +37180,7 @@
         "RR3",
         "3月 11.94%",
         "1年 18.74%",
-        "富邦銀行可買"
+        "基富通可買"
       ],
       "ticker": "ACJS109",
       "fundId": "ACJS109",
@@ -37184,13 +37193,12 @@
       "returnYtd": 17.34,
       "feeUnavailable": true,
       "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS109",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "channel": "基富通",
+      "fundrichFundId": "TW000T2075Y7#TWD",
+      "fundrichName": "MoneyDJ ACJS109 FundRich",
+      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS109,100&b=1&c=fundrich&d=2",
+      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS109,100&b=1&c=fundrich&d=2",
+      "fundrichSource": "MoneyDJ 申購清單"
     },
     {
       "name": "群益全民優質樂退組合基金R累積型(台幣)(本基金有相當比重投資於持有非投資等級高風險債券之基金且配息來源可能為本金)",
@@ -38477,8 +38485,7 @@
         "跨國投資指數型",
         "台幣",
         "RR4",
-        "3月 11.65%",
-        "富邦銀行可買"
+        "3月 11.65%"
       ],
       "ticker": "ACFP173",
       "fundId": "ACFP173",
@@ -38490,14 +38497,7 @@
       "return6m": 9.9,
       "returnYtd": 11.65,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP173",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP173"
     },
     {
       "name": "野村美國增長股票ETF組合基金-累積型(台幣)(本基金配息來源可能為本金)",
@@ -41405,8 +41405,7 @@
         "台幣",
         "RR5",
         "3月 0.73%",
-        "1年 11.71%",
-        "富邦銀行可買"
+        "1年 11.71%"
       ],
       "ticker": "ACFP65",
       "fundId": "ACFP65",
@@ -41418,14 +41417,7 @@
       "return6m": 8.53,
       "returnYtd": 9.92,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP65",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP65"
     },
     {
       "name": "街口標普高盛黃豆ER指數期貨基金",
@@ -41477,8 +41469,7 @@
         "台幣",
         "RR5",
         "3月 5.42%",
-        "1年 4.62%",
-        "富邦銀行可買"
+        "1年 4.62%"
       ],
       "ticker": "ACFP68",
       "fundId": "ACFP68",
@@ -41490,14 +41481,7 @@
       "return6m": 10.32,
       "returnYtd": 8.35,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP68",
-      "channel": "台北富邦銀行",
-      "fubonFundId": "1263",
-      "fubonBuyUrl": "https://ebankcld.taipeifubon.com.tw/start/FubonPlus?taskId=NMFTX001&fundCode=1263",
-      "fubonPurchaseTypes": [
-        "單筆申購",
-        "定期定額"
-      ]
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACFP68"
     }
   ]
 }

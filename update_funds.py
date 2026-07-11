@@ -25,6 +25,7 @@ import statistics
 import sys
 import tempfile
 import time
+import unicodedata
 import uuid
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -805,11 +806,23 @@ def is_twd_currency(value: str | None) -> bool:
     return any(keyword in text for keyword in ["台幣", "新台幣", "新臺幣", "TWD", "NTD"])
 
 
+def normalized_fund_text(value: str) -> str:
+    return unicodedata.normalize("NFKC", html.unescape(value or ""))
+
+
 def canonical_fund_name(value: str) -> str:
-    text = html.unescape(value)
+    text = normalized_fund_text(value)
     text = re.sub(r"[\(（][^()（）]*(?:本金|配息來源|收益平準金|保證收益)[^()（）]*[\)）]", "", text)
     text = re.sub(r"[\(（]\s*([A-Z]{1,3})\s*[\)）]", r"\1", text, flags=re.IGNORECASE)
     text = re.sub(r"[\(（]([^（）()]{1,12})[\)）]", r"\1", text)
+    synonym_replacements = [
+        ("台灣", "台"),
+        ("臺灣", "台"),
+        ("臺", "台"),
+        ("優質", "優"),
+    ]
+    for source, target in synonym_replacements:
+        text = text.replace(source, target)
     replacements = [
         "證券投資信託基金",
         "投資信託基金",
@@ -834,13 +847,14 @@ def canonical_fund_name(value: str) -> str:
 
 
 def fund_class_tokens(value: str) -> set[str]:
-    text = html.unescape(value or "")
+    text = normalized_fund_text(value)
     text = re.sub(r"[\(（][^()（）]*(?:本金|配息來源|收益平準金|保證收益)[^()（）]*[\)）]", "", text)
     tokens = set()
     patterns = [
         r"[\(（]\s*([A-Z]{1,3})\s*[\)）]",
         r"基金\s*([A-Z]{1,3})(?=(?:不配息|配息|月配|季配|累積|後收|類型|級別|$))",
         r"([A-Z]{1,3})(?=類型|級別)",
+        r"([A-Z]{1,3})(?=\s*(?:不配息|配息|月配|季配|累積|後收|$))",
     ]
     for pattern in patterns:
         tokens.update(match.lower() for match in re.findall(pattern, text, flags=re.IGNORECASE))
@@ -852,7 +866,7 @@ def channel_item_name(item: dict[str, Any]) -> str:
 
 
 def distribution_tokens(value: str) -> set[str]:
-    text = html.unescape(value or "")
+    text = normalized_fund_text(value)
     text = re.sub(r"[\(（][^()（）]*(?:本金|配息來源|收益平準金|保證收益)[^()（）]*[\)）]", "", text)
     tokens = set()
     is_accumulating = any(keyword in text for keyword in ["不配息", "累積", "累積型"])
@@ -890,18 +904,45 @@ def fund_distribution_compatible(source_name: str, candidate_name: str) -> bool:
 
 
 def channel_match_compatible(source_name: str, item: dict[str, Any]) -> bool:
-    candidate_name = channel_item_name(item)
+    candidate_name = f"{channel_item_name(item)} {item.get('dividend') or ''}"
     return fund_classes_compatible(source_name, candidate_name) and fund_distribution_compatible(source_name, candidate_name)
 
 
-def find_channel_match(name: str, channel_items: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+def nav_values_compatible(source_item: dict[str, Any], candidate_item: dict[str, Any]) -> bool:
+    source_nav = source_item.get("nav")
+    candidate_nav = candidate_item.get("nav")
+    if source_nav is None or candidate_nav is None:
+        return False
+    try:
+        source_value = float(source_nav)
+        candidate_value = float(candidate_nav)
+    except (TypeError, ValueError):
+        return False
+    if source_value <= 0 or candidate_value <= 0:
+        return False
+    tolerance = max(0.02, abs(source_value) * 0.001)
+    return abs(source_value - candidate_value) <= tolerance
+
+
+def find_channel_match(
+    item_or_name: str | dict[str, Any],
+    channel_items: dict[str, dict[str, Any]],
+    *,
+    require_nav_match: bool = False,
+) -> dict[str, Any] | None:
+    source_item = item_or_name if isinstance(item_or_name, dict) else {"name": str(item_or_name)}
+    name = str(source_item.get("name") or "")
     key = canonical_fund_name(name)
     if not key:
         return None
     if key in channel_items and channel_match_compatible(name, channel_items[key]):
+        if require_nav_match and not nav_values_compatible(source_item, channel_items[key]):
+            return None
         return channel_items[key]
     for candidate_key, item in channel_items.items():
         if len(key) >= 5 and (key in candidate_key or candidate_key in key) and channel_match_compatible(name, item):
+            if require_nav_match and not nav_values_compatible(source_item, item):
+                continue
             return item
     return None
 
@@ -1811,11 +1852,12 @@ def enrich_channel_links(
     fundrich_lookup: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     tags = list(fund.get("tags") or [])
-    fubon = find_channel_match(fund["name"], fubon_lookup)
+    fubon = find_channel_match(fund, fubon_lookup, require_nav_match=True)
     if fubon:
         fund["channel"] = "台北富邦銀行"
         fund["fubonFundId"] = fubon.get("fundId")
         fund["fubonBuyUrl"] = fubon.get("fubonBuyUrl")
+        fund["fubonMatchedName"] = fubon.get("name")
         fund["fubonPurchaseTypes"] = fubon.get("fubonPurchaseTypes", [])
         tags.append("富邦銀行可買")
     else:
@@ -1974,6 +2016,7 @@ def normalize_fund(item: dict[str, Any]) -> dict[str, Any]:
         "sourceDetail",
         "fubonFundId",
         "fubonBuyUrl",
+        "fubonMatchedName",
         "fundrichFundId",
         "fundrichName",
         "fundrichUrl",
