@@ -157,6 +157,7 @@ let portfolioPeriodSnapshots = {
 };
 let portfolioSnapshotsDirty = false;
 let portfolioSnapshotsSaving = false;
+let periodDetailStore = new Map();
 
 const els = {
   query: document.querySelector("#queryInput"),
@@ -1053,34 +1054,74 @@ function markPortfolioSnapshotsDirty() {
   portfolioSnapshotsDirty = true;
 }
 
-function renderPeriodDetails(details, isOpen = false) {
+function renderPeriodDetailsContent(details) {
   if (!details?.length) {
     return "";
   }
   const rows = [...details].sort((a, b) => Math.abs(Number(b.profit) || 0) - Math.abs(Number(a.profit) || 0));
-  return `
-    <details class="period-detail"${isOpen ? " open" : ""}>
-      <summary>明細</summary>
-      ${rows
-        .map((detail) => {
-          const profit = Number(detail.profit);
-          const hasProfit = detail.profit !== null && detail.profit !== undefined && Number.isFinite(profit);
-          const profitClass = hasProfit ? (profit >= 0 ? "up" : "down") : "";
-          const navText =
-            detail.startNav && detail.endNav
-              ? `${moneyNumber(detail.startNav)} -> ${moneyNumber(detail.endNav)}`
-              : "缺淨值";
-          return `
-            <div>
-              <span>${escapeHtml(detail.name || "未命名基金")}</span>
-              <small>本${compactTwdWan(detail.invested)} / 現${detail.value === null ? "缺" : compactTwdWan(detail.value)} / ${navText}${detail.date ? ` / ${escapeHtml(detail.date)}` : ""}</small>
-              <strong class="${profitClass}">${hasProfit ? twd(profit) : "缺資料"}</strong>
-            </div>
-          `;
-        })
-        .join("")}
-    </details>
+  return rows
+    .map((detail) => {
+      const profit = Number(detail.profit);
+      const hasProfit = detail.profit !== null && detail.profit !== undefined && Number.isFinite(profit);
+      const profitClass = hasProfit ? (profit >= 0 ? "up" : "down") : "";
+      const navText =
+        detail.startNav && detail.endNav ? `${moneyNumber(detail.startNav)} -> ${moneyNumber(detail.endNav)}` : "缺淨值";
+      return `
+        <div class="period-detail-row">
+          <span>${escapeHtml(detail.name || "未命名基金")}</span>
+          <small>本${compactTwdWan(detail.invested)} / 現${detail.value === null ? "缺" : compactTwdWan(detail.value)} / ${navText}${detail.date ? ` / ${escapeHtml(detail.date)}` : ""}</small>
+          <strong class="${profitClass}">${hasProfit ? twd(profit) : "缺資料"}</strong>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function periodDetailButton(key, label, className) {
+  return `<button class="period-profit-button ${className}" type="button" data-period-detail="${escapeHtml(key)}">${label}</button>`;
+}
+
+function ensurePeriodDetailModal() {
+  let modal = document.querySelector("#periodDetailModal");
+  if (modal) {
+    return modal;
+  }
+  modal = document.createElement("div");
+  modal.id = "periodDetailModal";
+  modal.className = "period-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div class="period-modal-panel" role="dialog" aria-modal="true" aria-labelledby="periodDetailTitle">
+      <button class="period-modal-close" type="button" aria-label="關閉">×</button>
+      <h3 id="periodDetailTitle"></h3>
+      <div class="period-modal-body"></div>
+    </div>
   `;
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.closest(".period-modal-close")) {
+      hidePeriodDetailModal();
+    }
+  });
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function showPeriodDetailModal(key) {
+  const data = periodDetailStore.get(key);
+  if (!data) {
+    return;
+  }
+  const modal = ensurePeriodDetailModal();
+  modal.querySelector("#periodDetailTitle").textContent = data.title;
+  modal.querySelector(".period-modal-body").innerHTML = renderPeriodDetailsContent(data.details);
+  modal.hidden = false;
+}
+
+function hidePeriodDetailModal() {
+  const modal = document.querySelector("#periodDetailModal");
+  if (modal) {
+    modal.hidden = true;
+  }
 }
 
 function renderPortfolioStats() {
@@ -1117,6 +1158,7 @@ function renderPortfolioStats() {
   const weeklyRows = [...summary.weeks.values()]
     .sort((a, b) => b.key.localeCompare(a.key))
     .slice(0, PERIOD_DISPLAY_LIMIT);
+  periodDetailStore = new Map();
   els.portfolioStats.innerHTML = `
     <div class="portfolio-stat">
       <span>投入金額</span>
@@ -1153,13 +1195,18 @@ function renderPortfolioStats() {
                 const profitClass = profit >= 0 ? "up" : "down";
                 const monthLabel = item.key === "未填日期" ? item.key : item.key.replace("-", "/");
                 const periodText = `本${compactTwdWan(item.invested)} / 現${item.valued ? compactTwdWan(item.value) : "缺"}`;
+                const detailKey = `month:${item.key}`;
+                const profitLabel = item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-";
+                periodDetailStore.set(detailKey, {
+                  title: `${monthLabel} 明細`,
+                  details: item.details || []
+                });
                 return `
                   <div class="period-row">
                     <p>
                       <span>${escapeHtml(monthLabel)}：${periodText}</span>
-                      <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
+                      ${periodDetailButton(detailKey, profitLabel, profitClass)}
                     </p>
-                    ${renderPeriodDetails(item.details, item.key === monthlyRows[0]?.key)}
                   </div>
                 `;
               })
@@ -1178,13 +1225,18 @@ function renderPortfolioStats() {
                 const profitClass = profit >= 0 ? "up" : "down";
                 const weekLabel = item.date ? item.date.slice(5).replace("-", "/") : item.key;
                 const periodText = `本${compactTwdWan(item.invested)} / 現${item.valued ? compactTwdWan(item.value) : "缺"}`;
+                const detailKey = `week:${item.key}`;
+                const profitLabel = item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-";
+                periodDetailStore.set(detailKey, {
+                  title: `${weekLabel} 明細`,
+                  details: item.details || []
+                });
                 return `
                   <div class="period-row">
                     <p>
                       <span>${escapeHtml(weekLabel)}：${periodText}</span>
-                      <strong class="${profitClass}">${item.valued ? `${twd(profit)} ${percent === null ? "" : `(${formatPercent(percent)})`}` : "-"}</strong>
+                      ${periodDetailButton(detailKey, profitLabel, profitClass)}
                     </p>
-                    ${renderPeriodDetails(item.details, item.key === weeklyRows[0]?.key)}
                   </div>
                 `;
               })
@@ -1193,6 +1245,9 @@ function renderPortfolioStats() {
       }
     </div>
   `;
+  document.querySelectorAll("[data-period-detail]").forEach((button) => {
+    button.addEventListener("click", () => showPeriodDetailModal(button.dataset.periodDetail));
+  });
 }
 
 function renderAuthState() {
@@ -1931,6 +1986,12 @@ function applyHighReturnPreset() {
     syncLabels();
     renderFunds();
   });
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    hidePeriodDetailModal();
+  }
 });
 
 document.querySelectorAll("input[name='goal']").forEach((input) => input.addEventListener("change", renderFunds));

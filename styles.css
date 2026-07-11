@@ -788,49 +788,116 @@ textarea {
   gap: 4px;
 }
 
-.period-detail {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.period-detail summary {
-  width: max-content;
-  cursor: pointer;
-  color: var(--accent-dark);
-}
-
-.period-detail div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2px 8px;
-  padding: 6px 0;
-  border-top: 1px solid var(--line);
-}
-
-.period-detail span,
-.period-detail small {
-  min-width: 0;
-}
-
-.period-detail small {
-  grid-column: 1 / -1;
-  color: var(--muted);
+.period-profit-button {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0;
+  min-height: 0;
+  font: inherit;
+  font-weight: 900;
+  text-align: right;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .monthly-breakdown strong,
-.weekly-breakdown strong {
+.weekly-breakdown strong,
+.period-profit-button {
   color: var(--ink);
   white-space: nowrap;
 }
 
 .monthly-breakdown strong.up,
-.weekly-breakdown strong.up {
+.weekly-breakdown strong.up,
+.period-profit-button.up {
   color: var(--accent-dark);
 }
 
 .monthly-breakdown strong.down,
-.weekly-breakdown strong.down {
+.weekly-breakdown strong.down,
+.period-profit-button.down {
+  color: var(--danger);
+}
+
+.period-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(14, 24, 22, 0.42);
+}
+
+.period-modal[hidden] {
+  display: none;
+}
+
+.period-modal-panel {
+  width: min(560px, 100%);
+  max-height: min(76vh, 680px);
+  overflow: auto;
+  position: relative;
+  padding: 18px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 24px 80px rgba(14, 24, 22, 0.28);
+}
+
+.period-modal-panel h3 {
+  margin: 0 40px 12px 0;
+  font-size: 18px;
+}
+
+.period-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.period-modal-body {
+  display: grid;
+  gap: 8px;
+}
+
+.period-detail-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.period-detail-row span {
+  min-width: 0;
+  color: var(--ink);
+}
+
+.period-detail-row small {
+  grid-column: 1 / -1;
+}
+
+.period-detail-row strong {
+  white-space: nowrap;
+}
+
+.period-detail-row strong.up {
+  color: var(--accent-dark);
+}
+
+.period-detail-row strong.down {
   color: var(--danger);
 }
 
