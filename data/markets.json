@@ -1,6 +1,6 @@
 {
   "source": "Yahoo Taiwan market data",
-  "updatedAt": "2026-07-11T06:38:16.775492+00:00",
+  "updatedAt": "2026-07-13T10:59:21.309189+00:00",
   "markets": [
     {
       "id": "txf",
@@ -8,23 +8,23 @@
       "symbol": "WTX&",
       "url": "https://tw.stock.yahoo.com/quote/WTX%26",
       "name": "台指期近一",
-      "price": 46281.0,
-      "change": 633.0,
-      "changePercent": 1.39,
-      "quoteTime": "2026-07-09T20:59:59Z"
+      "price": 45752.0,
+      "change": 187.0,
+      "changePercent": 0.41,
+      "quoteTime": "2026-07-13T10:59:13Z"
     },
     {
       "id": "twii",
       "label": "台股大盤",
       "symbol": "^TWII",
       "url": "https://tw.stock.yahoo.com/quote/%5ETWII",
-      "price": 45354.61,
-      "change": -379.8,
-      "changePercent": -0.83,
-      "return2w": -1.95,
-      "return1m": 4.26,
-      "return3m": 35.79,
-      "quoteTime": "2026-07-09T05:31:00Z"
+      "price": 45380.52,
+      "change": 25.91,
+      "changePercent": 0.06,
+      "return2w": 1.81,
+      "return1m": 1.51,
+      "return3m": 36.1,
+      "quoteTime": "2026-07-13T05:31:00Z"
     },
     {
       "id": "sp500",
@@ -36,7 +36,7 @@
       "changePercent": 0.42,
       "return2w": 2.96,
       "return1m": 2.29,
-      "return3m": 14.22,
+      "return3m": 13.08,
       "quoteTime": "2026-07-10T21:28:30Z"
     },
     {
@@ -45,11 +45,11 @@
       "symbol": "^IXIC",
       "url": "https://tw.stock.yahoo.com/quote/%5EIXIC",
       "price": 26281.61,
-      "change": 74.72,
+      "change": 74.71,
       "changePercent": 0.29,
       "return2w": 3.64,
       "return1m": 1.36,
-      "return3m": 18.89,
+      "return3m": 17.46,
       "quoteTime": "2026-07-10T21:15:59Z"
     },
     {
@@ -57,33 +57,59 @@
       "label": "Nasdaq 期貨",
       "symbol": "NQ=F",
       "url": "https://tw.stock.yahoo.com/quote/NQ%3DF",
-      "price": 30068.5,
-      "change": 36.25,
-      "changePercent": 0.12,
-      "return2w": 1.03,
-      "return1m": 1.96,
-      "return3m": 23.11,
-      "quoteTime": "2026-07-10T20:59:59Z"
+      "price": 29761.75,
+      "change": -270.5,
+      "changePercent": -0.9,
+      "return2w": 1.34,
+      "return1m": 2.21,
+      "return3m": 20.61,
+      "quoteTime": "2026-07-13T10:49:16Z"
+    },
+    {
+      "id": "nikkei",
+      "label": "日股 Nikkei",
+      "symbol": "^N225",
+      "url": "https://tw.stock.yahoo.com/quote/%5EN225",
+      "price": 67242.73,
+      "change": -1315.0,
+      "changePercent": -1.92,
+      "return2w": -3.2,
+      "return1m": 4.71,
+      "return3m": 25.1,
+      "quoteTime": "2026-07-13T06:45:03Z"
+    },
+    {
+      "id": "kospi",
+      "label": "韓股 KOSPI",
+      "symbol": "^KS11",
+      "url": "https://tw.stock.yahoo.com/quote/%5EKS11",
+      "price": 6806.93,
+      "change": -669.01,
+      "changePercent": -8.95,
+      "return2w": -18.91,
+      "return1m": -12.33,
+      "return3m": 22.65,
+      "quoteTime": "2026-07-13T09:05:30Z"
     }
   ],
   "benchmarks": {
     "twii": {
       "label": "台股大盤",
-      "return2w": -1.95,
-      "return1m": 4.26,
-      "return3m": 35.79
+      "return2w": 1.81,
+      "return1m": 1.51,
+      "return3m": 36.1
     },
     "sp500": {
       "label": "S&P 500",
       "return2w": 2.96,
       "return1m": 2.29,
-      "return3m": 14.22
+      "return3m": 13.08
     },
     "nasdaq": {
       "label": "Nasdaq",
       "return2w": 3.64,
       "return1m": 1.36,
-      "return3m": 18.89
+      "return3m": 17.46
     }
   }
 }

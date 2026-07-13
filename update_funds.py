@@ -200,6 +200,8 @@ MARKET_SYMBOLS = [
     {"id": "sp500", "label": "S&P 500", "symbol": "^GSPC", "benchmark": True, "urlSymbol": "%5EGSPC"},
     {"id": "nasdaq", "label": "Nasdaq", "symbol": "^IXIC", "benchmark": True, "urlSymbol": "%5EIXIC"},
     {"id": "nasdaqFuture", "label": "Nasdaq 期貨", "symbol": "NQ=F", "benchmark": False, "urlSymbol": "NQ%3DF"},
+    {"id": "nikkei", "label": "日股 Nikkei", "symbol": "^N225", "benchmark": False, "urlSymbol": "%5EN225"},
+    {"id": "kospi", "label": "韓股 KOSPI", "symbol": "^KS11", "benchmark": False, "urlSymbol": "%5EKS11"},
 ]
 
 

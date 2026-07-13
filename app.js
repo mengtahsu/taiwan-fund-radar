@@ -2031,7 +2031,9 @@ function marketUrl(market) {
     twii: "https://tw.stock.yahoo.com/quote/%5ETWII",
     sp500: "https://tw.stock.yahoo.com/quote/%5EGSPC",
     nasdaq: "https://tw.stock.yahoo.com/quote/%5EIXIC",
-    nasdaqFuture: "https://tw.stock.yahoo.com/quote/NQ%3DF"
+    nasdaqFuture: "https://tw.stock.yahoo.com/quote/NQ%3DF",
+    nikkei: "https://tw.stock.yahoo.com/quote/%5EN225",
+    kospi: "https://tw.stock.yahoo.com/quote/%5EKS11"
   };
   if (fixedUrls[market.id]) {
     return fixedUrls[market.id];
