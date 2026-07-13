@@ -1594,7 +1594,7 @@ function renderPurchases() {
   });
 }
 
-async function loadPurchases() {
+async function loadPurchases(options = {}) {
   if (!db || !currentUser) {
     purchases = [];
     resetPortfolioSnapshots();
@@ -1621,13 +1621,15 @@ async function loadPurchases() {
   }
   purchases = data || [];
   await loadPortfolioPeriodSnapshots();
-  requestOwnedFundNavHistory();
+  if (options.requestNavHistory !== false) {
+    requestOwnedFundNavHistory();
+  }
   renderPurchases();
 }
 
 async function requestOwnedFundNavHistory() {
   if (!db || !purchases.length) {
-    return;
+    return 0;
   }
   const requests = [...new Map(
     purchases
@@ -1642,13 +1644,47 @@ async function requestOwnedFundNavHistory() {
       ])
   ).values()];
   if (!requests.length) {
-    return;
+    return 0;
   }
   try {
     await db.from("fund_nav_requests").upsert(requests, { onConflict: "fund_id" });
+    return requests.length;
   } catch (_error) {
     // The request table is optional; purchases must keep working if the migration has not been run.
+    return 0;
   }
+}
+
+function purchaseNavSnapshot() {
+  return new Map(
+    purchases.map((item) => {
+      const valuation = purchaseValuation(item);
+      return [
+        item.id,
+        {
+          nav: valuation.currentNav,
+          value: valuation.currentValue,
+          navDate: valuation.fund?.navDate || item.sell_date || ""
+        }
+      ];
+    })
+  );
+}
+
+function changedPurchaseNavCount(beforeSnapshot) {
+  return purchases.reduce((count, item) => {
+    const before = beforeSnapshot.get(item.id);
+    if (!before) {
+      return count;
+    }
+    const valuation = purchaseValuation(item);
+    const next = {
+      nav: valuation.currentNav,
+      value: valuation.currentValue,
+      navDate: valuation.fund?.navDate || item.sell_date || ""
+    };
+    return count + (before.nav !== next.nav || before.value !== next.value || before.navDate !== next.navDate ? 1 : 0);
+  }, 0);
 }
 
 async function fetchLatestFundValues() {
@@ -1699,16 +1735,21 @@ async function refreshPurchaseValues() {
   setMessage(els.purchaseRefreshStatus, "正在更新淨值...");
   setMessage(els.purchaseMessage, "");
   try {
-    await loadPurchases();
+    await loadPurchases({ requestNavHistory: false });
     if (!purchases.length) {
       setMessage(els.purchaseRefreshStatus, "目前沒有買入紀錄可更新。");
       return;
     }
+    const requestedCount = await requestOwnedFundNavHistory();
+    const beforeSnapshot = purchaseNavSnapshot();
     await fetchLatestFundValues();
     await loadMonthlyNavData();
     renderPurchases();
+    const changedCount = changedPurchaseNavCount(beforeSnapshot);
     const dataTime = sourceMeta.updatedAt ? formatTaiwanDateTime(sourceMeta.updatedAt) : "最新資料";
-    setMessage(els.purchaseRefreshStatus, `已更新 ${dataTime}`);
+    const requestText = requestedCount ? `，已送出 ${requestedCount} 檔補淨值請求` : "";
+    const changeText = changedCount ? `，${changedCount} 筆有新淨值` : "，目前沒有新淨值";
+    setMessage(els.purchaseRefreshStatus, `資料 ${dataTime}${changeText}${requestText}`);
   } catch (error) {
     setMessage(els.purchaseRefreshStatus, `更新失敗：${error.message}`, true);
   } finally {
