@@ -1019,9 +1019,30 @@ textarea {
   font-weight: 900;
 }
 
-.purchase-item h4 {
-  margin: 0 0 4px;
+.purchase-title {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.purchase-title h4 {
+  min-width: 0;
+  margin: 0;
   font-size: 15px;
+}
+
+.purchase-score {
+  flex: 0 0 auto;
+  min-width: 38px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #e6f3ef;
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
 }
 
 .purchase-item p {

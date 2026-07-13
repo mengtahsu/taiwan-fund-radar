@@ -472,6 +472,13 @@ function renderPurchaseFundName(item, matchedFund) {
   return `<a class="fund-name-link" href="${url}">${name}</a>`;
 }
 
+function renderPurchaseScore(matchedFund) {
+  if (!matchedFund) {
+    return "";
+  }
+  return `<span class="purchase-score" title="${scoreTitle()}">${scoreFund(matchedFund)}</span>`;
+}
+
 function renderBuyLink(fund) {
   if (fund.fubonBuyUrl) {
     const navHint = typeof fund.nav === "number" && Number.isFinite(fund.nav) ? `，先核對淨值 ${moneyNumber(fund.nav)}${fund.navDate ? ` / ${fund.navDate}` : ""}` : "";
@@ -1551,7 +1558,10 @@ function renderPurchases() {
     return `
       <article class="purchase-item${valuation.isSold ? " sold" : ""}">
         <div>
-          <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
+          <div class="purchase-title">
+            <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
+            ${renderPurchaseScore(matchedFund)}
+          </div>
           <p>${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${moneyNumber(item.nav)}</p>
           <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
           ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
