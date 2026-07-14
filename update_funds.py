@@ -401,6 +401,10 @@ def period_return_from_series(series: list[tuple[datetime, float]], days: int) -
     return round(period_return, 2), start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
 
 
+def nav_date_label(value: datetime) -> str:
+    return value.strftime("%m/%d")
+
+
 def month_end_navs_from_series(series: list[tuple[datetime, float]], months: int) -> list[dict[str, Any]]:
     if not series:
         return []
@@ -1251,9 +1255,15 @@ def apply_nav_cache(funds: list[dict[str, Any]], cache: dict[str, Any]) -> None:
 
     for fund in funds:
         cached = cached_for_fund(str(fund.get("fundId") or ""))
-        if not cached or cached.get("return2w") is None:
+        if not cached:
             continue
         if parse_iso_datetime(cached.get("fetchedAt")) < fresh_after:
+            continue
+        if cached.get("nav") is not None:
+            fund["nav"] = round(number(cached["nav"], "nav"), 4)
+        if cached.get("navDate"):
+            fund["navDate"] = str(cached["navDate"])
+        if cached.get("return2w") is None:
             continue
         fund["return2w"] = cached["return2w"]
         if cached.get("return2wStartDate"):
@@ -1410,22 +1420,30 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
 
     refresh_limit = int(os.environ.get("RECENT_NAV_REFRESH_LIMIT", RECENT_NAV_REFRESH_LIMIT))
     candidates = nav_refresh_candidates(funds, cache, max(0, refresh_limit))
+    candidates = prioritize_requested_nav_candidates(funds, candidates, max(0, refresh_limit))
     if not candidates:
         return
 
     max_workers = int(os.environ.get("RECENT_NAV_WORKERS", RECENT_NAV_WORKERS))
 
-    def fetch_recent(fund: dict[str, Any]) -> tuple[str, dict[str, tuple[float, str, str]], str | None]:
+    def fetch_recent(fund: dict[str, Any]) -> tuple[str, dict[str, Any], str | None]:
         fund_id = str(fund.get("fundId") or "")
         if not fund_id:
             return str(fund.get("name") or ""), {}, "missing fundId"
         try:
             series = fetch_moneydj_bcd_nav(fund_id)
+            if not series:
+                return fund_id, {}, "empty NAV series"
+            latest_date, latest_nav = sorted(series, key=lambda item: item[0])[-1]
             returns = {
                 "return2w": period_return_from_series(series, RECENT_RETURN_DAYS),
                 "return1m": period_return_from_series(series, MONTH_RETURN_DAYS),
             }
-            return fund_id, {key: value for key, value in returns.items() if value}, None
+            return fund_id, {
+                "nav": round(latest_nav, 4),
+                "navDate": nav_date_label(latest_date),
+                **{key: value for key, value in returns.items() if value},
+            }, None
         except Exception as exc:
             return fund_id, {}, str(exc)
 
@@ -1435,24 +1453,34 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(fetch_recent, fund) for fund in candidates]
         for future in concurrent.futures.as_completed(futures):
-            fund_id, recent_returns, error = future.result()
-            if error or not recent_returns.get("return2w"):
+            fund_id, recent_data, error = future.result()
+            if error or recent_data.get("nav") is None:
                 errors += 1
                 continue
-            period_return, start_date, end_date = recent_returns["return2w"]
             fund = by_id.get(fund_id)
             if fund is not None:
-                fund["return2w"] = period_return
-                fund["return2wStartDate"] = start_date
-                fund["return2wEndDate"] = end_date
+                fund["nav"] = recent_data["nav"]
+                fund["navDate"] = recent_data["navDate"]
             cache_item = {
-                "return2w": period_return,
-                "return2wStartDate": start_date,
-                "return2wEndDate": end_date,
+                "nav": recent_data["nav"],
+                "navDate": recent_data["navDate"],
                 "fetchedAt": datetime.now(timezone.utc).isoformat(),
             }
-            if recent_returns.get("return1m"):
-                month_return, month_start_date, month_end_date = recent_returns["return1m"]
+            if recent_data.get("return2w"):
+                period_return, start_date, end_date = recent_data["return2w"]
+                if fund is not None:
+                    fund["return2w"] = period_return
+                    fund["return2wStartDate"] = start_date
+                    fund["return2wEndDate"] = end_date
+                cache_item.update(
+                    {
+                        "return2w": period_return,
+                        "return2wStartDate": start_date,
+                        "return2wEndDate": end_date,
+                    }
+                )
+            if recent_data.get("return1m"):
+                month_return, month_start_date, month_end_date = recent_data["return1m"]
                 if fund is not None:
                     fund["return1m"] = month_return
                     fund["return1mStartDate"] = month_start_date
