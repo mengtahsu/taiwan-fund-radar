@@ -202,7 +202,8 @@ assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: fal
 assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should include Taiwan, futures, US, Japan, and Korea indexes");
 assert(appSource.includes("visibleMarkets = MARKET_DISPLAY_IDS.map"), "market UI should use the fixed market display order");
 assert(appSource.includes("MARKET_DISPLAY_LABELS[market.id] || market.label"), "market UI should use short display labels");
-assert(appSource.includes("非即時"), "market UI should explicitly mark market quotes as non-live");
+assert(appSource.includes("市場非即時"), "market UI should mark market quotes as non-live in the data status line");
+assert(!appSource.includes("market-note"), "market UI should not add a second market timestamp/status line");
 assert(appSource.includes('"txf"'), "market display should include Taiwan futures");
 assert(appSource.includes('nasdaqFuture: "Nasdaq 期貨"'), "market display should include Nasdaq futures");
 assert(!appSource.includes("LIVE_MARKET_REFRESH_MS"), "market UI should not claim minute-level live refresh");

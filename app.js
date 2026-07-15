@@ -2076,7 +2076,7 @@ function renderDataStatus() {
     return;
   }
 
-  els.dataStatus.textContent = `${formatTaiwanDateTime(sourceMeta.updatedAt)} 台灣時間`;
+  els.dataStatus.textContent = `${formatTaiwanDateTime(sourceMeta.updatedAt)} 台灣時間，市場非即時`;
 }
 
 function renderMarkets() {
@@ -2089,12 +2089,7 @@ function renderMarkets() {
     els.marketList.innerHTML = '<div class="market-empty">市場資料暫無法更新</div>';
     return;
   }
-  const marketStatus = marketMeta.updatedAt
-    ? `${formatTaiwanDateTime(marketMeta.updatedAt)} 台灣時間更新，非即時`
-    : "排程市場資料，非即時";
-  els.marketList.innerHTML = `
-    <div class="market-note">${escapeHtml(marketStatus)}</div>
-  ` + visibleMarkets
+  els.marketList.innerHTML = visibleMarkets
     .map((market) => {
       const displayLabel = MARKET_DISPLAY_LABELS[market.id] || market.label;
       const moveClass = market.changePercent >= 0 ? "up" : "down";
