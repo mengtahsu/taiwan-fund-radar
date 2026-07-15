@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-14T10:38:17.747834+00:00",
+  "updatedAt": "2026-07-15T10:40:43.593605+00:00",
   "items": {
     "ACDD04-4102": {
       "return2w": 13.34,
@@ -9812,15 +9812,15 @@
       "fetchedAt": "2026-06-26T02:51:12.513160+00:00"
     },
     "ACDD04": {
-      "nav": 740.72,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.629578+00:00",
-      "return2w": -11.13,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -6.32,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 767.49,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.627771+00:00",
+      "return2w": -9.43,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -6.7,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACNB45": {
       "nav": 82.12,
@@ -9845,13 +9845,15 @@
       "return1mEndDate": "2026-07-13"
     },
     "ACDD102": {
-      "return2w": -6.4,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.399127+00:00",
-      "return1m": -0.58,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 99.7,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.770461+00:00",
+      "return2w": -7.39,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -4.63,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACNB01": {
       "nav": 102.18,
@@ -9905,44 +9907,48 @@
       "return1mEndDate": "2026-07-13"
     },
     "ACFH67": {
-      "nav": 93.06,
-      "navDate": "07/13",
-      "fetchedAt": "2026-07-14T10:38:16.639512+00:00",
-      "return2w": -10.32,
-      "return2wStartDate": "2026-06-29",
-      "return2wEndDate": "2026-07-13",
-      "return1m": -6.04,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-13"
-    },
-    "ACKH03": {
-      "return2w": -4.5,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.493482+00:00",
-      "return1m": -3.96,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
-    },
-    "ACDD01": {
-      "nav": 306.21,
+      "nav": 93.34,
       "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.636324+00:00",
-      "return2w": -8.1,
+      "fetchedAt": "2026-07-15T10:40:42.638266+00:00",
+      "return2w": -14.41,
       "return2wStartDate": "2026-06-30",
       "return2wEndDate": "2026-07-14",
-      "return1m": -4.67,
+      "return1m": -5.76,
       "return1mStartDate": "2026-06-12",
       "return1mEndDate": "2026-07-14"
     },
+    "ACKH03": {
+      "nav": 440.16,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.775268+00:00",
+      "return2w": -7.1,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -4.75,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
+    },
+    "ACDD01": {
+      "nav": 316.21,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:43.593345+00:00",
+      "return2w": -7.43,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -4.71,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
+    },
     "ACDD19": {
-      "return2w": -7.24,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-11T06:38:09.441271+00:00",
-      "return1m": -0.53,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 417.68,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.715899+00:00",
+      "return2w": -6.3,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -2.87,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACKG15": {
       "return2w": -7.27,
@@ -9983,13 +9989,15 @@
       "return1mEndDate": "2026-07-13"
     },
     "ACCH01": {
-      "return2w": -8.62,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:51:37.488315+00:00",
-      "return1m": -1.48,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 193.32,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.766294+00:00",
+      "return2w": -12.35,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -7.5,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "AC0001": {
       "return2w": -5.09,
@@ -10001,66 +10009,70 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACPS03": {
-      "nav": 612.01,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.615741+00:00",
-      "return2w": -7.72,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": 0.11,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 633.45,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:43.590556+00:00",
+      "return2w": -6.14,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": 0.28,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACYT161": {
-      "nav": 53.94,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.615754+00:00",
-      "return2w": 6.33,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": 15.8,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 55.07,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.623089+00:00",
+      "return2w": 6.44,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": 13.95,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACYT162": {
-      "nav": 29.64,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.636318+00:00",
-      "return2w": 6.2,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": 15.65,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 30.26,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.634981+00:00",
+      "return2w": 6.32,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": 13.8,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACJS13": {
-      "nav": 374.34,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.731771+00:00",
-      "return2w": -8.22,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -4.62,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 387.58,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.694650+00:00",
+      "return2w": -6.9,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -4.0,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACIC04": {
-      "return2w": -4.5,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:48:31.584361+00:00",
-      "return1m": -4.02,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 395.04,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.849579+00:00",
+      "return2w": -7.03,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -4.89,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACCH03": {
-      "return2w": -8.43,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:48:31.584369+00:00",
-      "return1m": -1.93,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 192.25,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.851069+00:00",
+      "return2w": -12.55,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -7.9,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACTT06": {
       "return2w": -7.52,
@@ -10072,13 +10084,15 @@
       "return1mEndDate": "2026-07-09"
     },
     "AC0015": {
-      "return2w": -6.59,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T08:48:31.599905+00:00",
-      "return1m": -2.25,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 55.1,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.768147+00:00",
+      "return2w": -5.03,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -0.22,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACFT12": {
       "return2w": -6.41,
@@ -10090,66 +10104,70 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACFD02": {
-      "return2w": -5.99,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T10:54:21.416492+00:00",
-      "return1m": -0.67,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 241.61,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.742255+00:00",
+      "return2w": -7.7,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -2.66,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACES10": {
-      "nav": 170.68,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:17.583486+00:00",
-      "return2w": -7.48,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -8.6,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 175.78,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.609317+00:00",
+      "return2w": -7.3,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -7.95,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACYT03": {
-      "nav": 138.54,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:17.583468+00:00",
-      "return2w": -4.73,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": 1.45,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 141.6,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.623095+00:00",
+      "return2w": -3.53,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": 0.19,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACPS10": {
-      "nav": 710.57,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.730248+00:00",
-      "return2w": -9.84,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -5.42,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 736.36,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.688991+00:00",
+      "return2w": -8.94,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -4.88,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACPS06": {
-      "nav": 215.14,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.629585+00:00",
-      "return2w": -6.84,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -1.49,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 222.47,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.623078+00:00",
+      "return2w": -5.66,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -1.63,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACFH03": {
-      "return2w": -8.47,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-11T06:38:09.383406+00:00",
-      "return1m": -0.75,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 469.45,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.758838+00:00",
+      "return2w": -9.92,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -4.74,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACJF147": {
       "return2w": -7.83,
@@ -10217,24 +10235,26 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACFH01": {
-      "return2w": -7.61,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-11T06:38:09.364294+00:00",
-      "return1m": 0.24,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 131.67,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.747445+00:00",
+      "return2w": -9.24,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -3.25,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACYT164": {
-      "nav": 54.41,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.814490+00:00",
-      "return2w": 6.33,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": 15.82,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 55.55,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.694645+00:00",
+      "return2w": 6.44,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": 13.97,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACII94": {
       "return2w": -6.73,
@@ -10246,13 +10266,15 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACFH73": {
-      "return2w": -11.72,
-      "return2wStartDate": "2026-06-24",
-      "return2wEndDate": "2026-07-08",
-      "fetchedAt": "2026-07-10T09:05:12.640645+00:00",
-      "return1m": -1.81,
-      "return1mStartDate": "2026-06-08",
-      "return1mEndDate": "2026-07-08"
+      "nav": 55.01,
+      "navDate": "07/14",
+      "fetchedAt": "2026-07-15T10:40:42.801787+00:00",
+      "return2w": -17.17,
+      "return2wStartDate": "2026-06-30",
+      "return2wEndDate": "2026-07-14",
+      "return1m": -8.76,
+      "return1mStartDate": "2026-06-12",
+      "return1mEndDate": "2026-07-14"
     },
     "ACCS07": {
       "nav": 213.51,
@@ -10284,22 +10306,26 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACFH15": {
-      "return2w": -5.7,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-11T06:38:09.405101+00:00",
-      "return1m": 2.07,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 197.14,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.758831+00:00",
+      "return2w": -8.02,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -1.05,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACCS02": {
-      "return2w": -5.01,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-10T09:05:12.786237+00:00",
-      "return1m": -0.62,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 168.86,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.703816+00:00",
+      "return2w": -4.98,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -1.22,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACYT09": {
       "nav": 127.33,
@@ -10360,15 +10386,15 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACYT11": {
-      "nav": 195.04,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.730256+00:00",
-      "return2w": -3.16,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": 3.95,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 202.03,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.690208+00:00",
+      "return2w": -1.36,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": 3.56,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACPS01": {
       "return2w": -5.77,
@@ -10398,15 +10424,15 @@
       "return1mEndDate": "2026-07-08"
     },
     "ACIC08": {
-      "nav": 536.5,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.740246+00:00",
-      "return2w": -8.29,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -6.63,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 552.29,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.699693+00:00",
+      "return2w": -7.96,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -7.13,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACNC16": {
       "return2w": -6.23,
@@ -10555,26 +10581,26 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACYT151": {
-      "nav": 63.49,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.615760+00:00",
-      "return2w": -2.44,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": 1.96,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 64.53,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.634974+00:00",
+      "return2w": -3.48,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": 0.59,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACKH19": {
-      "nav": 110.13,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.740242+00:00",
-      "return2w": -8.55,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -5.04,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 113.36,
+      "navDate": "07/15",
+      "fetchedAt": "2026-07-15T10:40:42.703811+00:00",
+      "return2w": -6.73,
+      "return2wStartDate": "2026-07-01",
+      "return2wEndDate": "2026-07-15",
+      "return1m": -6.52,
+      "return1mStartDate": "2026-06-15",
+      "return1mEndDate": "2026-07-15"
     },
     "ACUI68": {
       "nav": 36.4568,
@@ -10608,7 +10634,18 @@
       "return1m": -6.01,
       "return1mStartDate": "2026-06-12",
       "return1mEndDate": "2026-07-14"
+    },
+    "ACYT165": {
+      "nav": 24.01,
+      "navDate": "05/21",
+      "fetchedAt": "2026-07-15T10:40:42.802798+00:00",
+      "return2w": -0.87,
+      "return2wStartDate": "2026-05-07",
+      "return2wEndDate": "2026-05-21",
+      "return1m": 14.5,
+      "return1mStartDate": "2026-04-21",
+      "return1mEndDate": "2026-05-21"
     }
   },
-  "nextTopOffset": 60
+  "nextTopOffset": 70
 }

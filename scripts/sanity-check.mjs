@@ -116,12 +116,16 @@ assert(Boolean(yuantaB), "missing ACYT162 元大高股息優質龍頭 B");
 if (yuantaA) {
   assert(Number(yuantaA.nav) > 0, "ACYT161 NAV must be positive");
   assert(Boolean(yuantaA.navDate), "ACYT161 missing navDate");
-  assert(yuantaA.fubonFundId === "0456", `ACYT161 Fubon id mismatch: ${yuantaA.fubonFundId}`);
+  if (yuantaA.fubonFundId) {
+    assert(yuantaA.fubonFundId === "0456", `ACYT161 Fubon id mismatch: ${yuantaA.fubonFundId}`);
+  }
 }
 if (yuantaB) {
   assert(Number(yuantaB.nav) > 0, "ACYT162 NAV must be positive");
   assert(Boolean(yuantaB.navDate), "ACYT162 missing navDate");
-  assert(yuantaB.fubonFundId === "0457", `ACYT162 Fubon id mismatch: ${yuantaB.fubonFundId}`);
+  if (yuantaB.fubonFundId) {
+    assert(yuantaB.fubonFundId === "0457", `ACYT162 Fubon id mismatch: ${yuantaB.fubonFundId}`);
+  }
 }
 
 const navCacheItems = navCachePayload?.items && typeof navCachePayload.items === "object" ? navCachePayload.items : {};

@@ -1,6 +1,6 @@
 {
   "source": "Yahoo Taiwan market data",
-  "updatedAt": "2026-07-15T10:33:44.016469+00:00",
+  "updatedAt": "2026-07-15T10:40:52.074589+00:00",
   "markets": [
     {
       "id": "txf",
@@ -8,10 +8,10 @@
       "symbol": "WTX&",
       "url": "https://tw.stock.yahoo.com/quote/WTX%26",
       "name": "台指期近一",
-      "price": 45976.0,
-      "change": -90.0,
-      "changePercent": -0.2,
-      "quoteTime": "2026-07-15T10:33:35Z"
+      "price": 46005.0,
+      "change": -61.0,
+      "changePercent": -0.13,
+      "quoteTime": "2026-07-15T10:40:44Z"
     },
     {
       "id": "twii",
@@ -57,13 +57,13 @@
       "label": "Nasdaq 期貨",
       "symbol": "NQ=F",
       "url": "https://tw.stock.yahoo.com/quote/NQ%3DF",
-      "price": 29901.0,
-      "change": 110.75,
-      "changePercent": 0.37,
-      "return2w": -2.02,
-      "return1m": 1.5,
-      "return3m": 20.61,
-      "quoteTime": "2026-07-15T10:23:41Z"
+      "price": 29898.0,
+      "change": 107.75,
+      "changePercent": 0.36,
+      "return2w": -2.05,
+      "return1m": 1.47,
+      "return3m": 20.58,
+      "quoteTime": "2026-07-15T10:30:48Z"
     },
     {
       "id": "nikkei",
