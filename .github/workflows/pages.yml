@@ -39,6 +39,7 @@ jobs:
         with:
           path: |
             data/nav_cache.json
+            data/monthly_nav.json
             data/fundrich_cache.json
           key: update-caches-${{ github.run_id }}
           restore-keys: |
@@ -79,6 +80,9 @@ jobs:
 
       - name: Update market data
         run: timeout 1m python3 update_funds.py --provider markets --once || echo "Market update timed out or failed; deploying committed data/markets.json if present"
+
+      - name: Run sanity checks
+        run: node scripts/sanity-check.mjs
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

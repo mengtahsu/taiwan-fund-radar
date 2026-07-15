@@ -127,6 +127,7 @@ let sourceMeta = {
   source: "示範資料",
   updatedAt: null
 };
+let fundDataLoaded = false;
 let marketMeta = {
   source: "市場資料未載入",
   updatedAt: null,
@@ -1562,15 +1563,28 @@ function renderPurchases() {
   if (!els.purchaseList) {
     return;
   }
-  renderPortfolioStats();
   if (!currentUser) {
+    if (els.portfolioStats) {
+      els.portfolioStats.innerHTML = "";
+    }
     els.purchaseList.innerHTML = '<div class="empty">登入後會顯示你的買入紀錄。</div>';
     return;
   }
   if (!purchases.length) {
+    if (els.portfolioStats) {
+      els.portfolioStats.innerHTML = "";
+    }
     els.purchaseList.innerHTML = '<div class="empty">還沒有買入紀錄。</div>';
     return;
   }
+  if (!fundDataLoaded) {
+    if (els.portfolioStats) {
+      els.portfolioStats.innerHTML = "";
+    }
+    els.purchaseList.innerHTML = '<div class="empty">基金資料尚未載入，暫不估算現值。</div>';
+    return;
+  }
+  renderPortfolioStats();
   const sortByProfit = (items) => [...items].sort((a, b) => {
     const aProfit = purchaseValuation(a).profitPercent;
     const bProfit = purchaseValuation(b).profitPercent;
@@ -1648,7 +1662,9 @@ async function loadPurchases(options = {}) {
   if (!db || !currentUser) {
     purchases = [];
     resetPortfolioSnapshots();
-    renderPurchases();
+    if (options.render !== false) {
+      renderPurchases();
+    }
     return;
   }
   let { data, error } = await db
@@ -1665,7 +1681,9 @@ async function loadPurchases(options = {}) {
   }
   if (error) {
     purchases = [];
-    renderPurchases();
+    if (options.render !== false) {
+      renderPurchases();
+    }
     setMessage(els.purchaseMessage, `讀取失敗：${error.message}`, true);
     return;
   }
@@ -1674,7 +1692,9 @@ async function loadPurchases(options = {}) {
   if (options.requestNavHistory !== false) {
     requestOwnedFundNavHistory();
   }
-  renderPurchases();
+  if (options.render !== false) {
+    renderPurchases();
+  }
 }
 
 async function requestOwnedFundNavHistory() {
@@ -1748,6 +1768,7 @@ async function fetchLatestFundValues() {
   }
   funds = parsed.funds;
   sourceMeta = parsed.meta;
+  fundDataLoaded = true;
 }
 
 async function loadMonthlyNavData() {
@@ -1785,8 +1806,9 @@ async function refreshPurchaseValues() {
   setMessage(els.purchaseRefreshStatus, "正在更新淨值...");
   setMessage(els.purchaseMessage, "");
   try {
-    await loadPurchases({ requestNavHistory: false });
+    await loadPurchases({ requestNavHistory: false, render: false });
     if (!purchases.length) {
+      renderPurchases();
       setMessage(els.purchaseRefreshStatus, "目前沒有買入紀錄可更新。");
       return;
     }
@@ -2303,6 +2325,7 @@ async function loadLatestData() {
       source: "示範資料",
       updatedAt: null
     };
+    fundDataLoaded = false;
   } finally {
     syncLabels();
     renderFunds();
