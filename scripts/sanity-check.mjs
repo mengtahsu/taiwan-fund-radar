@@ -195,6 +195,11 @@ const appSource = fs.readFileSync("app.js", "utf8");
 assert(appSource.includes("fundDataLoaded"), "app.js missing fundDataLoaded guard");
 assert(appSource.includes("基金資料尚未載入，暫不估算現值"), "app.js missing not-ready portfolio message");
 assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: false })"), "refresh flow should load purchases without intermediate render");
+assert(appSource.includes("LIVE_MARKET_REFRESH_MS = 60 * 1000"), "market quotes should refresh every 60 seconds");
+assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "sp500", "nasdaq", "nikkei", "kospi"]'), "market display should only include Taiwan, US, Japan, and Korea indexes");
+assert(appSource.includes("visibleMarkets = marketMeta.markets.filter"), "market UI should filter display-only markets");
+assert(appSource.includes("displayConfig?.label || market.label"), "market UI should use short display labels");
+assert(!appSource.includes('MARKET_DISPLAY_IDS = ["txf"'), "market display should not default to futures");
 
 if (failures.length) {
   console.error("Sanity check failed:");

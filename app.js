@@ -142,6 +142,15 @@ let monthlyNavMeta = {
 
 const DISPLAY_LIMIT = 50;
 const PERIOD_DISPLAY_LIMIT = 12;
+const LIVE_MARKET_REFRESH_MS = 60 * 1000;
+const MARKET_DISPLAY_IDS = ["twii", "sp500", "nasdaq", "nikkei", "kospi"];
+const LIVE_MARKET_SYMBOLS = [
+  { id: "twii", label: "台股", symbol: "^TWII", url: "https://tw.stock.yahoo.com/quote/%5ETWII" },
+  { id: "sp500", label: "S&P 500", symbol: "^GSPC", url: "https://tw.stock.yahoo.com/quote/%5EGSPC" },
+  { id: "nasdaq", label: "Nasdaq", symbol: "^IXIC", url: "https://tw.stock.yahoo.com/quote/%5EIXIC" },
+  { id: "nikkei", label: "日股", symbol: "^N225", url: "https://tw.stock.yahoo.com/quote/%5EN225" },
+  { id: "kospi", label: "韓股", symbol: "^KS11", url: "https://tw.stock.yahoo.com/quote/%5EKS11" }
+];
 const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK";
 const SITE_URL = "https://mengtahsu.github.io/taiwan-fund-radar/";
@@ -153,6 +162,7 @@ if (isPortfolioView) {
 }
 
 let currentUser = null;
+let liveMarketTimer = null;
 let purchases = [];
 let portfolioPeriodSnapshots = {
   loaded: false,
@@ -2073,17 +2083,20 @@ function renderMarkets() {
   if (!els.marketList) {
     return;
   }
-  if (!marketMeta.markets.length) {
+  const visibleMarkets = marketMeta.markets.filter((market) => MARKET_DISPLAY_IDS.includes(market.id));
+  if (!visibleMarkets.length) {
     els.marketList.innerHTML = '<div class="market-empty">市場資料暫無法更新</div>';
     return;
   }
-  els.marketList.innerHTML = marketMeta.markets
+  els.marketList.innerHTML = visibleMarkets
     .map((market) => {
+      const displayConfig = LIVE_MARKET_SYMBOLS.find((item) => item.id === market.id);
+      const displayLabel = displayConfig?.label || market.label;
       const moveClass = market.changePercent >= 0 ? "up" : "down";
       const url = market.url || marketUrl(market);
       const label = url
-        ? `<a class="quote-link" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${escapeHtml(market.label)}</a>`
-        : `<span>${escapeHtml(market.label)}</span>`;
+        ? `<a class="quote-link" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${escapeHtml(displayLabel)}</a>`
+        : `<span>${escapeHtml(displayLabel)}</span>`;
       return `
         <div class="quote-row">
           <div>
@@ -2114,6 +2127,78 @@ function marketUrl(market) {
     return `https://finance.yahoo.com/quote/${encodeURIComponent(market.symbol)}`;
   }
   return "";
+}
+
+function latestCloseFromChart(result) {
+  const quotes = result?.indicators?.quote?.[0]?.close || [];
+  for (let index = quotes.length - 1; index >= 0; index -= 1) {
+    const value = Number(quotes[index]);
+    if (Number.isFinite(value) && value > 0) {
+      return value;
+    }
+  }
+  return null;
+}
+
+async function fetchLiveMarketQuote(config) {
+  const endpoint = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(config.symbol)}?interval=1m&range=1d`;
+  const response = await fetch(endpoint, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`market quote ${config.id} failed: ${response.status}`);
+  }
+  const payload = await response.json();
+  const result = payload?.chart?.result?.[0];
+  const meta = result?.meta || {};
+  const price = Number(meta.regularMarketPrice) || latestCloseFromChart(result);
+  const previousClose = Number(meta.chartPreviousClose) || Number(meta.previousClose);
+  if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(previousClose) || previousClose <= 0) {
+    throw new Error(`market quote ${config.id} missing price`);
+  }
+  const change = price - previousClose;
+  const changePercent = (change / previousClose) * 100;
+  const quoteTime = Number(meta.regularMarketTime)
+    ? new Date(Number(meta.regularMarketTime) * 1000).toISOString()
+    : new Date().toISOString();
+  return {
+    id: config.id,
+    label: config.label,
+    symbol: config.symbol,
+    url: config.url,
+    price,
+    change,
+    changePercent,
+    quoteTime
+  };
+}
+
+async function refreshLiveMarkets() {
+  if (!window.fetch) {
+    return;
+  }
+  const results = await Promise.allSettled(LIVE_MARKET_SYMBOLS.map((config) => fetchLiveMarketQuote(config)));
+  const liveQuotes = results
+    .filter((result) => result.status === "fulfilled")
+    .map((result) => result.value);
+  if (!liveQuotes.length) {
+    return;
+  }
+  const liveById = new Map(liveQuotes.map((market) => [market.id, market]));
+  const fallbackById = new Map(marketMeta.markets.map((market) => [market.id, market]));
+  marketMeta = {
+    ...marketMeta,
+    source: "Yahoo 即時市場資料",
+    updatedAt: new Date().toISOString(),
+    markets: MARKET_DISPLAY_IDS.map((id) => liveById.get(id) || fallbackById.get(id)).filter(Boolean)
+  };
+  renderMarkets();
+}
+
+function startLiveMarketRefresh() {
+  if (liveMarketTimer) {
+    window.clearInterval(liveMarketTimer);
+  }
+  refreshLiveMarkets();
+  liveMarketTimer = window.setInterval(refreshLiveMarkets, LIVE_MARKET_REFRESH_MS);
 }
 
 function renderFunds() {
@@ -2360,4 +2445,6 @@ async function loadMarketData() {
 }
 
 initAuth();
-Promise.all([loadLatestData(), loadMarketData(), loadMonthlyNavData()]);
+loadLatestData();
+loadMonthlyNavData();
+loadMarketData().then(startLiveMarketRefresh);
