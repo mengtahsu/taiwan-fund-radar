@@ -2141,6 +2141,26 @@ def update_combined_tw_funds_once(root: Path, output_path: str = "data/funds.jso
 def update_markets_once(root: Path, output_path: str = "data/markets.json") -> None:
     target = root / output_path
     payload = build_markets_payload()
+    existing = load_json_file(target, {"markets": [], "benchmarks": {}})
+    existing_by_id = {
+        str(market.get("id") or ""): market
+        for market in existing.get("markets", [])
+        if isinstance(market, dict) and str(market.get("id") or "")
+    }
+    payload_by_id = {
+        str(market.get("id") or ""): market
+        for market in payload.get("markets", [])
+        if isinstance(market, dict) and str(market.get("id") or "")
+    }
+    fallback_ids = [item["id"] for item in [TXF_QUOTE_ITEM, *MARKET_SYMBOLS] if item["id"] not in payload_by_id and item["id"] in existing_by_id]
+    if fallback_ids:
+        payload["markets"] = list(payload.get("markets", [])) + [existing_by_id[market_id] for market_id in fallback_ids]
+        payload["warnings"] = list(payload.get("warnings", [])) + [f"kept previous market quote for {market_id}" for market_id in fallback_ids]
+        existing_benchmarks = existing.get("benchmarks") if isinstance(existing.get("benchmarks"), dict) else {}
+        benchmarks = payload.setdefault("benchmarks", {})
+        for market_id in fallback_ids:
+            if market_id in existing_benchmarks and market_id not in benchmarks:
+                benchmarks[market_id] = existing_benchmarks[market_id]
     atomic_write_json(target, payload)
     print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(payload['markets'])} markets)")
 
