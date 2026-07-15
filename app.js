@@ -143,11 +143,13 @@ let monthlyNavMeta = {
 const DISPLAY_LIMIT = 50;
 const PERIOD_DISPLAY_LIMIT = 12;
 const LIVE_MARKET_REFRESH_MS = 60 * 1000;
-const MARKET_DISPLAY_IDS = ["twii", "sp500", "nasdaq", "nikkei", "kospi"];
+const MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"];
 const LIVE_MARKET_SYMBOLS = [
   { id: "twii", label: "台股", symbol: "^TWII", url: "https://tw.stock.yahoo.com/quote/%5ETWII" },
+  { id: "txf", label: "台指期", symbol: "WTX&", url: "https://tw.stock.yahoo.com/quote/WTX%26" },
   { id: "sp500", label: "S&P 500", symbol: "^GSPC", url: "https://tw.stock.yahoo.com/quote/%5EGSPC" },
   { id: "nasdaq", label: "Nasdaq", symbol: "^IXIC", url: "https://tw.stock.yahoo.com/quote/%5EIXIC" },
+  { id: "nasdaqFuture", label: "Nasdaq 期貨", symbol: "NQ=F", url: "https://tw.stock.yahoo.com/quote/NQ%3DF" },
   { id: "nikkei", label: "日股", symbol: "^N225", url: "https://tw.stock.yahoo.com/quote/%5EN225" },
   { id: "kospi", label: "韓股", symbol: "^KS11", url: "https://tw.stock.yahoo.com/quote/%5EKS11" }
 ];
@@ -2083,7 +2085,8 @@ function renderMarkets() {
   if (!els.marketList) {
     return;
   }
-  const visibleMarkets = marketMeta.markets.filter((market) => MARKET_DISPLAY_IDS.includes(market.id));
+  const marketsById = new Map(marketMeta.markets.map((market) => [market.id, market]));
+  const visibleMarkets = MARKET_DISPLAY_IDS.map((id) => marketsById.get(id)).filter(Boolean);
   if (!visibleMarkets.length) {
     els.marketList.innerHTML = '<div class="market-empty">市場資料暫無法更新</div>';
     return;
