@@ -199,14 +199,15 @@ const appSource = fs.readFileSync("app.js", "utf8");
 assert(appSource.includes("fundDataLoaded"), "app.js missing fundDataLoaded guard");
 assert(appSource.includes("基金資料尚未載入，暫不估算現值"), "app.js missing not-ready portfolio message");
 assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: false })"), "refresh flow should load purchases without intermediate render");
-assert(appSource.includes("LIVE_MARKET_REFRESH_MS = 60 * 1000"), "market quotes should refresh every 60 seconds");
-assert(appSource.includes("document.hidden"), "market live refresh should pause while the page is hidden");
 assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should include Taiwan, futures, US, Japan, and Korea indexes");
 assert(appSource.includes("visibleMarkets = MARKET_DISPLAY_IDS.map"), "market UI should use the fixed market display order");
-assert(appSource.includes("displayConfig?.label || market.label"), "market UI should use short display labels");
+assert(appSource.includes("MARKET_DISPLAY_LABELS[market.id] || market.label"), "market UI should use short display labels");
+assert(appSource.includes("非即時"), "market UI should explicitly mark market quotes as non-live");
 assert(appSource.includes('"txf"'), "market display should include Taiwan futures");
-assert(!appSource.includes('{ id: "txf", label: "台指期", symbol: "WTX&"'), "Taiwan futures should not use minute-level live refresh");
-assert(appSource.includes('{ id: "nasdaqFuture", label: "Nasdaq 期貨"'), "market display should include Nasdaq futures");
+assert(appSource.includes('nasdaqFuture: "Nasdaq 期貨"'), "market display should include Nasdaq futures");
+assert(!appSource.includes("LIVE_MARKET_REFRESH_MS"), "market UI should not claim minute-level live refresh");
+assert(!appSource.includes("fetchLiveMarketQuote"), "market UI should not fetch fake live quotes from the browser");
+assert(!appSource.includes("setInterval(refreshLiveMarkets"), "market UI should not poll market quotes every minute");
 
 if (failures.length) {
   console.error("Sanity check failed:");
