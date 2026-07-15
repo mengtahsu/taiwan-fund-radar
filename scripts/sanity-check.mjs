@@ -196,10 +196,12 @@ assert(appSource.includes("fundDataLoaded"), "app.js missing fundDataLoaded guar
 assert(appSource.includes("基金資料尚未載入，暫不估算現值"), "app.js missing not-ready portfolio message");
 assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: false })"), "refresh flow should load purchases without intermediate render");
 assert(appSource.includes("LIVE_MARKET_REFRESH_MS = 60 * 1000"), "market quotes should refresh every 60 seconds");
+assert(appSource.includes("document.hidden"), "market live refresh should pause while the page is hidden");
 assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should include Taiwan, futures, US, Japan, and Korea indexes");
 assert(appSource.includes("visibleMarkets = MARKET_DISPLAY_IDS.map"), "market UI should use the fixed market display order");
 assert(appSource.includes("displayConfig?.label || market.label"), "market UI should use short display labels");
-assert(appSource.includes('{ id: "txf", label: "台指期"'), "market display should include Taiwan futures");
+assert(appSource.includes('"txf"'), "market display should include Taiwan futures");
+assert(!appSource.includes('{ id: "txf", label: "台指期", symbol: "WTX&"'), "Taiwan futures should not use minute-level live refresh");
 assert(appSource.includes('{ id: "nasdaqFuture", label: "Nasdaq 期貨"'), "market display should include Nasdaq futures");
 
 if (failures.length) {

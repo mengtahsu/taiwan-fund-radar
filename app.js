@@ -146,7 +146,6 @@ const LIVE_MARKET_REFRESH_MS = 60 * 1000;
 const MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"];
 const LIVE_MARKET_SYMBOLS = [
   { id: "twii", label: "台股", symbol: "^TWII", url: "https://tw.stock.yahoo.com/quote/%5ETWII" },
-  { id: "txf", label: "台指期", symbol: "WTX&", url: "https://tw.stock.yahoo.com/quote/WTX%26" },
   { id: "sp500", label: "S&P 500", symbol: "^GSPC", url: "https://tw.stock.yahoo.com/quote/%5EGSPC" },
   { id: "nasdaq", label: "Nasdaq", symbol: "^IXIC", url: "https://tw.stock.yahoo.com/quote/%5EIXIC" },
   { id: "nasdaqFuture", label: "Nasdaq 期貨", symbol: "NQ=F", url: "https://tw.stock.yahoo.com/quote/NQ%3DF" },
@@ -2176,6 +2175,9 @@ async function fetchLiveMarketQuote(config) {
 
 async function refreshLiveMarkets() {
   if (!window.fetch) {
+    return;
+  }
+  if (document.hidden) {
     return;
   }
   const results = await Promise.allSettled(LIVE_MARKET_SYMBOLS.map((config) => fetchLiveMarketQuote(config)));
