@@ -495,6 +495,24 @@ function fundLookupKey(fund) {
   return String(fund.fundId || fund.name);
 }
 
+function moneyDjFundId(value) {
+  if (String(value || "").startsWith("manual:")) {
+    return "";
+  }
+  const text = String(value || "").trim().toUpperCase();
+  const match = text.match(/[A-Z]{2,}\d{2,}/);
+  return match ? match[0] : "";
+}
+
+function normalizedFundName(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .replace(/[\(（][^()（）]*(?:本金|配息來源|收益平準金|保證收益)[^()（）]*[\)）]/g, "")
+    .replace(/證券投資信託基金|投資信託基金|基金|新台幣|新臺幣|台幣|臺幣/g, "")
+    .replace(/[\s　\-_－—/／、:：.．]+/g, "")
+    .toLowerCase();
+}
+
 function setMessage(element, text, isError = false) {
   if (!element) {
     return;
@@ -551,7 +569,29 @@ function compactTwdWan(value) {
 }
 
 function currentFundForPurchase(item) {
-  return funds.find((fund) => fundLookupKey(fund) === item.fund_id) || null;
+  const itemFundId = moneyDjFundId(item.fund_id);
+  if (itemFundId) {
+    const idMatch = funds.find((fund) => moneyDjFundId(fund.fundId || fundLookupKey(fund)) === itemFundId);
+    if (idMatch) {
+      return idMatch;
+    }
+  }
+  const nameKey = normalizedFundName(item.fund_name);
+  if (!nameKey) {
+    return null;
+  }
+  const exactMatches = funds.filter((fund) => normalizedFundName(fund.name) === nameKey);
+  if (exactMatches.length === 1) {
+    return exactMatches[0];
+  }
+  if (nameKey.length < 8) {
+    return null;
+  }
+  const looseMatches = funds.filter((fund) => {
+    const fundName = normalizedFundName(fund.name);
+    return fundName && (fundName.includes(nameKey) || nameKey.includes(fundName));
+  });
+  return looseMatches.length === 1 ? looseMatches[0] : null;
 }
 
 function monthlyNavForPurchase(item) {
