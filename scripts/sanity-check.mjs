@@ -213,6 +213,10 @@ assert(!appSource.includes('document.querySelector("#compareTable")'), "compare 
 assert(!appSource.includes('data-fund="${escapeHtml(fund.name)}"'), "fund cards should not render compare checkboxes");
 assert(appSource.includes("displayFundName(fund.name)"), "fund cards should use compact display names");
 assert(appSource.includes("compact-stats"), "fund cards should use compact stat rows");
+assert(appSource.includes('performanceTag("3月", fund.return3m)'), "fund cards should keep only 3-month performance in tags");
+assert(appSource.includes('performanceTag("1年", fund.return1y)'), "fund cards should keep only 1-year performance in tags");
+assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</span>'), "fund cards should not render dividend tags");
+assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not render extra type/currency tags");
 
 const indexSource = fs.readFileSync("index.html", "utf8");
 assert(!indexSource.includes('href="./#compare"'), "top navigation should not show compare");

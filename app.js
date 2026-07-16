@@ -2088,6 +2088,13 @@ function navTag(fund) {
   return `<span class="pill nav-pill">淨值 ${moneyNumber(fund.nav)}</span>`;
 }
 
+function performanceTag(label, value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "";
+  }
+  return `<span class="pill">${escapeHtml(label)} ${value.toFixed(2)}%</span>`;
+}
+
 function renderMetrics(list) {
   const total = list.length;
   const avgReturn = total ? list.reduce((sum, fund) => sum + fund.return3y, 0) / total : 0;
@@ -2182,16 +2189,14 @@ function renderFunds() {
             <div class="score" title="${scoreTitle()}">${fund.score}</div>
           </div>
           <div class="pill-row">
-            <span class="pill">${escapeHtml(fund.dividend)}</span>
             ${navTag(fund)}
-            ${visibleTags(fund.tags).map((tag) => `<span class="pill">${escapeHtml(compactTag(tag))}</span>`).join("")}
+            ${performanceTag("3月", fund.return3m)}
+            ${performanceTag("1年", fund.return1y)}
           </div>
           <div class="compact-stats">
-            <div class="compact-stat">
+            <div class="compact-stat compact-stat-row">
               <span>3年</span><strong>${fund.return3y.toFixed(1)}%</strong>
               <span>波動</span><strong>${fund.volatility.toFixed(1)}%</strong>
-            </div>
-            <div class="compact-stat benchmark-line">
               <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${twoWeek.value}</strong>
               <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${oneMonth.value}</strong>
               ${benchmarkDate ? `<small>資料 ${escapeHtml(benchmarkDate)}</small>` : ""}
