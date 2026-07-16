@@ -216,6 +216,8 @@ assert(appSource.includes("fund-list-row"), "fund cards should use list-row layo
 assert(appSource.includes("metric-strip"), "fund cards should use a single compact metric strip");
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
 assert(appSource.includes("metric-line"), "fund metrics should be arranged in two readable lines");
+assert(appSource.includes("3年年化"), "fund metric labels should use full three-year annualized wording");
+assert(appSource.includes("波動度"), "fund metric labels should use full volatility wording");
 assert(!appSource.includes("compact-stats"), "fund cards should not render nested metric cards");
 assert(appSource.includes('performanceTag("3月", fund.return3m)'), "fund cards should keep only 3-month performance in tags");
 assert(appSource.includes('performanceTag("1年", fund.return1y)'), "fund cards should keep only 1-year performance in tags");

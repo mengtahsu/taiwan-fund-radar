@@ -2212,8 +2212,8 @@ function renderFunds() {
           <div class="fund-action-row">
             <div class="metric-strip">
               <div class="metric-line">
-                <span>3年</span><strong>${fund.return3y.toFixed(1)}%</strong>
-                <span>波</span><strong>${fund.volatility.toFixed(1)}%</strong>
+                <span>3年年化</span><strong>${fund.return3y.toFixed(1)}%</strong>
+                <span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong>
               </div>
               <div class="metric-line">
                 <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${typeof twoWeek.valueNumber === "number" ? formatCompactPercent(twoWeek.valueNumber) : twoWeek.value}</strong>

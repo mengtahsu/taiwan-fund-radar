@@ -495,7 +495,7 @@ legend {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .metric-strip {
@@ -507,7 +507,7 @@ legend {
 .metric-line {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
   white-space: nowrap;
 }
@@ -544,15 +544,17 @@ legend {
 .card-actions {
   display: grid;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   justify-items: stretch;
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
 }
 
 .buy-link {
   display: inline-grid;
   min-height: 28px;
   place-items: center;
-  min-width: 48px;
+  min-width: 52px;
   padding: 0 8px;
   border-radius: 8px;
   background: var(--accent);
@@ -570,7 +572,7 @@ legend {
   display: inline-grid;
   min-height: 28px;
   place-items: center;
-  min-width: 48px;
+  min-width: 52px;
   padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
