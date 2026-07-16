@@ -383,6 +383,40 @@ def fetch_moneydj_bcd_nav(fund_id: str) -> list[tuple[datetime, float]]:
     return series
 
 
+def parse_moneydj_mobile_latest_nav(text: str) -> tuple[datetime, float] | None:
+    match = re.search(
+        r'<span class="netValue[^"]*">\s*<span class="[^"]*">(?P<nav>[\d,]+(?:\.\d+)?)</span>\s*</span>\s*[^<(]*\((?P<date>\d{4}/\d{2}/\d{2})\)',
+        text,
+        re.S,
+    )
+    if not match:
+        return None
+    try:
+        date = datetime.strptime(match.group("date"), "%Y/%m/%d")
+        nav = float(match.group("nav").replace(",", ""))
+    except ValueError:
+        return None
+    if nav <= 0:
+        return None
+    return date, nav
+
+
+def fetch_moneydj_mobile_latest_nav(fund_id: str) -> tuple[datetime, float] | None:
+    fund_key = fund_id.split("-", 1)[0]
+    url = f"https://m.moneydj.com/a1.aspx?{urlencode({'a': fund_key})}"
+    request = Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 TaiwanFundRadar/1.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Referer": "https://m.moneydj.com/",
+        },
+    )
+    with urlopen(request, timeout=20) as response:
+        text = response.read().decode(response.headers.get_content_charset() or "utf-8", "replace")
+    return parse_moneydj_mobile_latest_nav(text)
+
+
 def period_return_from_series(series: list[tuple[datetime, float]], days: int) -> tuple[float, str, str] | None:
     if len(series) < 2:
         return None
@@ -1435,6 +1469,15 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
             if not series:
                 return fund_id, {}, "empty NAV series"
             latest_date, latest_nav = sorted(series, key=lambda item: item[0])[-1]
+            latest_source = "MoneyDJ BCD"
+            try:
+                mobile_latest = fetch_moneydj_mobile_latest_nav(fund_id)
+            except Exception as exc:
+                mobile_latest = None
+                print(f"{datetime.now().isoformat(timespec='seconds')} mobile latest NAV skipped for {fund_id}: {exc}", file=sys.stderr)
+            if mobile_latest and mobile_latest[0] > latest_date:
+                latest_date, latest_nav = mobile_latest
+                latest_source = "MoneyDJ mobile"
             returns = {
                 "return2w": period_return_from_series(series, RECENT_RETURN_DAYS),
                 "return1m": period_return_from_series(series, MONTH_RETURN_DAYS),
@@ -1442,6 +1485,7 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
             return fund_id, {
                 "nav": round(latest_nav, 4),
                 "navDate": nav_date_label(latest_date),
+                "navSource": latest_source,
                 **{key: value for key, value in returns.items() if value},
             }, None
         except Exception as exc:
@@ -1464,6 +1508,7 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
             cache_item = {
                 "nav": recent_data["nav"],
                 "navDate": recent_data["navDate"],
+                "navSource": recent_data.get("navSource") or "MoneyDJ BCD",
                 "fetchedAt": datetime.now(timezone.utc).isoformat(),
             }
             if recent_data.get("return2w"):
