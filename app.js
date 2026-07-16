@@ -122,7 +122,6 @@ const sampleFunds = [
 ];
 
 let funds = [...sampleFunds];
-let selected = new Set();
 let sourceMeta = {
   source: "示範資料",
   updatedAt: null
@@ -189,7 +188,6 @@ const els = {
   scoreExplain: document.querySelector("#scoreExplain"),
   grid: document.querySelector("#fundGrid"),
   count: document.querySelector("#resultCount"),
-  compare: document.querySelector("#compareTable"),
   metricTotal: document.querySelector("#metricTotal"),
   metricReturn: document.querySelector("#metricReturn"),
   dataStatus: document.querySelector("#dataStatus"),
@@ -433,6 +431,27 @@ function benchmarkStatus(fund, period) {
   `;
 }
 
+function compactBenchmarkStatus(fund, period) {
+  const benchmark = benchmarkForFund(fund);
+  const returnKey = `return${period}`;
+  const shortLabel = period === "1m" ? "1月" : "2週";
+  if (typeof fund[returnKey] !== "number" || !benchmark || typeof benchmark[returnKey] !== "number") {
+    return {
+      className: "pending",
+      label: `${shortLabel}台股`,
+      value: "更新中",
+      date: fundReturnDate(fund, period)
+    };
+  }
+  const excess = fund[returnKey] - benchmark[returnKey];
+  return {
+    className: excess >= 0 ? "beat" : "lag",
+    label: `${shortLabel}${excess >= 0 ? "贏" : "輸"}`,
+    value: formatPercent(excess),
+    date: fundReturnDate(fund, period)
+  };
+}
+
 function formatPrice(fund) {
   if (typeof fund.nav === "number" && fund.nav > 0) {
     return `${fund.nav.toLocaleString("zh-TW", { maximumFractionDigits: 4 })}`;
@@ -458,7 +477,7 @@ function riskClass(risk) {
 }
 
 function renderFundName(fund) {
-  const name = escapeHtml(fund.name);
+  const name = escapeHtml(displayFundName(fund.name));
   const url = moneyDjFundUrl(fund.fundId);
   if (!url) {
     return name;
@@ -472,6 +491,13 @@ function moneyDjFundUrl(fundId) {
     return "";
   }
   return `https://m.moneydj.com/a1.aspx?a=${encodeURIComponent(moneyDjId)}`;
+}
+
+function displayFundName(name) {
+  return String(name || "")
+    .replace(/[\(（][^()（）]*[\)）]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function renderPurchaseFundName(item, matchedFund) {
@@ -2139,20 +2165,19 @@ function renderFunds() {
 
   if (!visibleList.length) {
     els.grid.innerHTML = '<div class="empty">沒有符合條件的基金，放寬風險或報酬門檻再試一次。</div>';
-    renderCompare();
     return;
   }
 
   els.grid.innerHTML = visibleList
     .map((fund) => {
-      const checked = selected.has(fund.name) ? "checked" : "";
-      const selectedClass = selected.has(fund.name) ? " selected" : "";
+      const twoWeek = compactBenchmarkStatus(fund, "2w");
+      const oneMonth = compactBenchmarkStatus(fund, "1m");
+      const benchmarkDate = twoWeek.date || oneMonth.date;
       return `
-        <article class="fund-card${selectedClass}">
+        <article class="fund-card">
           <div class="fund-head">
             <div>
               <h3>${renderFundName(fund)}</h3>
-              <p>${escapeHtml(fund.ticker || fund.company)} / ${escapeHtml(fund.type)} / ${escapeHtml(fund.region)}</p>
             </div>
             <div class="score" title="${scoreTitle()}">${fund.score}</div>
           </div>
@@ -2161,36 +2186,26 @@ function renderFunds() {
             ${navTag(fund)}
             ${visibleTags(fund.tags).map((tag) => `<span class="pill">${escapeHtml(compactTag(tag))}</span>`).join("")}
           </div>
-          <div class="stats">
-            <div class="stat"><span>三年年化</span><strong>${fund.return3y.toFixed(1)}%</strong></div>
-            <div class="stat"><span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong></div>
-            ${benchmarkStatus(fund, "2w")}
-            ${benchmarkStatus(fund, "1m")}
+          <div class="compact-stats">
+            <div class="compact-stat">
+              <span>3年</span><strong>${fund.return3y.toFixed(1)}%</strong>
+              <span>波動</span><strong>${fund.volatility.toFixed(1)}%</strong>
+            </div>
+            <div class="compact-stat benchmark-line">
+              <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${twoWeek.value}</strong>
+              <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${oneMonth.value}</strong>
+              ${benchmarkDate ? `<small>資料 ${escapeHtml(benchmarkDate)}</small>` : ""}
+            </div>
           </div>
           <div class="card-actions">
             ${renderBuyLink(fund)}
             <button class="record-link" type="button" data-buy-fund="${escapeHtml(fundLookupKey(fund))}">記錄買入</button>
-            <label class="choice">
-              <input type="checkbox" data-fund="${escapeHtml(fund.name)}" ${checked}>
-              比較
-            </label>
           </div>
         </article>
       `;
     })
     .join("");
 
-  document.querySelectorAll("[data-fund]").forEach((input) => {
-    input.addEventListener("change", () => {
-      if (input.checked && selected.size >= 3) {
-        input.checked = false;
-        return;
-      }
-      input.checked ? selected.add(input.dataset.fund) : selected.delete(input.dataset.fund);
-      renderFunds();
-      renderCompare();
-    });
-  });
   document.querySelectorAll("[data-buy-fund]").forEach((button) => {
     button.addEventListener("click", () => {
       const fund = funds.find((item) => fundLookupKey(item) === button.dataset.buyFund);
@@ -2200,50 +2215,6 @@ function renderFunds() {
     });
   });
 
-  renderCompare();
-}
-
-function renderCompare() {
-  const list = funds.filter((fund) => selected.has(fund.name)).map((fund) => ({ ...fund, score: scoreFund(fund) }));
-  if (!list.length) {
-    els.compare.innerHTML = '<div class="empty">尚未選擇基金。</div>';
-    return;
-  }
-
-  els.compare.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>基金</th>
-          <th>分數</th>
-          <th>RR</th>
-          <th>三年年化</th>
-          <th>波動度</th>
-          <th>Sharpe</th>
-          <th>淨值/日期</th>
-          <th>配息</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${list
-          .map(
-            (fund) => `
-              <tr>
-                <td>${escapeHtml(fund.name)}</td>
-                <td>${fund.score}</td>
-                <td>RR ${fund.risk}</td>
-                <td>${fund.return3y.toFixed(1)}%</td>
-                <td>${fund.volatility.toFixed(1)}%</td>
-                <td>${fund.sharpe.toFixed(2)}</td>
-                <td>${fund.nav || fund.price ? `${formatPrice(fund)} / ${liquidityLabel(fund)}` : formatMoney(fund.aum)}</td>
-                <td>${escapeHtml(fund.dividend)}</td>
-              </tr>
-            `
-          )
-          .join("")}
-      </tbody>
-    </table>
-  `;
 }
 
 function syncLabels() {

@@ -209,6 +209,14 @@ assert(appSource.includes('nasdaqFuture: "Nasdaq 期貨"'), "market display shou
 assert(!appSource.includes("LIVE_MARKET_REFRESH_MS"), "market UI should not claim minute-level live refresh");
 assert(!appSource.includes("fetchLiveMarketQuote"), "market UI should not fetch fake live quotes from the browser");
 assert(!appSource.includes("setInterval(refreshLiveMarkets"), "market UI should not poll market quotes every minute");
+assert(!appSource.includes('document.querySelector("#compareTable")'), "compare table should be removed");
+assert(!appSource.includes('data-fund="${escapeHtml(fund.name)}"'), "fund cards should not render compare checkboxes");
+assert(appSource.includes("displayFundName(fund.name)"), "fund cards should use compact display names");
+assert(appSource.includes("compact-stats"), "fund cards should use compact stat rows");
+
+const indexSource = fs.readFileSync("index.html", "utf8");
+assert(!indexSource.includes('href="./#compare"'), "top navigation should not show compare");
+assert(!indexSource.includes('id="compare"'), "compare section should be removed");
 
 if (failures.length) {
   console.error("Sanity check failed:");
