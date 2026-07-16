@@ -212,7 +212,9 @@ assert(!appSource.includes("setInterval(refreshLiveMarkets"), "market UI should 
 assert(!appSource.includes('document.querySelector("#compareTable")'), "compare table should be removed");
 assert(!appSource.includes('data-fund="${escapeHtml(fund.name)}"'), "fund cards should not render compare checkboxes");
 assert(appSource.includes("displayFundName(fund.name)"), "fund cards should use compact display names");
-assert(appSource.includes("compact-stats"), "fund cards should use compact stat rows");
+assert(appSource.includes("fund-list-row"), "fund cards should use list-row layout");
+assert(appSource.includes("metric-strip"), "fund cards should use a single compact metric strip");
+assert(!appSource.includes("compact-stats"), "fund cards should not render nested metric cards");
 assert(appSource.includes('performanceTag("3月", fund.return3m)'), "fund cards should keep only 3-month performance in tags");
 assert(appSource.includes('performanceTag("1年", fund.return1y)'), "fund cards should keep only 1-year performance in tags");
 assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</span>'), "fund cards should not render dividend tags");

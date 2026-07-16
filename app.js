@@ -360,6 +360,11 @@ function formatPercent(value) {
   return `${sign}${value.toFixed(2)}%`;
 }
 
+function formatCompactPercent(value) {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toLocaleString("zh-TW", { maximumFractionDigits: 1 })}%`;
+}
+
 function formatMarketPrice(value) {
   return Number(value).toLocaleString("zh-TW", { maximumFractionDigits: 2 });
 }
@@ -440,6 +445,7 @@ function compactBenchmarkStatus(fund, period) {
       className: "pending",
       label: `${shortLabel}台股`,
       value: "更新中",
+      valueNumber: null,
       date: fundReturnDate(fund, period)
     };
   }
@@ -448,6 +454,7 @@ function compactBenchmarkStatus(fund, period) {
     className: excess >= 0 ? "beat" : "lag",
     label: `${shortLabel}${excess >= 0 ? "贏" : "輸"}`,
     value: formatPercent(excess),
+    valueNumber: excess,
     date: fundReturnDate(fund, period)
   };
 }
@@ -2092,7 +2099,18 @@ function performanceTag(label, value) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "";
   }
-  return `<span class="pill">${escapeHtml(label)} ${value.toFixed(2)}%</span>`;
+  return `<span class="pill">${escapeHtml(label)} ${value.toLocaleString("zh-TW", { maximumFractionDigits: 1 })}%</span>`;
+}
+
+function renderCompactBuyLink(fund) {
+  if (fund.fubonBuyUrl) {
+    const navHint = typeof fund.nav === "number" && Number.isFinite(fund.nav) ? `，先核對淨值 ${moneyNumber(fund.nav)}${fund.navDate ? ` / ${fund.navDate}` : ""}` : "";
+    return `<a class="buy-link" href="${escapeHtml(fund.fubonBuyUrl)}" title="請在富邦確認基金名稱與淨值${escapeHtml(navHint)}">富邦</a>`;
+  }
+  if (fund.fundrichAppUrl) {
+    return `<a class="buy-link secondary" href="${escapeHtml(fund.fundrichAppUrl)}">基富通</a>`;
+  }
+  return "";
 }
 
 function renderMetrics(list) {
@@ -2181,30 +2199,26 @@ function renderFunds() {
       const oneMonth = compactBenchmarkStatus(fund, "1m");
       const benchmarkDate = twoWeek.date || oneMonth.date;
       return `
-        <article class="fund-card">
+        <article class="fund-card fund-list-row">
           <div class="fund-head">
-            <div>
-              <h3>${renderFundName(fund)}</h3>
-            </div>
-            <div class="score" title="${scoreTitle()}">${fund.score}</div>
+            <h3>${renderFundName(fund)}</h3>
+            <div class="score compact-score" title="${scoreTitle()}">${fund.score}</div>
           </div>
           <div class="pill-row">
             ${navTag(fund)}
             ${performanceTag("3月", fund.return3m)}
             ${performanceTag("1年", fund.return1y)}
           </div>
-          <div class="compact-stats">
-            <div class="compact-stat compact-stat-row">
-              <span>3年</span><strong>${fund.return3y.toFixed(1)}%</strong>
-              <span>波動</span><strong>${fund.volatility.toFixed(1)}%</strong>
-              <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${twoWeek.value}</strong>
-              <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${oneMonth.value}</strong>
-              ${benchmarkDate ? `<small>資料 ${escapeHtml(benchmarkDate)}</small>` : ""}
-            </div>
+          <div class="metric-strip">
+            <span>3年</span><strong>${fund.return3y.toFixed(1)}%</strong>
+            <span>波</span><strong>${fund.volatility.toFixed(1)}%</strong>
+            <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${typeof twoWeek.valueNumber === "number" ? formatCompactPercent(twoWeek.valueNumber) : twoWeek.value}</strong>
+            <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${typeof oneMonth.valueNumber === "number" ? formatCompactPercent(oneMonth.valueNumber) : oneMonth.value}</strong>
+            ${benchmarkDate ? `<small>${escapeHtml(benchmarkDate)}</small>` : ""}
           </div>
           <div class="card-actions">
-            ${renderBuyLink(fund)}
-            <button class="record-link" type="button" data-buy-fund="${escapeHtml(fundLookupKey(fund))}">記錄買入</button>
+            ${renderCompactBuyLink(fund)}
+            <button class="record-link" type="button" data-buy-fund="${escapeHtml(fundLookupKey(fund))}">記錄</button>
           </div>
         </article>
       `;
