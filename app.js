@@ -2204,21 +2204,23 @@ function renderFunds() {
             <h3>${renderFundName(fund)}</h3>
             <div class="score compact-score" title="${scoreTitle()}">${fund.score}</div>
           </div>
-          <div class="pill-row">
-            ${navTag(fund)}
-            ${performanceTag("3月", fund.return3m)}
-            ${performanceTag("1年", fund.return1y)}
-          </div>
           <div class="fund-action-row">
-            <div class="metric-strip">
-              <div class="metric-line">
-                <span>3年年化</span><strong>${fund.return3y.toFixed(1)}%</strong>
-                <span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong>
+            <div class="fund-info-block">
+              <div class="pill-row">
+                ${navTag(fund)}
+                ${performanceTag("3月", fund.return3m)}
+                ${performanceTag("1年", fund.return1y)}
               </div>
-              <div class="metric-line">
-                <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${typeof twoWeek.valueNumber === "number" ? formatCompactPercent(twoWeek.valueNumber) : twoWeek.value}</strong>
-                <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${typeof oneMonth.valueNumber === "number" ? formatCompactPercent(oneMonth.valueNumber) : oneMonth.value}</strong>
-                ${benchmarkDate ? `<small>${escapeHtml(benchmarkDate)}</small>` : ""}
+              <div class="metric-strip">
+                <div class="metric-line">
+                  <span>3年年化</span><strong>${fund.return3y.toFixed(1)}%</strong>
+                  <span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong>
+                </div>
+                <div class="metric-line">
+                  <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${typeof twoWeek.valueNumber === "number" ? formatCompactPercent(twoWeek.valueNumber) : twoWeek.value}</strong>
+                  <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${typeof oneMonth.valueNumber === "number" ? formatCompactPercent(oneMonth.valueNumber) : oneMonth.value}</strong>
+                  ${benchmarkDate ? `<small>${escapeHtml(benchmarkDate)}</small>` : ""}
+                </div>
               </div>
             </div>
             <div class="card-actions">

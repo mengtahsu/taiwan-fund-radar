@@ -498,6 +498,12 @@ legend {
   gap: 12px;
 }
 
+.fund-info-block {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
 .metric-strip {
   display: grid;
   gap: 1px;

@@ -215,6 +215,7 @@ assert(appSource.includes("displayFundName(fund.name)"), "fund cards should use 
 assert(appSource.includes("fund-list-row"), "fund cards should use list-row layout");
 assert(appSource.includes("metric-strip"), "fund cards should use a single compact metric strip");
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
+assert(appSource.includes("fund-info-block"), "fund nav/performance/metrics should be grouped on the left side");
 assert(appSource.includes("metric-line"), "fund metrics should be arranged in two readable lines");
 assert(appSource.includes("3年年化"), "fund metric labels should use full three-year annualized wording");
 assert(appSource.includes("波動度"), "fund metric labels should use full volatility wording");
