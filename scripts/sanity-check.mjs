@@ -214,6 +214,8 @@ assert(!appSource.includes('data-fund="${escapeHtml(fund.name)}"'), "fund cards 
 assert(appSource.includes("displayFundName(fund.name)"), "fund cards should use compact display names");
 assert(appSource.includes("fund-list-row"), "fund cards should use list-row layout");
 assert(appSource.includes("metric-strip"), "fund cards should use a single compact metric strip");
+assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
+assert(appSource.includes("metric-line"), "fund metrics should be arranged in two readable lines");
 assert(!appSource.includes("compact-stats"), "fund cards should not render nested metric cards");
 assert(appSource.includes('performanceTag("3月", fund.return3m)'), "fund cards should keep only 3-month performance in tags");
 assert(appSource.includes('performanceTag("1年", fund.return1y)'), "fund cards should keep only 1-year performance in tags");

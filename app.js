@@ -2209,16 +2209,22 @@ function renderFunds() {
             ${performanceTag("3月", fund.return3m)}
             ${performanceTag("1年", fund.return1y)}
           </div>
-          <div class="metric-strip">
-            <span>3年</span><strong>${fund.return3y.toFixed(1)}%</strong>
-            <span>波</span><strong>${fund.volatility.toFixed(1)}%</strong>
-            <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${typeof twoWeek.valueNumber === "number" ? formatCompactPercent(twoWeek.valueNumber) : twoWeek.value}</strong>
-            <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${typeof oneMonth.valueNumber === "number" ? formatCompactPercent(oneMonth.valueNumber) : oneMonth.value}</strong>
-            ${benchmarkDate ? `<small>${escapeHtml(benchmarkDate)}</small>` : ""}
-          </div>
-          <div class="card-actions">
-            ${renderCompactBuyLink(fund)}
-            <button class="record-link" type="button" data-buy-fund="${escapeHtml(fundLookupKey(fund))}">記錄</button>
+          <div class="fund-action-row">
+            <div class="metric-strip">
+              <div class="metric-line">
+                <span>3年</span><strong>${fund.return3y.toFixed(1)}%</strong>
+                <span>波</span><strong>${fund.volatility.toFixed(1)}%</strong>
+              </div>
+              <div class="metric-line">
+                <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${typeof twoWeek.valueNumber === "number" ? formatCompactPercent(twoWeek.valueNumber) : twoWeek.value}</strong>
+                <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${typeof oneMonth.valueNumber === "number" ? formatCompactPercent(oneMonth.valueNumber) : oneMonth.value}</strong>
+                ${benchmarkDate ? `<small>${escapeHtml(benchmarkDate)}</small>` : ""}
+              </div>
+            </div>
+            <div class="card-actions">
+              ${renderCompactBuyLink(fund)}
+              <button class="record-link" type="button" data-buy-fund="${escapeHtml(fundLookupKey(fund))}">記錄</button>
+            </div>
           </div>
         </article>
       `;

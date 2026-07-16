@@ -491,56 +491,69 @@ legend {
   font-weight: 800;
 }
 
+.fund-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
 .metric-strip {
   display: grid;
-  grid-template-columns: auto 1fr auto 1fr auto 1fr auto 1fr auto;
-  align-items: baseline;
-  gap: 2px 5px;
+  gap: 1px;
   min-width: 0;
 }
 
-.metric-strip span,
-.metric-strip small {
+.metric-line {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.metric-line span,
+.metric-line small {
   color: var(--muted);
   font-size: 11px;
   font-weight: 800;
 }
 
-.metric-strip strong {
+.metric-line strong {
   font-size: 13px;
   white-space: nowrap;
 }
 
-.metric-strip .beat {
+.metric-line .beat {
   color: var(--accent-dark);
 }
 
-.metric-strip .lag {
+.metric-line .lag {
   color: var(--danger);
 }
 
-.metric-strip .pending {
+.metric-line .pending {
   color: var(--muted);
 }
 
-.metric-strip small {
-  justify-self: end;
+.metric-line small {
+  margin-left: auto;
   white-space: nowrap;
 }
 
 .card-actions {
-  display: flex;
+  display: grid;
   align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 4px;
+  justify-items: stretch;
 }
 
 .buy-link {
   display: inline-grid;
   min-height: 28px;
   place-items: center;
-  padding: 0 9px;
+  min-width: 48px;
+  padding: 0 8px;
   border-radius: 8px;
   background: var(--accent);
   color: #fff;
@@ -557,7 +570,8 @@ legend {
   display: inline-grid;
   min-height: 28px;
   place-items: center;
-  padding: 0 9px;
+  min-width: 48px;
+  padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
