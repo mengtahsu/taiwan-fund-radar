@@ -153,6 +153,7 @@ const MARKET_DISPLAY_LABELS = {
 };
 const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK";
+const NAV_REFRESH_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/refresh-nav`;
 const SITE_URL = "https://mengtahsu.github.io/taiwan-fund-radar/";
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const isPortfolioView = new URLSearchParams(window.location.search).get("view") === "portfolio";
@@ -1814,6 +1815,70 @@ async function fetchLatestFundValues() {
   fundDataLoaded = true;
 }
 
+function applyLatestNavItems(items) {
+  if (!Array.isArray(items) || !items.length) {
+    return 0;
+  }
+  const fundById = new Map(funds.map((fund) => [String(fund.fundId || ""), fund]));
+  let updated = 0;
+  items.forEach((item) => {
+    const fundId = String(item?.fundId || "");
+    const nav = Number(item?.nav);
+    const navDate = String(item?.navDate || "");
+    const fund = fundById.get(fundId);
+    if (!fund || !Number.isFinite(nav) || nav <= 0 || !navDate) {
+      return;
+    }
+    if (fund.nav !== nav || fund.navDate !== navDate) {
+      updated += 1;
+    }
+    fund.nav = nav;
+    fund.navDate = navDate;
+    fund.navSource = item.navSource || "MoneyDJ mobile";
+  });
+  return updated;
+}
+
+async function refreshOwnedFundNavFromFunction() {
+  if (!db || !purchases.length) {
+    return { updated: 0, unavailable: true };
+  }
+  const fundIds = [...new Set(
+    purchases
+      .map((item) => String(item.fund_id || "").trim())
+      .filter((fundId) => fundId && !fundId.startsWith("manual:"))
+  )];
+  if (!fundIds.length) {
+    return { updated: 0, unavailable: false };
+  }
+  const { data } = await db.auth.getSession();
+  const token = data.session?.access_token || SUPABASE_KEY;
+  try {
+    const response = await fetch(NAV_REFRESH_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ fundIds })
+    });
+    if (!response.ok) {
+      return { updated: 0, unavailable: true };
+    }
+    const payload = await response.json();
+    const updated = applyLatestNavItems(payload.items);
+    return {
+      updated,
+      unavailable: false,
+      fetched: Array.isArray(payload.items) ? payload.items.length : 0,
+      failed: Array.isArray(payload.errors) ? payload.errors.length : 0
+    };
+  } catch (_error) {
+    return { updated: 0, unavailable: true };
+  }
+}
+
 async function loadMonthlyNavData() {
   try {
     const response = await fetch("data/monthly_nav.json", { cache: "no-store" });
@@ -1858,13 +1923,17 @@ async function refreshPurchaseValues() {
     const requestedCount = await requestOwnedFundNavHistory();
     const beforeSnapshot = purchaseNavSnapshot();
     await fetchLatestFundValues();
+    const instantRefresh = await refreshOwnedFundNavFromFunction();
     await loadMonthlyNavData();
     renderPurchases();
     const changedCount = changedPurchaseNavCount(beforeSnapshot);
     const dataTime = sourceMeta.updatedAt ? formatTaiwanDateTime(sourceMeta.updatedAt) : "最新資料";
-    const requestText = requestedCount ? `，已送出 ${requestedCount} 檔補淨值請求` : "";
+    const instantText = instantRefresh.unavailable
+      ? "，即時單檔更新尚未啟用"
+      : `，即時檢查 ${instantRefresh.fetched || 0} 檔`;
+    const requestText = requestedCount ? `，已排入 ${requestedCount} 檔後端更新` : "";
     const changeText = changedCount ? `，${changedCount} 筆有新淨值` : "，目前沒有新淨值";
-    setMessage(els.purchaseRefreshStatus, `資料 ${dataTime}${changeText}${requestText}`);
+    setMessage(els.purchaseRefreshStatus, `資料 ${dataTime}${changeText}${instantText}${requestText}`);
   } catch (error) {
     setMessage(els.purchaseRefreshStatus, `更新失敗：${error.message}`, true);
   } finally {

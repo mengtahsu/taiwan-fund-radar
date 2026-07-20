@@ -197,12 +197,18 @@ for (const id of ["twii", "sp500", "nasdaq", "nikkei", "kospi"]) {
 
 const appSource = fs.readFileSync("app.js", "utf8");
 const updateFundsSource = fs.readFileSync("update_funds.py", "utf8");
+const refreshNavFunctionSource = fs.readFileSync("supabase/functions/refresh-nav/index.ts", "utf8");
 assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_funds.py should parse MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");
 assert(updateFundsSource.includes("period_return_from_series(series, RECENT_RETURN_DAYS)"), "recent returns should still use BCD historical NAV series");
+assert(refreshNavFunctionSource.includes("https://m.moneydj.com/a1.aspx"), "refresh-nav function should fetch MoneyDJ mobile fund pages");
+assert(refreshNavFunctionSource.includes("parseMoneyDjMobileLatestNav"), "refresh-nav function should parse MoneyDJ mobile latest NAV");
 assert(appSource.includes("fundDataLoaded"), "app.js missing fundDataLoaded guard");
 assert(appSource.includes("基金資料尚未載入，暫不估算現值"), "app.js missing not-ready portfolio message");
+assert(appSource.includes("NAV_REFRESH_FUNCTION_URL"), "refresh flow should define a single-fund NAV refresh function endpoint");
+assert(appSource.includes("refreshOwnedFundNavFromFunction"), "refresh flow should attempt immediate owned-fund NAV refresh");
+assert(appSource.includes("即時單檔更新尚未啟用"), "refresh flow should not silently pretend immediate NAV refresh is enabled");
 assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: false })"), "refresh flow should load purchases without intermediate render");
 assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should include Taiwan, futures, US, Japan, and Korea indexes");
 assert(appSource.includes("visibleMarkets = MARKET_DISPLAY_IDS.map"), "market UI should use the fixed market display order");
