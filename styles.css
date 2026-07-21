@@ -766,7 +766,8 @@ textarea {
 
 .holding-breakdown,
 .monthly-breakdown,
-.weekly-breakdown {
+.weekly-breakdown,
+.daily-breakdown {
   grid-column: 1 / -1;
   display: grid;
   gap: 6px;
@@ -778,14 +779,16 @@ textarea {
 
 .holding-breakdown h4,
 .monthly-breakdown h4,
-.weekly-breakdown h4 {
+.weekly-breakdown h4,
+.daily-breakdown h4 {
   margin: 0;
   font-size: 14px;
 }
 
 .holding-breakdown p,
 .monthly-breakdown p,
-.weekly-breakdown p {
+.weekly-breakdown p,
+.daily-breakdown p {
   margin: 0;
   color: var(--muted);
   font-size: 13px;
@@ -793,7 +796,8 @@ textarea {
 }
 
 .monthly-breakdown p,
-.weekly-breakdown p {
+.weekly-breakdown p,
+.daily-breakdown p {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -839,6 +843,7 @@ textarea {
 
 .monthly-breakdown strong,
 .weekly-breakdown strong,
+.daily-breakdown strong,
 .period-profit-button {
   color: var(--ink);
   white-space: nowrap;
@@ -846,12 +851,14 @@ textarea {
 
 .monthly-breakdown strong.up,
 .weekly-breakdown strong.up,
+.daily-breakdown strong.up,
 .period-profit-button.up {
   color: var(--accent-dark);
 }
 
 .monthly-breakdown strong.down,
 .weekly-breakdown strong.down,
+.daily-breakdown strong.down,
 .period-profit-button.down {
   color: var(--danger);
 }

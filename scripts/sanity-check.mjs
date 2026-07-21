@@ -199,6 +199,7 @@ for (const id of ["twii", "sp500", "nasdaq", "nikkei", "kospi"]) {
 }
 
 const appSource = fs.readFileSync("app.js", "utf8");
+const styleSource = fs.readFileSync("styles.css", "utf8");
 const updateFundsSource = fs.readFileSync("update_funds.py", "utf8");
 const refreshNavFunctionSource = fs.readFileSync("supabase/functions/refresh-nav/index.ts", "utf8");
 assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_funds.py should parse MoneyDJ mobile latest NAV");
@@ -217,6 +218,8 @@ assert(appSource.indexOf("await loadMonthlyNavData();") < appSource.indexOf("con
 assert(appSource.includes("DAILY_PERIOD_DISPLAY_LIMIT = 10"), "daily profit should show at most 10 days");
 assert(appSource.includes("每天賺賠"), "portfolio stats should render daily profit");
 assert(appSource.includes("sortSoldByDate"), "sold purchases should be sorted by sell date");
+assert(styleSource.includes(".weekly-breakdown,\n.daily-breakdown"), "daily profit should share weekly/monthly block styling");
+assert(styleSource.includes(".weekly-breakdown p,\n.daily-breakdown p"), "daily profit rows should share weekly row layout");
 assert(appSource.includes("即時單檔更新尚未啟用"), "refresh flow should not silently pretend immediate NAV refresh is enabled");
 assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: false })"), "refresh flow should load purchases without intermediate render");
 assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should include Taiwan, futures, US, Japan, and Korea indexes");
