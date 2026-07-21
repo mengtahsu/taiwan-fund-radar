@@ -248,6 +248,9 @@ assert(!appSource.includes('data-fund="${escapeHtml(fund.name)}"'), "fund cards 
 assert(appSource.includes("displayFundName(fund.name)"), "fund cards should use compact display names");
 assert(appSource.includes("fund-list-row"), "fund cards should use list-row layout");
 assert(appSource.includes("metric-strip"), "fund cards should use a single compact metric strip");
+assert(appSource.includes("fundDisplayLimit"), "fund list should support increasing the visible result limit");
+assert(appSource.includes("data-load-more-funds"), "fund list should render a load-more button");
+assert(appSource.includes("fundDisplayLimit += DISPLAY_LIMIT"), "load-more button should show the next batch");
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
 assert(appSource.includes("fund-info-block"), "fund nav/performance/metrics should be grouped on the left side");
 assert(appSource.includes("metric-line"), "fund metrics should be arranged in two readable lines");

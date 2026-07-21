@@ -440,6 +440,30 @@ legend {
   border-top: 0;
 }
 
+.load-more-funds {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 2px;
+  min-height: 48px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  background: #fff;
+  color: var(--accent-dark);
+  font-weight: 900;
+}
+
+.load-more-funds span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fund-card:has(+ .load-more-funds) {
+  border-radius: 0;
+}
+
 .fund-head {
   display: flex;
   align-items: center;

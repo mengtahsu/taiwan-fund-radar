@@ -177,6 +177,7 @@ let portfolioSnapshotsDirty = false;
 let portfolioSnapshotsSaving = false;
 let periodDetailStore = new Map();
 let periodHistoryStore = new Map();
+let fundDisplayLimit = DISPLAY_LIMIT;
 
 const els = {
   query: document.querySelector("#queryInput"),
@@ -2382,8 +2383,9 @@ function marketUrl(market) {
 
 function renderFunds() {
   const list = filteredFunds();
-  const visibleList = list.slice(0, DISPLAY_LIMIT);
-  els.count.textContent = list.length > DISPLAY_LIMIT ? `${list.length} 檔符合，顯示前 ${DISPLAY_LIMIT} 檔` : `${list.length} 檔符合`;
+  const visibleCount = Math.min(fundDisplayLimit, list.length);
+  const visibleList = list.slice(0, visibleCount);
+  els.count.textContent = list.length > visibleCount ? `${list.length} 檔符合，顯示前 ${visibleCount} 檔` : `${list.length} 檔符合`;
   renderMetrics(list);
   renderDataStatus();
   renderScoreExplain();
@@ -2393,7 +2395,7 @@ function renderFunds() {
     return;
   }
 
-  els.grid.innerHTML = visibleList
+  const cardsHtml = visibleList
     .map((fund) => {
       const twoWeek = compactBenchmarkStatus(fund, "2w");
       const oneMonth = compactBenchmarkStatus(fund, "1m");
@@ -2432,6 +2434,12 @@ function renderFunds() {
       `;
     })
     .join("");
+  const remainingCount = Math.max(0, list.length - visibleCount);
+  els.grid.innerHTML = `${cardsHtml}${
+    remainingCount
+      ? `<button class="load-more-funds" type="button" data-load-more-funds>再顯示 ${Math.min(DISPLAY_LIMIT, remainingCount)} 檔<span>還有 ${remainingCount} 檔</span></button>`
+      : ""
+  }`;
 
   document.querySelectorAll("[data-buy-fund]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -2440,6 +2448,10 @@ function renderFunds() {
         setPurchaseFund(fund);
       }
     });
+  });
+  document.querySelector("[data-load-more-funds]")?.addEventListener("click", () => {
+    fundDisplayLimit += DISPLAY_LIMIT;
+    renderFunds();
   });
 
 }
@@ -2495,12 +2507,14 @@ function resetFilters() {
   els.beatBenchmark.checked = false;
   els.sort.value = "score";
   document.querySelector("input[name='goal'][value='growth']").checked = true;
+  fundDisplayLimit = DISPLAY_LIMIT;
   syncLabels();
   renderFunds();
 }
 
 [els.query, els.type, els.region, els.risk, els.return, els.beatBenchmark, els.sort].forEach((el) => {
   el.addEventListener("input", () => {
+    fundDisplayLimit = DISPLAY_LIMIT;
     syncLabels();
     renderFunds();
   });
@@ -2513,7 +2527,10 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-document.querySelectorAll("input[name='goal']").forEach((input) => input.addEventListener("change", renderFunds));
+document.querySelectorAll("input[name='goal']").forEach((input) => input.addEventListener("change", () => {
+  fundDisplayLimit = DISPLAY_LIMIT;
+  renderFunds();
+}));
 els.reset.addEventListener("click", resetFilters);
 els.signIn?.addEventListener("click", signIn);
 els.signUp?.addEventListener("click", signUp);
