@@ -1,0 +1,653 @@
+{
+  "source": "TWSE 信用交易統計與 Yahoo Taiwan index history",
+  "updatedAt": "2026-07-21T14:56:22.017292+00:00",
+  "items": [
+    {
+      "date": "2026-04-09",
+      "marginBalanceMillion": 396518.15,
+      "marginBuyMillion": 31289.73,
+      "marginSellMillion": 29818.15,
+      "marginRepayMillion": 287.28,
+      "marginPreviousMillion": 395333.85,
+      "twiiClose": 34861.16
+    },
+    {
+      "date": "2026-04-10",
+      "marginBalanceMillion": 401240.71,
+      "marginBuyMillion": 32465.12,
+      "marginSellMillion": 27228.5,
+      "marginRepayMillion": 514.05,
+      "marginPreviousMillion": 396518.14,
+      "twiiClose": 35417.83
+    },
+    {
+      "date": "2026-04-13",
+      "marginBalanceMillion": 408651.31,
+      "marginBuyMillion": 32687.28,
+      "marginSellMillion": 24891.8,
+      "marginRepayMillion": 384.88,
+      "marginPreviousMillion": 401240.71,
+      "twiiClose": 35457.29
+    },
+    {
+      "date": "2026-04-14",
+      "marginBalanceMillion": 414955.07,
+      "marginBuyMillion": 42071.62,
+      "marginSellMillion": 35459.41,
+      "marginRepayMillion": 308.45,
+      "marginPreviousMillion": 408651.31,
+      "twiiClose": 36296.12
+    },
+    {
+      "date": "2026-04-15",
+      "marginBalanceMillion": 416253.78,
+      "marginBuyMillion": 34536.63,
+      "marginSellMillion": 32924.61,
+      "marginRepayMillion": 346.41,
+      "marginPreviousMillion": 414988.18,
+      "twiiClose": 36722.14
+    },
+    {
+      "date": "2026-04-16",
+      "marginBalanceMillion": 422408.76,
+      "marginBuyMillion": 36384.85,
+      "marginSellMillion": 29857.17,
+      "marginRepayMillion": 372.71,
+      "marginPreviousMillion": 416253.79,
+      "twiiClose": 37132.02
+    },
+    {
+      "date": "2026-04-17",
+      "marginBalanceMillion": 427120.35,
+      "marginBuyMillion": 37183.07,
+      "marginSellMillion": 32034.38,
+      "marginRepayMillion": 437.08,
+      "marginPreviousMillion": 422408.74,
+      "twiiClose": 36804.34
+    },
+    {
+      "date": "2026-04-20",
+      "marginBalanceMillion": 429830.66,
+      "marginBuyMillion": 36367.74,
+      "marginSellMillion": 33272.81,
+      "marginRepayMillion": 385.05,
+      "marginPreviousMillion": 427120.79,
+      "twiiClose": 36958.8
+    },
+    {
+      "date": "2026-04-21",
+      "marginBalanceMillion": 433163.89,
+      "marginBuyMillion": 39218.67,
+      "marginSellMillion": 35575.73,
+      "marginRepayMillion": 308.99,
+      "marginPreviousMillion": 429829.95,
+      "twiiClose": 37605.11
+    },
+    {
+      "date": "2026-04-22",
+      "marginBalanceMillion": 438545.24,
+      "marginBuyMillion": 38522.09,
+      "marginSellMillion": 32799.71,
+      "marginRepayMillion": 341.04,
+      "marginPreviousMillion": 433163.89,
+      "twiiClose": 37878.47
+    },
+    {
+      "date": "2026-04-23",
+      "marginBalanceMillion": 430827.02,
+      "marginBuyMillion": 49439.79,
+      "marginSellMillion": 56827.96,
+      "marginRepayMillion": 330.05,
+      "marginPreviousMillion": 438545.24,
+      "twiiClose": 37714.15
+    },
+    {
+      "date": "2026-04-24",
+      "marginBalanceMillion": 440907.08,
+      "marginBuyMillion": 41780.09,
+      "marginSellMillion": 31200.77,
+      "marginRepayMillion": 497.97,
+      "marginPreviousMillion": 430825.72,
+      "twiiClose": 38932.4
+    },
+    {
+      "date": "2026-04-27",
+      "marginBalanceMillion": 452044.39,
+      "marginBuyMillion": 47025.68,
+      "marginSellMillion": 35441.05,
+      "marginRepayMillion": 447.32,
+      "marginPreviousMillion": 440907.08,
+      "twiiClose": 39616.63
+    },
+    {
+      "date": "2026-04-28",
+      "marginBalanceMillion": 457109.76,
+      "marginBuyMillion": 36791.49,
+      "marginSellMillion": 31384.58,
+      "marginRepayMillion": 341.55,
+      "marginPreviousMillion": 452044.39,
+      "twiiClose": 39521.73
+    },
+    {
+      "date": "2026-04-29",
+      "marginBalanceMillion": 460963.8,
+      "marginBuyMillion": 29073.81,
+      "marginSellMillion": 24578.8,
+      "marginRepayMillion": 644.0,
+      "marginPreviousMillion": 457112.8,
+      "twiiClose": 39303.5
+    },
+    {
+      "date": "2026-04-30",
+      "marginBalanceMillion": 460904.58,
+      "marginBuyMillion": 36514.01,
+      "marginSellMillion": 36037.93,
+      "marginRepayMillion": 546.3,
+      "marginPreviousMillion": 460974.8,
+      "twiiClose": 38926.63
+    },
+    {
+      "date": "2026-05-04",
+      "marginBalanceMillion": 470393.58,
+      "marginBuyMillion": 45624.39,
+      "marginSellMillion": 35574.29,
+      "marginRepayMillion": 562.12,
+      "marginPreviousMillion": 460905.6,
+      "twiiClose": 40705.14
+    },
+    {
+      "date": "2026-05-05",
+      "marginBalanceMillion": 475145.29,
+      "marginBuyMillion": 42359.44,
+      "marginSellMillion": 36930.34,
+      "marginRepayMillion": 673.44,
+      "marginPreviousMillion": 470389.64,
+      "twiiClose": 40769.29
+    },
+    {
+      "date": "2026-05-06",
+      "marginBalanceMillion": 475648.47,
+      "marginBuyMillion": 53266.03,
+      "marginSellMillion": 52359.11,
+      "marginRepayMillion": 403.75,
+      "marginPreviousMillion": 475145.29,
+      "twiiClose": 41138.85
+    },
+    {
+      "date": "2026-05-07",
+      "marginBalanceMillion": 482664.17,
+      "marginBuyMillion": 48446.61,
+      "marginSellMillion": 40961.97,
+      "marginRepayMillion": 468.94,
+      "marginPreviousMillion": 475648.47,
+      "twiiClose": 41933.78
+    },
+    {
+      "date": "2026-05-08",
+      "marginBalanceMillion": 477184.76,
+      "marginBuyMillion": 45955.67,
+      "marginSellMillion": 50550.77,
+      "marginRepayMillion": 884.31,
+      "marginPreviousMillion": 482664.17,
+      "twiiClose": 41603.94
+    },
+    {
+      "date": "2026-05-11",
+      "marginBalanceMillion": 484592.75,
+      "marginBuyMillion": 45012.98,
+      "marginSellMillion": 37273.24,
+      "marginRepayMillion": 331.75,
+      "marginPreviousMillion": 477184.76,
+      "twiiClose": 41790.06
+    },
+    {
+      "date": "2026-05-12",
+      "marginBalanceMillion": 491194.95,
+      "marginBuyMillion": 52207.36,
+      "marginSellMillion": 45055.92,
+      "marginRepayMillion": 549.23,
+      "marginPreviousMillion": 484592.75,
+      "twiiClose": 41898.32
+    },
+    {
+      "date": "2026-05-13",
+      "marginBalanceMillion": 494418.03,
+      "marginBuyMillion": 41929.89,
+      "marginSellMillion": 38293.85,
+      "marginRepayMillion": 412.86,
+      "marginPreviousMillion": 491194.85,
+      "twiiClose": 41374.5
+    },
+    {
+      "date": "2026-05-14",
+      "marginBalanceMillion": 499134.84,
+      "marginBuyMillion": 47449.11,
+      "marginSellMillion": 41849.72,
+      "marginRepayMillion": 882.58,
+      "marginPreviousMillion": 494418.03,
+      "twiiClose": 41751.75
+    },
+    {
+      "date": "2026-05-15",
+      "marginBalanceMillion": 492797.14,
+      "marginBuyMillion": 41291.39,
+      "marginSellMillion": 47241.61,
+      "marginRepayMillion": 387.53,
+      "marginPreviousMillion": 499134.88,
+      "twiiClose": 41172.36
+    },
+    {
+      "date": "2026-05-18",
+      "marginBalanceMillion": 501619.6,
+      "marginBuyMillion": 36070.13,
+      "marginSellMillion": 26872.98,
+      "marginRepayMillion": 374.69,
+      "marginPreviousMillion": 492797.14,
+      "twiiClose": 40891.82
+    },
+    {
+      "date": "2026-05-19",
+      "marginBalanceMillion": 496887.08,
+      "marginBuyMillion": 33268.27,
+      "marginSellMillion": 37431.43,
+      "marginRepayMillion": 569.36,
+      "marginPreviousMillion": 501619.6,
+      "twiiClose": 40175.56
+    },
+    {
+      "date": "2026-05-20",
+      "marginBalanceMillion": 502079.18,
+      "marginBuyMillion": 32183.03,
+      "marginSellMillion": 26515.95,
+      "marginRepayMillion": 474.81,
+      "marginPreviousMillion": 496886.92,
+      "twiiClose": 40020.82
+    },
+    {
+      "date": "2026-05-21",
+      "marginBalanceMillion": 511154.47,
+      "marginBuyMillion": 44021.29,
+      "marginSellMillion": 34376.84,
+      "marginRepayMillion": 569.46,
+      "marginPreviousMillion": 502079.49,
+      "twiiClose": 41368.21
+    },
+    {
+      "date": "2026-05-22",
+      "marginBalanceMillion": 522289.31,
+      "marginBuyMillion": 52404.82,
+      "marginSellMillion": 40602.92,
+      "marginRepayMillion": 667.07,
+      "marginPreviousMillion": 511154.47,
+      "twiiClose": 42267.97
+    },
+    {
+      "date": "2026-05-25",
+      "marginBalanceMillion": 530476.07,
+      "marginBuyMillion": 57113.24,
+      "marginSellMillion": 48385.73,
+      "marginRepayMillion": 541.29,
+      "marginPreviousMillion": 522289.85,
+      "twiiClose": 43644.4
+    },
+    {
+      "date": "2026-05-26",
+      "marginBalanceMillion": 534592.62,
+      "marginBuyMillion": 60482.78,
+      "marginSellMillion": 55864.42,
+      "marginRepayMillion": 501.81,
+      "marginPreviousMillion": 530476.07,
+      "twiiClose": 43525.37
+    },
+    {
+      "date": "2026-05-27",
+      "marginBalanceMillion": 536269.19,
+      "marginBuyMillion": 60130.57,
+      "marginSellMillion": 58110.27,
+      "marginRepayMillion": 343.85,
+      "marginPreviousMillion": 534592.73,
+      "twiiClose": 44256.8
+    },
+    {
+      "date": "2026-05-28",
+      "marginBalanceMillion": 535029.54,
+      "marginBuyMillion": 56779.81,
+      "marginSellMillion": 57569.82,
+      "marginRepayMillion": 449.64,
+      "marginPreviousMillion": 536269.19,
+      "twiiClose": 43636.44
+    },
+    {
+      "date": "2026-05-29",
+      "marginBalanceMillion": 556359.65,
+      "marginBuyMillion": 60372.81,
+      "marginSellMillion": 38671.52,
+      "marginRepayMillion": 367.42,
+      "marginPreviousMillion": 535025.76,
+      "twiiClose": 44732.94
+    },
+    {
+      "date": "2026-06-01",
+      "marginBalanceMillion": 565779.1,
+      "marginBuyMillion": 64381.06,
+      "marginSellMillion": 54038.49,
+      "marginRepayMillion": 923.77,
+      "marginPreviousMillion": 556360.31,
+      "twiiClose": 45337.91
+    },
+    {
+      "date": "2026-06-02",
+      "marginBalanceMillion": 566970.79,
+      "marginBuyMillion": 56873.18,
+      "marginSellMillion": 55079.26,
+      "marginRepayMillion": 602.23,
+      "marginPreviousMillion": 565779.1,
+      "twiiClose": 45557.31
+    },
+    {
+      "date": "2026-06-03",
+      "marginBalanceMillion": 568395.32,
+      "marginBuyMillion": 51749.6,
+      "marginSellMillion": 49761.77,
+      "marginRepayMillion": 561.43,
+      "marginPreviousMillion": 566968.92,
+      "twiiClose": 46459.16
+    },
+    {
+      "date": "2026-06-04",
+      "marginBalanceMillion": 572635.94,
+      "marginBuyMillion": 44039.58,
+      "marginSellMillion": 39357.53,
+      "marginRepayMillion": 441.3,
+      "marginPreviousMillion": 568395.18,
+      "twiiClose": 45677.46
+    },
+    {
+      "date": "2026-06-05",
+      "marginBalanceMillion": 566649.27,
+      "marginBuyMillion": 41537.97,
+      "marginSellMillion": 47189.8,
+      "marginRepayMillion": 334.39,
+      "marginPreviousMillion": 572635.49,
+      "twiiClose": 45070.94
+    },
+    {
+      "date": "2026-06-08",
+      "marginBalanceMillion": 551012.2,
+      "marginBuyMillion": 30988.07,
+      "marginSellMillion": 45300.87,
+      "marginRepayMillion": 1323.87,
+      "marginPreviousMillion": 566648.87,
+      "twiiClose": 43502.78
+    },
+    {
+      "date": "2026-06-09",
+      "marginBalanceMillion": 563876.9,
+      "marginBuyMillion": 43318.97,
+      "marginSellMillion": 29972.29,
+      "marginRepayMillion": 481.99,
+      "marginPreviousMillion": 551012.2,
+      "twiiClose": 44704.44
+    },
+    {
+      "date": "2026-06-10",
+      "marginBalanceMillion": 546811.62,
+      "marginBuyMillion": 38210.58,
+      "marginSellMillion": 54411.06,
+      "marginRepayMillion": 864.79,
+      "marginPreviousMillion": 563876.9,
+      "twiiClose": 43225.54
+    },
+    {
+      "date": "2026-06-11",
+      "marginBalanceMillion": 549176.98,
+      "marginBuyMillion": 39907.84,
+      "marginSellMillion": 36751.05,
+      "marginRepayMillion": 792.27,
+      "marginPreviousMillion": 546812.47,
+      "twiiClose": 43149.46
+    },
+    {
+      "date": "2026-06-12",
+      "marginBalanceMillion": 557027.95,
+      "marginBuyMillion": 43665.06,
+      "marginSellMillion": 35337.45,
+      "marginRepayMillion": 476.64,
+      "marginPreviousMillion": 549176.98,
+      "twiiClose": 44169.04
+    },
+    {
+      "date": "2026-06-15",
+      "marginBalanceMillion": 571907.09,
+      "marginBuyMillion": 50157.25,
+      "marginSellMillion": 34592.66,
+      "marginRepayMillion": 685.45,
+      "marginPreviousMillion": 557027.95,
+      "twiiClose": 45396.99
+    },
+    {
+      "date": "2026-06-16",
+      "marginBalanceMillion": 571307.65,
+      "marginBuyMillion": 44470.7,
+      "marginSellMillion": 44767.57,
+      "marginRepayMillion": 300.33,
+      "marginPreviousMillion": 571904.85,
+      "twiiClose": 45809.19
+    },
+    {
+      "date": "2026-06-17",
+      "marginBalanceMillion": 583911.94,
+      "marginBuyMillion": 45406.43,
+      "marginSellMillion": 32283.39,
+      "marginRepayMillion": 518.75,
+      "marginPreviousMillion": 571307.65,
+      "twiiClose": 45877.39
+    },
+    {
+      "date": "2026-06-18",
+      "marginBalanceMillion": 593046.55,
+      "marginBuyMillion": 52359.12,
+      "marginSellMillion": 43477.74,
+      "marginRepayMillion": 594.96,
+      "marginPreviousMillion": 584760.13,
+      "twiiClose": 46465.2
+    },
+    {
+      "date": "2026-06-22",
+      "marginBalanceMillion": 605041.59,
+      "marginBuyMillion": 63876.45,
+      "marginSellMillion": 51545.63,
+      "marginRepayMillion": 335.32,
+      "marginPreviousMillion": 593046.09,
+      "twiiClose": 47741.51
+    },
+    {
+      "date": "2026-06-23",
+      "marginBalanceMillion": 593929.14,
+      "marginBuyMillion": 55168.61,
+      "marginSellMillion": 65694.79,
+      "marginRepayMillion": 586.67,
+      "marginPreviousMillion": 605041.99,
+      "twiiClose": 47100.65
+    },
+    {
+      "date": "2026-06-24",
+      "marginBalanceMillion": 607456.27,
+      "marginBuyMillion": 51217.6,
+      "marginSellMillion": 36966.78,
+      "marginRepayMillion": 724.58,
+      "marginPreviousMillion": 593930.02,
+      "twiiClose": 46043.6
+    },
+    {
+      "date": "2026-06-25",
+      "marginBalanceMillion": 611000.56,
+      "marginBuyMillion": 46105.14,
+      "marginSellMillion": 39734.48,
+      "marginRepayMillion": 2826.37,
+      "marginPreviousMillion": 607456.27,
+      "twiiClose": 46255.26
+    },
+    {
+      "date": "2026-06-26",
+      "marginBalanceMillion": 590925.88,
+      "marginBuyMillion": 42748.79,
+      "marginSellMillion": 62081.51,
+      "marginRepayMillion": 741.96,
+      "marginPreviousMillion": 611000.56,
+      "twiiClose": 44571.76
+    },
+    {
+      "date": "2026-06-29",
+      "marginBalanceMillion": 594229.69,
+      "marginBuyMillion": 28864.92,
+      "marginSellMillion": 24710.33,
+      "marginRepayMillion": 851.41,
+      "marginPreviousMillion": 590926.52,
+      "twiiClose": 44999.9
+    },
+    {
+      "date": "2026-06-30",
+      "marginBalanceMillion": 611652.21,
+      "marginBuyMillion": 49195.93,
+      "marginSellMillion": 31310.23,
+      "marginRepayMillion": 463.18,
+      "marginPreviousMillion": 594229.69,
+      "twiiClose": 46125.91
+    },
+    {
+      "date": "2026-07-01",
+      "marginBalanceMillion": 609502.41,
+      "marginBuyMillion": 47129.69,
+      "marginSellMillion": 48604.96,
+      "marginRepayMillion": 674.52,
+      "marginPreviousMillion": 611652.21,
+      "twiiClose": 47018.99
+    },
+    {
+      "date": "2026-07-02",
+      "marginBalanceMillion": 620837.29,
+      "marginBuyMillion": 41109.75,
+      "marginSellMillion": 29380.0,
+      "marginRepayMillion": 394.87,
+      "marginPreviousMillion": 609502.41,
+      "twiiClose": 46744.16
+    },
+    {
+      "date": "2026-07-03",
+      "marginBalanceMillion": 630812.48,
+      "marginBuyMillion": 39521.24,
+      "marginSellMillion": 28496.8,
+      "marginRepayMillion": 1049.24,
+      "marginPreviousMillion": 620837.29,
+      "twiiClose": 46780.62
+    },
+    {
+      "date": "2026-07-06",
+      "marginBalanceMillion": 631344.86,
+      "marginBuyMillion": 39865.71,
+      "marginSellMillion": 38560.1,
+      "marginRepayMillion": 778.13,
+      "marginPreviousMillion": 630817.37,
+      "twiiClose": 46556.39
+    },
+    {
+      "date": "2026-07-07",
+      "marginBalanceMillion": 610945.26,
+      "marginBuyMillion": 34437.83,
+      "marginSellMillion": 54289.18,
+      "marginRepayMillion": 548.25,
+      "marginPreviousMillion": 631344.86,
+      "twiiClose": 45479.11
+    },
+    {
+      "date": "2026-07-08",
+      "marginBalanceMillion": 613815.72,
+      "marginBuyMillion": 29802.25,
+      "marginSellMillion": 25689.12,
+      "marginRepayMillion": 1242.65,
+      "marginPreviousMillion": 610945.24,
+      "twiiClose": 45734.41
+    },
+    {
+      "date": "2026-07-09",
+      "marginBalanceMillion": 619648.24,
+      "marginBuyMillion": 31178.84,
+      "marginSellMillion": 24806.03,
+      "marginRepayMillion": 540.29,
+      "marginPreviousMillion": 613815.72,
+      "twiiClose": 45354.61
+    },
+    {
+      "date": "2026-07-13",
+      "marginBalanceMillion": 618299.04,
+      "marginBuyMillion": 34983.04,
+      "marginSellMillion": 35729.71,
+      "marginRepayMillion": 602.53,
+      "marginPreviousMillion": 619648.24,
+      "twiiClose": 45380.52
+    },
+    {
+      "date": "2026-07-14",
+      "marginBalanceMillion": 604034.11,
+      "marginBuyMillion": 37192.14,
+      "marginSellMillion": 49858.9,
+      "marginRepayMillion": 1599.18,
+      "marginPreviousMillion": 618300.06,
+      "twiiClose": 44737.95
+    },
+    {
+      "date": "2026-07-15",
+      "marginBalanceMillion": 615368.18,
+      "marginBuyMillion": 37420.98,
+      "marginSellMillion": 25511.08,
+      "marginRepayMillion": 575.66,
+      "marginPreviousMillion": 604033.93,
+      "twiiClose": 45631.59
+    },
+    {
+      "date": "2026-07-16",
+      "marginBalanceMillion": 615575.99,
+      "marginBuyMillion": 28459.2,
+      "marginSellMillion": 26959.27,
+      "marginRepayMillion": 1312.73,
+      "marginPreviousMillion": 615388.78,
+      "twiiClose": 45624.98
+    },
+    {
+      "date": "2026-07-17",
+      "marginBalanceMillion": 587962.51,
+      "marginBuyMillion": 29661.98,
+      "marginSellMillion": 54919.12,
+      "marginRepayMillion": 2356.34,
+      "marginPreviousMillion": 615575.99,
+      "twiiClose": 42671.27
+    },
+    {
+      "date": "2026-07-20",
+      "marginBalanceMillion": 569035.79,
+      "marginBuyMillion": 23968.6,
+      "marginSellMillion": 39695.75,
+      "marginRepayMillion": 3200.2,
+      "marginPreviousMillion": 587963.14,
+      "twiiClose": 42449.7
+    },
+    {
+      "date": "2026-07-21",
+      "marginBalanceMillion": 576496.24,
+      "marginBuyMillion": 27613.89,
+      "marginSellMillion": 19194.19,
+      "marginRepayMillion": 958.84,
+      "marginPreviousMillion": 569035.38,
+      "twiiClose": 44232.87
+    }
+  ],
+  "windows": {
+    "short": 5,
+    "medium": 20,
+    "long": 260
+  },
+  "warnings": [
+    "margin fetch skipped 233 dates"
+  ]
+}

@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20260721-04">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20260721-05">
   </head>
   <body>
     <header class="topbar">
@@ -55,6 +55,22 @@
           </div>
           <div id="marketList" class="market-list" aria-label="市場資料"></div>
         </div>
+      </section>
+
+      <section class="margin-section" aria-label="籌碼趨勢">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">Margin Balance</p>
+            <h2>融資餘額趨勢</h2>
+          </div>
+          <div class="margin-tabs" role="group" aria-label="融資餘額期間">
+            <button type="button" data-margin-window="5">5日</button>
+            <button type="button" data-margin-window="20">20日</button>
+            <button type="button" data-margin-window="260" class="active">1年</button>
+          </div>
+        </div>
+        <div id="marginChart" class="margin-chart"></div>
+        <p id="marginStatus" class="margin-status">籌碼資料載入中</p>
       </section>
 
       <section id="finder" class="workspace">
@@ -240,6 +256,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=tw-funds-20260721-04"></script>
+    <script src="app.js?v=tw-funds-20260721-05"></script>
   </body>
 </html>

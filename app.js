@@ -133,6 +133,12 @@ let marketMeta = {
   markets: [],
   benchmarks: {}
 };
+let marginMeta = {
+  source: "籌碼資料未載入",
+  updatedAt: null,
+  items: [],
+  activeWindow: 260
+};
 let monthlyNavMeta = {
   source: "月底淨值未載入",
   updatedAt: null,
@@ -196,6 +202,8 @@ const els = {
   metricReturn: document.querySelector("#metricReturn"),
   dataStatus: document.querySelector("#dataStatus"),
   marketList: document.querySelector("#marketList"),
+  marginChart: document.querySelector("#marginChart"),
+  marginStatus: document.querySelector("#marginStatus"),
   reset: document.querySelector("#resetBtn"),
   authStatus: document.querySelector("#authStatus"),
   authForm: document.querySelector("#authForm"),
@@ -2362,6 +2370,89 @@ function renderMarkets() {
     .join("");
 }
 
+function chartPath(points, getValue, width, height, padding) {
+  const values = points.map(getValue).filter((value) => Number.isFinite(value));
+  if (values.length < 2) {
+    return "";
+  }
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  return points
+    .map((point, index) => {
+      const x = padding + (index / Math.max(1, points.length - 1)) * (width - padding * 2);
+      const y = padding + (1 - (getValue(point) - min) / span) * (height - padding * 2);
+      return `${index === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+
+function marginWindowChange(items, key) {
+  if (items.length < 2) {
+    return null;
+  }
+  const first = Number(items[0][key]);
+  const last = Number(items.at(-1)[key]);
+  if (!Number.isFinite(first) || !Number.isFinite(last) || first === 0) {
+    return null;
+  }
+  return ((last / first) - 1) * 100;
+}
+
+function marginValueText(value) {
+  if (!Number.isFinite(Number(value))) {
+    return "-";
+  }
+  return `${(Number(value) / 100).toLocaleString("zh-TW", { maximumFractionDigits: 0 })} 億`;
+}
+
+function renderMarginChart() {
+  if (!els.marginChart) {
+    return;
+  }
+  const rows = (marginMeta.items || [])
+    .filter((item) => Number(item.marginBalanceMillion) > 0 && Number(item.twiiClose) > 0)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const activeWindow = Number(marginMeta.activeWindow) || 260;
+  const visibleRows = rows.slice(-activeWindow);
+  if (visibleRows.length < 2) {
+    els.marginChart.innerHTML = '<div class="market-empty">融資餘額資料不足</div>';
+    if (els.marginStatus) {
+      els.marginStatus.textContent = marginMeta.source;
+    }
+    return;
+  }
+  document.querySelectorAll("[data-margin-window]").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.marginWindow) === activeWindow);
+  });
+  const width = 680;
+  const height = 220;
+  const padding = 22;
+  const twiiPath = chartPath(visibleRows, (item) => Number(item.twiiClose), width, height, padding);
+  const marginPath = chartPath(visibleRows, (item) => Number(item.marginBalanceMillion), width, height, padding);
+  const latest = visibleRows.at(-1);
+  const marginChange = marginWindowChange(visibleRows, "marginBalanceMillion");
+  const twiiChange = marginWindowChange(visibleRows, "twiiClose");
+  const marginClass = (marginChange || 0) >= 0 ? "up" : "down";
+  const twiiClass = (twiiChange || 0) >= 0 ? "up" : "down";
+  els.marginChart.innerHTML = `
+    <svg class="margin-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="台股指數與融資餘額趨勢">
+      <path class="grid-line" d="M${padding} ${height / 2} H${width - padding}"></path>
+      <path class="margin-line twii-line" d="${twiiPath}"></path>
+      <path class="margin-line balance-line" d="${marginPath}"></path>
+    </svg>
+    <div class="margin-legend">
+      <span><i class="twii-dot"></i>台股 ${formatMarketPrice(latest.twiiClose)} <strong class="${twiiClass}">${twiiChange === null ? "" : formatPercent(twiiChange)}</strong></span>
+      <span><i class="balance-dot"></i>融資 ${marginValueText(latest.marginBalanceMillion)} <strong class="${marginClass}">${marginChange === null ? "" : formatPercent(marginChange)}</strong></span>
+    </div>
+  `;
+  if (els.marginStatus) {
+    const first = visibleRows[0];
+    const windowLabel = activeWindow === 260 ? "1年" : `${activeWindow}日`;
+    els.marginStatus.textContent = `資料 ${first.date} 到 ${latest.date}，目前選 ${windowLabel} 視窗；融資金額餘額與台股指數交疊`;
+  }
+}
+
 function marketUrl(market) {
   const fixedUrls = {
     txf: "https://tw.stock.yahoo.com/quote/WTX%26",
@@ -2587,7 +2678,40 @@ async function loadMarketData() {
   }
 }
 
+async function loadMarginData() {
+  try {
+    const response = await fetch("data/margin.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("找不到籌碼資料。");
+    }
+    const payload = await response.json();
+    marginMeta = {
+      source: payload.source || "TWSE 融資餘額",
+      updatedAt: payload.updatedAt || null,
+      items: Array.isArray(payload.items) ? payload.items : [],
+      activeWindow: marginMeta.activeWindow || 260
+    };
+  } catch (_error) {
+    marginMeta = {
+      source: "籌碼資料未載入",
+      updatedAt: null,
+      items: [],
+      activeWindow: marginMeta.activeWindow || 260
+    };
+  } finally {
+    renderMarginChart();
+  }
+}
+
+document.querySelectorAll("[data-margin-window]").forEach((button) => {
+  button.addEventListener("click", () => {
+    marginMeta.activeWindow = Number(button.dataset.marginWindow) || 260;
+    renderMarginChart();
+  });
+});
+
 initAuth();
 loadLatestData();
 loadMonthlyNavData();
 loadMarketData();
+loadMarginData();

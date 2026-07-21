@@ -88,6 +88,7 @@ function purchaseValuation(funds, item) {
 
 const fundPayload = readJson("data/funds.json");
 const marketPayload = readJson("data/markets.json");
+const marginPayload = readJson("data/margin.json");
 const navCachePayload = readJson("data/nav_cache.json");
 const monthlyNavPayload = readJson("data/monthly_nav.json");
 
@@ -209,6 +210,13 @@ for (const id of ["twii", "sp500", "nasdaq", "nikkei", "kospi"]) {
   }
 }
 
+const marginItems = Array.isArray(marginPayload?.items) ? marginPayload.items : [];
+assert(marginItems.length >= 20, `margin history too short: ${marginItems.length}`);
+assert(ageHours(marginPayload?.updatedAt) <= 96, `margin.json too old: ${marginPayload?.updatedAt}`);
+const latestMargin = marginItems.at(-1);
+assert(Number(latestMargin?.marginBalanceMillion) > 0, "latest margin balance invalid");
+assert(Number(latestMargin?.twiiClose) > 0, "latest margin TWII close invalid");
+
 const appSource = fs.readFileSync("app.js", "utf8");
 const styleSource = fs.readFileSync("styles.css", "utf8");
 const updateFundsSource = fs.readFileSync("update_funds.py", "utf8");
@@ -251,6 +259,8 @@ assert(appSource.includes("metric-strip"), "fund cards should use a single compa
 assert(appSource.includes("fundDisplayLimit"), "fund list should support increasing the visible result limit");
 assert(appSource.includes("data-load-more-funds"), "fund list should render a load-more button");
 assert(appSource.includes("fundDisplayLimit += DISPLAY_LIMIT"), "load-more button should show the next batch");
+assert(appSource.includes("renderMarginChart"), "app.js should render margin balance trend chart");
+assert(appSource.includes("data/margin.json"), "app.js should load margin history data");
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
 assert(appSource.includes("fund-info-block"), "fund nav/performance/metrics should be grouped on the left side");
 assert(appSource.includes("metric-line"), "fund metrics should be arranged in two readable lines");
@@ -263,6 +273,7 @@ assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</spa
 assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not render extra type/currency tags");
 
 const indexSource = fs.readFileSync("index.html", "utf8");
+assert(indexSource.includes("融資餘額趨勢"), "index should include margin trend section");
 assert(indexSource.includes('id="returnInput" type="range" min="-5" max="80" step="0.5" value="20"'), "minimum 3-year annualized return default should be 20");
 assert(!indexSource.includes('href="./#compare"'), "top navigation should not show compare");
 assert(!indexSource.includes('id="compare"'), "compare section should be removed");

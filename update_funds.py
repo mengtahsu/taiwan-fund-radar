@@ -63,6 +63,8 @@ MONTHLY_NAV_REFRESH_LIMIT = 20
 MONTHLY_NAV_MONTHS = 24
 WEEKLY_NAV_WEEKS = 52
 DAILY_NAV_DAYS = 90
+MARGIN_HISTORY_DAYS = 430
+MARGIN_FETCH_WORKERS = 8
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
 
@@ -193,6 +195,7 @@ MONEYDJ_DOMESTIC_RISK_URL = (
 )
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 YAHOO_TW_QUOTE_URL = "https://tw.stock.yahoo.com/quote/{symbol}"
+TWSE_MARGIN_URL = "https://www.twse.com.tw/rwd/zh/marginTrading/MI_MARGN"
 
 TXF_QUOTE_ITEM = {"id": "txf", "label": "台指期", "symbol": "WTX&", "urlSymbol": "WTX%26"}
 
@@ -617,6 +620,130 @@ def build_markets_payload() -> dict[str, Any]:
     if warnings:
         payload["warnings"] = warnings
     return payload
+
+
+def parse_twse_margin_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
+    if payload.get("stat") != "OK":
+        return None
+    date_text = str(payload.get("date") or "")
+    if len(date_text) != 8:
+        return None
+    row = None
+    for table in payload.get("tables") or []:
+        for candidate in table.get("data") or []:
+            if candidate and candidate[0] == "融資金額(仟元)":
+                row = candidate
+                break
+        if row:
+            break
+    if not row or len(row) < 6:
+        return None
+    balance_thousand = optional_number(row[5])
+    buy_thousand = optional_number(row[1])
+    sell_thousand = optional_number(row[2])
+    repay_thousand = optional_number(row[3])
+    previous_thousand = optional_number(row[4])
+    if balance_thousand is None or balance_thousand <= 0:
+        return None
+    date = datetime.strptime(date_text, "%Y%m%d")
+    return {
+        "date": date.strftime("%Y-%m-%d"),
+        "marginBalanceMillion": round(balance_thousand / 1000, 2),
+        "marginBuyMillion": round((buy_thousand or 0) / 1000, 2),
+        "marginSellMillion": round((sell_thousand or 0) / 1000, 2),
+        "marginRepayMillion": round((repay_thousand or 0) / 1000, 2),
+        "marginPreviousMillion": round((previous_thousand or 0) / 1000, 2),
+    }
+
+
+def fetch_twse_margin_total(date: datetime) -> dict[str, Any] | None:
+    query = urlencode({"date": date.strftime("%Y%m%d"), "selectType": "MS", "response": "json"})
+    request = Request(
+        f"{TWSE_MARGIN_URL}?{query}",
+        headers={
+            "User-Agent": "Mozilla/5.0 TaiwanFundRadar/1.0",
+            "Accept": "application/json,text/plain,*/*",
+            "Referer": "https://www.twse.com.tw/zh/trading/margin/mi-margn.html",
+        },
+    )
+    with urlopen(request, timeout=20) as response:
+        payload = json.loads(response.read().decode(response.headers.get_content_charset() or "utf-8", "replace"))
+    return parse_twse_margin_payload(payload)
+
+
+def twii_history_from_yahoo(days: int) -> dict[str, float]:
+    data = fetch_yahoo_chart_range("^TWII", days=days)
+    result = (data.get("chart") or {}).get("result") or []
+    if not result:
+        return {}
+    timestamps = result[0].get("timestamp") or []
+    quote = ((result[0].get("indicators") or {}).get("quote") or [{}])[0]
+    closes = quote.get("close") or []
+    prices: dict[str, float] = {}
+    for timestamp, close in zip(timestamps, closes):
+        if close is None:
+            continue
+        date = datetime.fromtimestamp(timestamp, timezone.utc).strftime("%Y-%m-%d")
+        prices[date] = round(float(close), 2)
+    return prices
+
+
+def load_margin_cache(root: Path) -> dict[str, Any]:
+    return load_json_file(root / "data/margin.json", {"source": "TWSE 信用交易統計", "updatedAt": None, "items": []})
+
+
+def build_margin_payload(root: Path, history_days: int = MARGIN_HISTORY_DAYS) -> dict[str, Any]:
+    existing = load_margin_cache(root)
+    cutoff = datetime.now() - timedelta(days=history_days)
+    items_by_date = {
+        str(item.get("date")): item
+        for item in existing.get("items", [])
+        if isinstance(item, dict) and str(item.get("date", "")) >= cutoff.strftime("%Y-%m-%d")
+    }
+    today = datetime.now()
+    candidate_dates = [
+        today - timedelta(days=offset)
+        for offset in range(history_days + 1)
+        if (today - timedelta(days=offset)).weekday() < 5
+    ]
+    missing_dates = [date for date in candidate_dates if date.strftime("%Y-%m-%d") not in items_by_date]
+    max_workers = int(os.environ.get("MARGIN_FETCH_WORKERS", MARGIN_FETCH_WORKERS))
+    errors = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, max_workers)) as executor:
+        futures = [executor.submit(fetch_twse_margin_total, date) for date in missing_dates]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                item = future.result()
+            except Exception:
+                errors += 1
+                continue
+            if item:
+                items_by_date[item["date"]] = item
+    twii_prices = twii_history_from_yahoo(history_days + 30)
+    items = []
+    for date, item in sorted(items_by_date.items()):
+        if date < cutoff.strftime("%Y-%m-%d"):
+            continue
+        next_item = dict(item)
+        if date in twii_prices:
+            next_item["twiiClose"] = twii_prices[date]
+        items.append(next_item)
+    payload = {
+        "source": "TWSE 信用交易統計與 Yahoo Taiwan index history",
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "items": items[-280:],
+        "windows": {"short": 5, "medium": 20, "long": 260},
+    }
+    if errors:
+        payload["warnings"] = [f"margin fetch skipped {errors} dates"]
+    return payload
+
+
+def update_margin_once(root: Path, output_path: str = "data/margin.json") -> None:
+    target = root / output_path
+    payload = build_margin_payload(root)
+    atomic_write_json(target, payload)
+    print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(payload['items'])} margin rows)")
 
 
 def fetch_yuanta_api(func_id: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -2261,6 +2388,8 @@ def watch(config: dict[str, Any] | None, root: Path, provider: str) -> None:
                     update_markets_once(root)
                 except Exception as exc:
                     print(f"{datetime.now().isoformat(timespec='seconds')} market update failed: {exc}", file=sys.stderr)
+            elif provider == "margin":
+                update_margin_once(root)
             else:
                 if config is None:
                     raise ValueError("config is required for JSON provider")
@@ -2275,7 +2404,7 @@ def main() -> int:
     parser.add_argument("--config", default="config/source.json", help="Path to source config JSON.")
     parser.add_argument(
         "--provider",
-        choices=["json", "yahoo-tw-etf", "yuanta-funds", "megabank-tw-funds", "fubon-bank-funds", "combined-tw-funds", "markets"],
+        choices=["json", "yahoo-tw-etf", "yuanta-funds", "megabank-tw-funds", "fubon-bank-funds", "combined-tw-funds", "markets", "margin"],
         default="json",
         help="Data provider to use.",
     )
@@ -2304,6 +2433,8 @@ def main() -> int:
             print(f"{datetime.now().isoformat(timespec='seconds')} market update failed: {exc}", file=sys.stderr)
     elif args.provider == "markets":
         update_markets_once(root)
+    elif args.provider == "margin":
+        update_margin_once(root)
     else:
         if config is None:
             raise ValueError("config is required for JSON provider")
