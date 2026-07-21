@@ -144,10 +144,13 @@ assert(Boolean(monthlyYuantaA), "monthly_nav missing ACYT161");
 if (monthlyYuantaA) {
   assert(Array.isArray(monthlyYuantaA.months) && monthlyYuantaA.months.length >= 3, "ACYT161 monthly NAV has too few months");
   assert(Array.isArray(monthlyYuantaA.weeks) && monthlyYuantaA.weeks.length >= 8, "ACYT161 weekly NAV has too few weeks");
+  assert(Array.isArray(monthlyYuantaA.days) && monthlyYuantaA.days.length >= 10, "ACYT161 daily NAV has too few days");
   const latestMonth = monthlyYuantaA.months.at(-1);
   const latestWeek = monthlyYuantaA.weeks.at(-1);
+  const latestDay = monthlyYuantaA.days.at(-1);
   assert(Number(latestMonth?.nav) > 0, "ACYT161 latest monthly NAV invalid");
   assert(Number(latestWeek?.nav) > 0, "ACYT161 latest weekly NAV invalid");
+  assert(Number(latestDay?.nav) > 0, "ACYT161 latest daily NAV invalid");
 }
 
 const valuationFixtureFund = {
@@ -211,6 +214,9 @@ assert(appSource.includes("refreshOwnedFundNavFromFunction"), "refresh flow shou
 assert(appSource.includes("applyLatestNavToPeriodData"), "instant NAV refresh should update current month/week period data");
 assert(appSource.includes("markPortfolioSnapshotsDirty();"), "instant NAV refresh should force portfolio period snapshots to recalculate");
 assert(appSource.indexOf("await loadMonthlyNavData();") < appSource.indexOf("const instantRefresh = await refreshOwnedFundNavFromFunction();"), "refresh flow should load monthly NAV history before applying instant NAV override");
+assert(appSource.includes("DAILY_PERIOD_DISPLAY_LIMIT = 10"), "daily profit should show at most 10 days");
+assert(appSource.includes("每天賺賠"), "portfolio stats should render daily profit");
+assert(appSource.includes("sortSoldByDate"), "sold purchases should be sorted by sell date");
 assert(appSource.includes("即時單檔更新尚未啟用"), "refresh flow should not silently pretend immediate NAV refresh is enabled");
 assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: false })"), "refresh flow should load purchases without intermediate render");
 assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should include Taiwan, futures, US, Japan, and Korea indexes");
@@ -240,6 +246,7 @@ assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</spa
 assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not render extra type/currency tags");
 
 const indexSource = fs.readFileSync("index.html", "utf8");
+assert(indexSource.includes('id="returnInput" type="range" min="-5" max="80" step="0.5" value="20"'), "minimum 3-year annualized return default should be 20");
 assert(!indexSource.includes('href="./#compare"'), "top navigation should not show compare");
 assert(!indexSource.includes('id="compare"'), "compare section should be removed");
 

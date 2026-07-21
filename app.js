@@ -141,6 +141,7 @@ let monthlyNavMeta = {
 
 const DISPLAY_LIMIT = 50;
 const PERIOD_DISPLAY_LIMIT = 12;
+const DAILY_PERIOD_DISPLAY_LIMIT = 10;
 const MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"];
 const MARKET_DISPLAY_LABELS = {
   twii: "台股",
@@ -169,7 +170,8 @@ let portfolioPeriodSnapshots = {
   supported: true,
   sourceUpdatedAt: null,
   months: new Map(),
-  weeks: new Map()
+  weeks: new Map(),
+  days: new Map()
 };
 let portfolioSnapshotsDirty = false;
 let portfolioSnapshotsSaving = false;
@@ -679,7 +681,8 @@ function applyLatestNavToPeriodData(item, fund) {
     fundId,
     name: fund?.name || fundId,
     months: [],
-    weeks: []
+    weeks: [],
+    days: []
   };
   const monthKey = monthKeyFromDate(navFullDate);
   const weekKey = weekKeyFromDate(navFullDate);
@@ -687,6 +690,7 @@ function applyLatestNavToPeriodData(item, fund) {
   existing.name = existing.name || fund?.name || fundId;
   existing.months = upsertPeriodNav(existing.months, "month", monthKey, navFullDate, nav);
   existing.weeks = upsertPeriodNav(existing.weeks, "week", weekKey, navFullDate, nav);
+  existing.days = upsertPeriodNav(existing.days, "day", navFullDate, navFullDate, nav);
   monthlyNavMeta.items[fundId] = existing;
   return true;
 }
@@ -711,7 +715,15 @@ function weekKeyFromDate(value) {
   return `${target.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
+function dayKeyFromDate(value) {
+  return String(value || "").slice(0, 10) || "未填日期";
+}
+
 function periodIndex(period, periodType) {
+  if (periodType === "day") {
+    const time = Date.parse(`${period}T00:00:00Z`);
+    return Number.isFinite(time) ? Math.floor(time / 86400000) : null;
+  }
   if (periodType === "week") {
     const match = String(period || "").match(/^(\d{4})-W(\d{2})$/);
     if (!match) {
@@ -729,6 +741,9 @@ function periodIndex(period, periodType) {
 function periodsAreContinuous(previousPeriod, currentPeriod, periodType) {
   if (previousPeriod === currentPeriod) {
     return true;
+  }
+  if (periodType === "day") {
+    return periodIndex(previousPeriod, "day") !== null && periodIndex(currentPeriod, "day") !== null;
   }
   const previous = periodIndex(previousPeriod, periodType);
   const current = periodIndex(currentPeriod, periodType);
@@ -748,14 +763,15 @@ function periodProfitRowsForPurchase(item, periodType) {
   const navItem = monthlyNavForPurchase(item);
   const buyDate = String(item.buy_date || "");
   const sellDate = String(item.sell_date || "");
-  const periodKey = periodType === "week" ? "week" : "month";
-  const sellPeriod = isSold ? (periodType === "week" ? weekKeyFromDate(sellDate) : monthKeyFromDate(sellDate)) : "";
-  const sourceRows = periodType === "week" ? navItem?.weeks || [] : navItem?.months || [];
+  const periodKey = periodType === "day" ? "day" : periodType === "week" ? "week" : "month";
+  const periodFromDate = periodType === "day" ? dayKeyFromDate : periodType === "week" ? weekKeyFromDate : monthKeyFromDate;
+  const sellPeriod = isSold ? periodFromDate(sellDate) : "";
+  const sourceRows = periodType === "day" ? navItem?.days || [] : periodType === "week" ? navItem?.weeks || [] : navItem?.months || [];
   const points = sourceRows
     .filter((row) => row?.date && Number(row.nav) > 0)
     .filter((row) => row.date >= buyDate && (!isSold || row.date < sellDate))
     .map((row) => ({
-      period: row[periodKey] || monthKeyFromDate(row.date),
+      period: row[periodKey] || periodFromDate(row.date),
       date: row.date,
       nav: Number(row.nav)
     }));
@@ -769,13 +785,21 @@ function periodProfitRowsForPurchase(item, periodType) {
   }
 
   let previousNav = buyNav;
-  let previousPeriod = periodType === "week" ? weekKeyFromDate(buyDate) : monthKeyFromDate(buyDate);
+  let previousPeriod = periodFromDate(buyDate);
+  let hasBaseline = periodType !== "day";
   let hasGap = false;
   const rowsByPeriod = new Map();
   points
     .sort((a, b) => String(a.date).localeCompare(String(b.date)))
     .forEach((point) => {
       const isSalePoint = isSold && point.period === sellPeriod && point.date === sellDate;
+      if (!hasBaseline && !isSalePoint && point.date > buyDate) {
+        previousNav = point.nav;
+        previousPeriod = point.period;
+        hasBaseline = true;
+        return;
+      }
+      hasBaseline = true;
       if (!periodsAreContinuous(previousPeriod, point.period, periodType)) {
         hasGap = true;
         if (!isSalePoint) {
@@ -823,6 +847,10 @@ function weeklyProfitRowsForPurchase(item) {
   return periodProfitRowsForPurchase(item, "week");
 }
 
+function dailyProfitRowsForPurchase(item) {
+  return periodProfitRowsForPurchase(item, "day");
+}
+
 function purchaseValuation(item) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
@@ -868,7 +896,8 @@ function portfolioSummary(options = {}) {
     valuedCount: 0,
     holdings: new Map(),
     months: new Map(),
-    weeks: new Map()
+    weeks: new Map(),
+    days: new Map()
   };
   purchases.forEach((item) => {
     const amount = Number(item.amount) || 0;
@@ -1095,6 +1124,38 @@ function portfolioSummary(options = {}) {
       });
       summary.weeks.set(buyWeekKey, week);
     }
+
+    const daily = dailyProfitRowsForPurchase(item);
+    daily.rows.forEach((row) => {
+      const day = summary.days.get(row.period) || {
+        key: row.period,
+        date: row.date,
+        invested: 0,
+        value: 0,
+        profit: 0,
+        valued: 0,
+        missing: 0,
+        details: []
+      };
+      if (!day.date || row.date > day.date) {
+        day.date = row.date;
+      }
+      day.invested += row.invested;
+      day.value += row.value;
+      day.profit += row.profit;
+      day.valued += row.valued;
+      day.details.push({
+        name: item.fund_name,
+        invested: row.invested,
+        value: row.value,
+        profit: row.profit,
+        startNav: row.startNav,
+        endNav: row.endNav,
+        date: row.date,
+        missing: false
+      });
+      summary.days.set(row.period, day);
+    });
   });
   return summary;
 }
@@ -1109,7 +1170,8 @@ function resetPortfolioSnapshots() {
     supported: true,
     sourceUpdatedAt: null,
     months: new Map(),
-    weeks: new Map()
+    weeks: new Map(),
+    days: new Map()
   };
 }
 
@@ -1152,7 +1214,8 @@ async function loadPortfolioPeriodSnapshots() {
       supported: true,
       sourceUpdatedAt: rows[0]?.source_updated_at || null,
       months: periodMapFromSnapshotRows(rows, "month"),
-      weeks: periodMapFromSnapshotRows(rows, "week")
+      weeks: periodMapFromSnapshotRows(rows, "week"),
+      days: periodMapFromSnapshotRows(rows, "day")
     };
   } catch (_error) {
     portfolioPeriodSnapshots = {
@@ -1160,7 +1223,8 @@ async function loadPortfolioPeriodSnapshots() {
       supported: false,
       sourceUpdatedAt: null,
       months: new Map(),
-      weeks: new Map()
+      weeks: new Map(),
+      days: new Map()
     };
   }
 }
@@ -1187,6 +1251,7 @@ function snapshotRowsFromSummary(summary) {
   };
   pushRows("month", summary.months);
   pushRows("week", summary.weeks);
+  pushRows("day", summary.days);
   return rows;
 }
 
@@ -1212,7 +1277,8 @@ async function savePortfolioPeriodSnapshots(summary) {
       supported: true,
       sourceUpdatedAt: portfolioSnapshotSource(),
       months: new Map(summary.months),
-      weeks: new Map(summary.weeks)
+      weeks: new Map(summary.weeks),
+      days: new Map(summary.days)
     };
     portfolioSnapshotsDirty = false;
   } catch (_error) {
@@ -1254,21 +1320,21 @@ function periodDetailButton(key, label, className) {
 }
 
 function periodDisplayLabel(item, periodType) {
-  if (periodType === "week") {
+  if (periodType === "week" || periodType === "day") {
     return item.date ? item.date.slice(5).replace("-", "/") : item.key;
   }
   return item.key === "未填日期" ? item.key : item.key.slice(5);
 }
 
 function periodDetailTitleLabel(item, periodType) {
-  if (periodType === "week") {
+  if (periodType === "week" || periodType === "day") {
     return item.date || item.key;
   }
   return item.key === "未填日期" ? item.key : item.key.replace("-", "/");
 }
 
 function periodHistoryYear(item, periodType) {
-  if (periodType === "week") {
+  if (periodType === "week" || periodType === "day") {
     return String(item.date || item.key || "").slice(0, 4) || "未填日期";
   }
   return String(item.key || "").slice(0, 4) || "未填日期";
@@ -1478,11 +1544,12 @@ function renderPortfolioStats() {
     portfolioPeriodSnapshots.loaded &&
     portfolioPeriodSnapshots.sourceUpdatedAt === currentSnapshotSource &&
     !portfolioSnapshotsDirty &&
-    (portfolioPeriodSnapshots.months.size > 0 || portfolioPeriodSnapshots.weeks.size > 0);
+    (portfolioPeriodSnapshots.months.size > 0 || portfolioPeriodSnapshots.weeks.size > 0 || portfolioPeriodSnapshots.days.size > 0);
   const summary = portfolioSummary({ includePeriods: !canUseSnapshots });
   if (canUseSnapshots) {
     summary.months = new Map(portfolioPeriodSnapshots.months);
     summary.weeks = new Map(portfolioPeriodSnapshots.weeks);
+    summary.days = new Map(portfolioPeriodSnapshots.days);
   } else {
     void savePortfolioPeriodSnapshots(summary);
   }
@@ -1495,8 +1562,10 @@ function renderPortfolioStats() {
     .slice(0, 3);
   const monthlyAllRows = [...summary.months.values()].sort((a, b) => b.key.localeCompare(a.key));
   const weeklyAllRows = [...summary.weeks.values()].sort((a, b) => b.key.localeCompare(a.key));
+  const dailyAllRows = [...summary.days.values()].sort((a, b) => b.key.localeCompare(a.key));
   const monthlyRows = monthlyAllRows.slice(0, PERIOD_DISPLAY_LIMIT);
   const weeklyRows = weeklyAllRows.slice(0, PERIOD_DISPLAY_LIMIT);
+  const dailyRows = dailyAllRows.slice(0, DAILY_PERIOD_DISPLAY_LIMIT);
   periodDetailStore = new Map();
   periodHistoryStore = new Map();
   if (monthlyAllRows.length > PERIOD_DISPLAY_LIMIT) {
@@ -1553,6 +1622,14 @@ function renderPortfolioStats() {
           : "<p>尚無資料</p>"
       }
       ${weeklyAllRows.length > PERIOD_DISPLAY_LIMIT ? `<button class="period-history-button" type="button" data-period-history="week">看全部每週歷史（${weeklyAllRows.length} 筆）</button>` : ""}
+    </div>
+    <div class="daily-breakdown">
+      <h4>每天賺賠</h4>
+      ${
+        dailyRows.length
+          ? dailyRows.map((item) => renderPeriodRow(item, "day")).join("")
+          : "<p>尚無資料</p>"
+      }
     </div>
   `;
   document.querySelectorAll("[data-period-detail]").forEach((button) => {
@@ -1684,6 +1761,13 @@ function renderPurchases() {
     }
     return bProfit - aProfit;
   });
+  const sortSoldByDate = (items) => [...items].sort((a, b) => {
+    const dateCompare = String(b.sell_date || "").localeCompare(String(a.sell_date || ""));
+    if (dateCompare !== 0) {
+      return dateCompare;
+    }
+    return String(b.buy_date || "").localeCompare(String(a.buy_date || ""));
+  });
   const renderPurchaseItem = (item) => {
     const valuation = purchaseValuation(item);
     const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
@@ -1715,7 +1799,7 @@ function renderPurchases() {
     `;
   };
   const activePurchases = sortByProfit(purchases.filter((item) => !item.sell_date));
-  const soldPurchases = sortByProfit(purchases.filter((item) => item.sell_date));
+  const soldPurchases = sortSoldByDate(purchases.filter((item) => item.sell_date));
   els.purchaseList.innerHTML = `
     ${activePurchases.length ? activePurchases.map(renderPurchaseItem).join("") : '<div class="empty">目前沒有持有中的基金。</div>'}
     ${
@@ -2406,7 +2490,7 @@ function resetFilters() {
   els.type.value = "non-etf";
   els.region.value = "all";
   els.risk.value = 5;
-  els.return.value = 50;
+  els.return.value = 20;
   els.beatBenchmark.checked = false;
   els.sort.value = "score";
   document.querySelector("input[name='goal'][value='growth']").checked = true;

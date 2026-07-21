@@ -62,6 +62,7 @@ RECENT_NAV_MAX_AGE_HOURS = 72
 MONTHLY_NAV_REFRESH_LIMIT = 20
 MONTHLY_NAV_MONTHS = 24
 WEEKLY_NAV_WEEKS = 52
+DAILY_NAV_DAYS = 90
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
 
@@ -481,6 +482,21 @@ def week_end_navs_from_series(series: list[tuple[datetime, float]], weeks: int) 
             "nav": round(nav, 4),
         }
         for week, (date, nav) in sorted(week_rows.items())
+    ]
+
+
+def day_navs_from_series(series: list[tuple[datetime, float]], days: int) -> list[dict[str, Any]]:
+    if not series:
+        return []
+    cutoff = datetime.now() - timedelta(days=max(1, days))
+    return [
+        {
+            "day": date.strftime("%Y-%m-%d"),
+            "date": date.strftime("%Y-%m-%d"),
+            "nav": round(nav, 4),
+        }
+        for date, nav in sorted(series, key=lambda item: item[0])
+        if date >= cutoff
     ]
 
 
@@ -1064,6 +1080,18 @@ def normalize_moneydj_domestic_fund(
     if one_year is not None:
         tags.append(f"1年 {one_year:.2f}%")
 
+    nav = optional_number(risk_row[3]) if risk_row and len(risk_row) > 3 else None
+    nav_date = return_row[0]
+    if not nav or nav <= 0:
+        try:
+            mobile_latest = fetch_moneydj_mobile_latest_nav(fund_code)
+        except Exception:
+            mobile_latest = None
+        if mobile_latest:
+            mobile_date, mobile_nav = mobile_latest
+            nav = mobile_nav
+            nav_date = nav_date_label(mobile_date)
+
     return {
         "fundId": fund_code,
         "ticker": fund_code,
@@ -1085,8 +1113,8 @@ def normalize_moneydj_domestic_fund(
         "volatility": round(volatility, 2),
         "sharpe": round(sharpe, 2),
         "aum": round(aum or 0.0, 2),
-        "nav": round(optional_number(risk_row[3]) or 0.0, 4) if risk_row and len(risk_row) > 3 else None,
-        "navDate": return_row[0],
+        "nav": round(nav or 0.0, 4),
+        "navDate": nav_date,
         "dividend": "配息" if any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型",
         "minRsp": 1000,
         "tags": tags,
@@ -1583,6 +1611,7 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
 
     months = int(os.environ.get("MONTHLY_NAV_MONTHS", MONTHLY_NAV_MONTHS))
     weeks = int(os.environ.get("WEEKLY_NAV_WEEKS", WEEKLY_NAV_WEEKS))
+    days = int(os.environ.get("DAILY_NAV_DAYS", DAILY_NAV_DAYS))
     max_workers = min(int(os.environ.get("RECENT_NAV_WORKERS", RECENT_NAV_WORKERS)), max(1, refresh_limit))
 
     def fetch_monthly(fund: dict[str, Any]) -> tuple[str, dict[str, Any] | None, str | None]:
@@ -1593,7 +1622,8 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
             series = fetch_moneydj_bcd_nav(fund_id)
             month_ends = month_end_navs_from_series(series, months)
             week_ends = week_end_navs_from_series(series, weeks)
-            if not month_ends and not week_ends:
+            day_rows = day_navs_from_series(series, days)
+            if not month_ends and not week_ends and not day_rows:
                 return fund_id, None, "empty period nav"
             return (
                 fund_id,
@@ -1603,6 +1633,7 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
                     "fetchedAt": datetime.now(timezone.utc).isoformat(),
                     "months": month_ends,
                     "weeks": week_ends,
+                    "days": day_rows,
                 },
                 None,
             )
