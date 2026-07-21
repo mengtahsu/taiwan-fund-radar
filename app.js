@@ -855,7 +855,8 @@ function purchaseValuation(item) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
   const fund = currentFundForPurchase(item);
-  const currentNav = Number(fund?.nav) || 0;
+  const isManualFund = String(item.fund_id || "").startsWith("manual:");
+  const currentNav = Number(fund?.nav) || (isManualFund ? buyNav : 0);
   const sellNav = Number(item.sell_nav) || 0;
   const sellAmount = Number(item.sell_amount) || 0;
   const isSold = Boolean(item.sell_date);

@@ -72,7 +72,8 @@ function purchaseValuation(funds, item) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
   const fund = currentFundForPurchase(funds, item);
-  const currentNav = Number(fund?.nav) || 0;
+  const isManualFund = String(item.fund_id || "").startsWith("manual:");
+  const currentNav = Number(fund?.nav) || (isManualFund ? buyNav : 0);
   const sellNav = Number(item.sell_nav) || 0;
   const sellAmount = Number(item.sell_amount) || 0;
   const isSold = Boolean(item.sell_date);
@@ -177,6 +178,16 @@ const missingFundValuation = purchaseValuation([], {
   nav: 109.94
 });
 assert(missingFundValuation.currentValue === null, "missing fund valuation must be null, not zero");
+
+const manualFundValuation = purchaseValuation([], {
+  fund_id: "manual:現金科目",
+  fund_name: "現金科目",
+  buy_date: "2026-07-21",
+  amount: 500000,
+  nav: 1
+});
+assert(manualFundValuation.currentValue === 500000, "manual fund valuation should use entered NAV as current NAV");
+assert(manualFundValuation.profit === 0, "manual fund valuation should keep profit at zero when NAV is unchanged");
 
 const ambiguousFunds = [
   { fundId: "AAA001", name: "範例高股息基金A不配息", nav: 10 },
