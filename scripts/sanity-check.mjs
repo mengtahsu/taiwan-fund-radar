@@ -208,6 +208,9 @@ assert(appSource.includes("fundDataLoaded"), "app.js missing fundDataLoaded guar
 assert(appSource.includes("基金資料尚未載入，暫不估算現值"), "app.js missing not-ready portfolio message");
 assert(appSource.includes("NAV_REFRESH_FUNCTION_URL"), "refresh flow should define a single-fund NAV refresh function endpoint");
 assert(appSource.includes("refreshOwnedFundNavFromFunction"), "refresh flow should attempt immediate owned-fund NAV refresh");
+assert(appSource.includes("applyLatestNavToPeriodData"), "instant NAV refresh should update current month/week period data");
+assert(appSource.includes("markPortfolioSnapshotsDirty();"), "instant NAV refresh should force portfolio period snapshots to recalculate");
+assert(appSource.indexOf("await loadMonthlyNavData();") < appSource.indexOf("const instantRefresh = await refreshOwnedFundNavFromFunction();"), "refresh flow should load monthly NAV history before applying instant NAV override");
 assert(appSource.includes("即時單檔更新尚未啟用"), "refresh flow should not silently pretend immediate NAV refresh is enabled");
 assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: false })"), "refresh flow should load purchases without intermediate render");
 assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should include Taiwan, futures, US, Japan, and Korea indexes");

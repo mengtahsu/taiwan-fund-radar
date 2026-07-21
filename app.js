@@ -650,6 +650,47 @@ function monthlyNavForPurchase(item) {
   return fundId ? items[fundId] || null : null;
 }
 
+function upsertPeriodNav(rows, keyName, keyValue, date, nav) {
+  const list = Array.isArray(rows) ? [...rows] : [];
+  const existingIndex = list.findIndex((row) => row?.[keyName] === keyValue);
+  const nextRow = {
+    ...(existingIndex >= 0 ? list[existingIndex] : {}),
+    [keyName]: keyValue,
+    date,
+    nav
+  };
+  if (existingIndex >= 0) {
+    list[existingIndex] = nextRow;
+  } else {
+    list.push(nextRow);
+  }
+  return list.sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+}
+
+function applyLatestNavToPeriodData(item, fund) {
+  const fundId = String(item?.fundId || "");
+  const nav = Number(item?.nav);
+  const navFullDate = String(item?.navFullDate || "");
+  if (!fundId || !Number.isFinite(nav) || nav <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(navFullDate)) {
+    return false;
+  }
+  monthlyNavMeta.items = monthlyNavMeta.items || {};
+  const existing = monthlyNavMeta.items[fundId] || {
+    fundId,
+    name: fund?.name || fundId,
+    months: [],
+    weeks: []
+  };
+  const monthKey = monthKeyFromDate(navFullDate);
+  const weekKey = weekKeyFromDate(navFullDate);
+  existing.fundId = fundId;
+  existing.name = existing.name || fund?.name || fundId;
+  existing.months = upsertPeriodNav(existing.months, "month", monthKey, navFullDate, nav);
+  existing.weeks = upsertPeriodNav(existing.weeks, "week", weekKey, navFullDate, nav);
+  monthlyNavMeta.items[fundId] = existing;
+  return true;
+}
+
 function monthKeyFromDate(value) {
   return String(value || "").slice(0, 7) || "未填日期";
 }
@@ -1821,6 +1862,7 @@ function applyLatestNavItems(items) {
   }
   const fundById = new Map(funds.map((fund) => [String(fund.fundId || ""), fund]));
   let updated = 0;
+  let periodUpdated = false;
   items.forEach((item) => {
     const fundId = String(item?.fundId || "");
     const nav = Number(item?.nav);
@@ -1835,7 +1877,11 @@ function applyLatestNavItems(items) {
     fund.nav = nav;
     fund.navDate = navDate;
     fund.navSource = item.navSource || "MoneyDJ mobile";
+    periodUpdated = applyLatestNavToPeriodData(item, fund) || periodUpdated;
   });
+  if (periodUpdated) {
+    markPortfolioSnapshotsDirty();
+  }
   return updated;
 }
 
@@ -1923,8 +1969,8 @@ async function refreshPurchaseValues() {
     const requestedCount = await requestOwnedFundNavHistory();
     const beforeSnapshot = purchaseNavSnapshot();
     await fetchLatestFundValues();
-    const instantRefresh = await refreshOwnedFundNavFromFunction();
     await loadMonthlyNavData();
+    const instantRefresh = await refreshOwnedFundNavFromFunction();
     renderPurchases();
     const changedCount = changedPurchaseNavCount(beforeSnapshot);
     const dataTime = sourceMeta.updatedAt ? formatTaiwanDateTime(sourceMeta.updatedAt) : "最新資料";

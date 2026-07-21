@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-16T12:08:05.335577+00:00",
+  "updatedAt": "2026-07-21T10:37:56.087002+00:00",
   "items": {
     "ACDD04-4102": {
       "return2w": 13.34,
@@ -9812,16 +9812,16 @@
       "fetchedAt": "2026-06-26T02:51:12.513160+00:00"
     },
     "ACDD04": {
-      "nav": 751.18,
-      "navDate": "07/16",
+      "nav": 711.46,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.361499+00:00",
-      "return2w": -12.37,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -9.51,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.035263+00:00",
+      "return2w": -9.23,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -17.63,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACNB45": {
       "nav": 78.63,
@@ -9848,15 +9848,16 @@
       "return1mEndDate": "2026-07-16"
     },
     "ACDD102": {
-      "nav": 99.7,
-      "navDate": "07/15",
-      "fetchedAt": "2026-07-15T10:40:42.770461+00:00",
-      "return2w": -7.39,
-      "return2wStartDate": "2026-07-01",
-      "return2wEndDate": "2026-07-15",
-      "return1m": -4.63,
-      "return1mStartDate": "2026-06-15",
-      "return1mEndDate": "2026-07-15"
+      "nav": 91.94,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.804962+00:00",
+      "return2w": -7.33,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -15.67,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACNB01": {
       "nav": 97.83,
@@ -9912,16 +9913,16 @@
       "return1mEndDate": "2026-07-13"
     },
     "ACFH67": {
-      "nav": 93.5,
-      "navDate": "07/15",
+      "nav": 81.32,
+      "navDate": "07/20",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.363684+00:00",
-      "return2w": -13.02,
-      "return2wStartDate": "2026-07-01",
-      "return2wEndDate": "2026-07-15",
-      "return1m": -12.23,
-      "return1mStartDate": "2026-06-15",
-      "return1mEndDate": "2026-07-15"
+      "fetchedAt": "2026-07-21T10:37:56.086647+00:00",
+      "return2w": -19.18,
+      "return2wStartDate": "2026-07-06",
+      "return2wEndDate": "2026-07-20",
+      "return1m": -26.7,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-20"
     },
     "ACKH03": {
       "nav": 440.16,
@@ -9935,27 +9936,28 @@
       "return1mEndDate": "2026-07-15"
     },
     "ACDD01": {
-      "nav": 306.2,
-      "navDate": "07/16",
+      "nav": 291.54,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.350006+00:00",
-      "return2w": -11.44,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -8.84,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:56.053658+00:00",
+      "return2w": -7.37,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -15.75,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACDD19": {
-      "nav": 417.68,
-      "navDate": "07/15",
-      "fetchedAt": "2026-07-15T10:40:42.715899+00:00",
-      "return2w": -6.3,
-      "return2wStartDate": "2026-07-01",
-      "return2wEndDate": "2026-07-15",
-      "return1m": -2.87,
-      "return1mStartDate": "2026-06-15",
-      "return1mEndDate": "2026-07-15"
+      "nav": 381.59,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.564578+00:00",
+      "return2w": -6.81,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -15.24,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACKG15": {
       "return2w": -7.27,
@@ -10019,52 +10021,52 @@
       "return1mEndDate": "2026-07-16"
     },
     "ACPS03": {
-      "nav": 611.86,
-      "navDate": "07/16",
+      "nav": 576.65,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:05.335287+00:00",
-      "return2w": -9.71,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -3.97,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.044217+00:00",
+      "return2w": -6.65,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -12.78,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACYT161": {
-      "nav": 53.41,
-      "navDate": "07/16",
+      "nav": 49.76,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.367913+00:00",
-      "return2w": 2.2,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": 8.91,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.065300+00:00",
+      "return2w": -2.39,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -0.76,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACYT162": {
-      "nav": 29.35,
-      "navDate": "07/16",
+      "nav": 27.34,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.359232+00:00",
-      "return2w": 2.23,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": 8.78,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.035243+00:00",
+      "return2w": -2.39,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -0.87,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACJS13": {
-      "nav": 375.09,
-      "navDate": "07/16",
+      "nav": 352.91,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.565424+00:00",
-      "return2w": -10.11,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -8.21,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.211904+00:00",
+      "return2w": -6.59,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -15.42,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACIC04": {
       "nav": 395.04,
@@ -10129,63 +10131,64 @@
       "return1mEndDate": "2026-07-15"
     },
     "ACES10": {
-      "nav": 173.56,
-      "navDate": "07/16",
+      "nav": 171.38,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.374319+00:00",
-      "return2w": -9.75,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -9.85,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:56.044655+00:00",
+      "return2w": -4.44,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -12.3,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACYT03": {
-      "nav": 139.33,
-      "navDate": "07/16",
+      "nav": 133.93,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.411635+00:00",
-      "return2w": -5.78,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -3.68,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.023474+00:00",
+      "return2w": -3.69,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -10.8,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACPS10": {
-      "nav": 724.39,
-      "navDate": "07/16",
+      "nav": 692.46,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.510397+00:00",
-      "return2w": -10.53,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -6.97,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.223256+00:00",
+      "return2w": -6.77,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -13.06,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACPS06": {
-      "nav": 214.47,
-      "navDate": "07/16",
+      "nav": 201.93,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.412070+00:00",
-      "return2w": -9.14,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -5.72,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:56.059326+00:00",
+      "return2w": -6.71,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -14.55,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACFH03": {
-      "nav": 469.45,
-      "navDate": "07/15",
-      "fetchedAt": "2026-07-15T10:40:42.758838+00:00",
-      "return2w": -9.92,
-      "return2wStartDate": "2026-07-01",
-      "return2wEndDate": "2026-07-15",
-      "return1m": -4.74,
-      "return1mStartDate": "2026-06-15",
-      "return1mEndDate": "2026-07-15"
+      "nav": 420.36,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.639822+00:00",
+      "return2w": -9.59,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -18.61,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACJF147": {
       "return2w": -7.83,
@@ -10227,15 +10230,16 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACYT12": {
-      "nav": 210.22,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.866308+00:00",
-      "return2w": -6.14,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -1.47,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 199.39,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.503252+00:00",
+      "return2w": -5.26,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -15.04,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACPS38": {
       "nav": 120.89,
@@ -10259,27 +10263,28 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACFH01": {
-      "nav": 131.67,
-      "navDate": "07/15",
-      "fetchedAt": "2026-07-15T10:40:42.747445+00:00",
-      "return2w": -9.24,
-      "return2wStartDate": "2026-07-01",
-      "return2wEndDate": "2026-07-15",
-      "return1m": -3.25,
-      "return1mStartDate": "2026-06-15",
-      "return1mEndDate": "2026-07-15"
+      "nav": 118.35,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.604957+00:00",
+      "return2w": -8.61,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -17.75,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACYT164": {
-      "nav": 53.88,
-      "navDate": "07/16",
+      "nav": 50.2,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.600723+00:00",
-      "return2w": 2.22,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": 8.94,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.390810+00:00",
+      "return2w": -2.37,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -0.73,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACII94": {
       "return2w": -6.73,
@@ -10302,15 +10307,16 @@
       "return1mEndDate": "2026-07-14"
     },
     "ACCS07": {
-      "nav": 213.51,
-      "navDate": "07/14",
-      "fetchedAt": "2026-07-14T10:38:16.826149+00:00",
-      "return2w": -7.21,
-      "return2wStartDate": "2026-06-30",
-      "return2wEndDate": "2026-07-14",
-      "return1m": -1.14,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-14"
+      "nav": 208.13,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.429232+00:00",
+      "return2w": -4.98,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -11.66,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACCA286": {
       "return2w": -1.82,
@@ -10331,38 +10337,40 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACFH15": {
-      "nav": 197.14,
-      "navDate": "07/15",
-      "fetchedAt": "2026-07-15T10:40:42.758831+00:00",
-      "return2w": -8.02,
-      "return2wStartDate": "2026-07-01",
-      "return2wEndDate": "2026-07-15",
-      "return1m": -1.05,
-      "return1mStartDate": "2026-06-15",
-      "return1mEndDate": "2026-07-15"
+      "nav": 179.99,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.684309+00:00",
+      "return2w": -8.08,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -14.16,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACCS02": {
-      "nav": 168.86,
-      "navDate": "07/15",
-      "fetchedAt": "2026-07-15T10:40:42.703816+00:00",
-      "return2w": -4.98,
-      "return2wStartDate": "2026-07-01",
-      "return2wEndDate": "2026-07-15",
-      "return1m": -1.22,
-      "return1mStartDate": "2026-06-15",
-      "return1mEndDate": "2026-07-15"
+      "nav": 158.85,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.495413+00:00",
+      "return2w": -5.11,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -11.8,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACYT09": {
-      "nav": 131.2,
-      "navDate": "07/16",
+      "nav": 123.72,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.767559+00:00",
-      "return2w": -6.17,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -1.08,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.374655+00:00",
+      "return2w": -5.19,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -8.55,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACGC79": {
       "return2w": -4.1,
@@ -10412,16 +10420,16 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACYT11": {
-      "nav": 193.45,
-      "navDate": "07/16",
+      "nav": 178.82,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.537709+00:00",
-      "return2w": -5.92,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -3.06,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.229528+00:00",
+      "return2w": -5.35,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -12.92,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACPS01": {
       "return2w": -5.77,
@@ -10454,16 +10462,16 @@
       "return1mEndDate": "2026-07-08"
     },
     "ACIC08": {
-      "nav": 542.68,
-      "navDate": "07/16",
+      "nav": 518.8,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.565995+00:00",
-      "return2w": -10.22,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -9.26,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.261284+00:00",
+      "return2w": -6.75,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -14.76,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACNC16": {
       "return2w": -6.23,
@@ -10561,13 +10569,16 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACCY157": {
-      "return2w": -4.63,
-      "return2wStartDate": "2026-06-25",
-      "return2wEndDate": "2026-07-09",
-      "fetchedAt": "2026-07-11T06:38:09.468061+00:00",
-      "return1m": -1.86,
-      "return1mStartDate": "2026-06-09",
-      "return1mEndDate": "2026-07-09"
+      "nav": 106.97,
+      "navDate": "07/21",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.824376+00:00",
+      "return2w": -7.65,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -14.4,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACCB01": {
       "return2w": -3.77,
@@ -10615,39 +10626,40 @@
       "return1mEndDate": "2026-07-09"
     },
     "ACYT151": {
-      "nav": 64.81,
-      "navDate": "07/16",
+      "nav": 62.99,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:05.325893+00:00",
-      "return2w": -2.08,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -0.09,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.045199+00:00",
+      "return2w": -2.27,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -3.79,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACKH19": {
-      "nav": 110.05,
-      "navDate": "07/16",
+      "nav": 103.99,
+      "navDate": "07/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.639773+00:00",
-      "return2w": -9.53,
-      "return2wStartDate": "2026-07-02",
-      "return2wEndDate": "2026-07-16",
-      "return1m": -10.35,
-      "return1mStartDate": "2026-06-16",
-      "return1mEndDate": "2026-07-16"
+      "fetchedAt": "2026-07-21T10:37:54.202893+00:00",
+      "return2w": -8.87,
+      "return2wStartDate": "2026-07-07",
+      "return2wEndDate": "2026-07-21",
+      "return1m": -17.49,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-21"
     },
     "ACUI68": {
-      "nav": 36.4568,
-      "navDate": "07/13",
-      "fetchedAt": "2026-07-14T10:38:16.938238+00:00",
-      "return2w": -2.23,
-      "return2wStartDate": "2026-06-29",
-      "return2wEndDate": "2026-07-13",
-      "return1m": 0.6,
-      "return1mStartDate": "2026-06-12",
-      "return1mEndDate": "2026-07-13"
+      "nav": 35.2686,
+      "navDate": "07/20",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.433378+00:00",
+      "return2w": -4.23,
+      "return2wStartDate": "2026-07-06",
+      "return2wEndDate": "2026-07-20",
+      "return1m": -7.03,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-20"
     },
     "ACGC63": {
       "nav": 316.18,
@@ -10675,7 +10687,7 @@
       "nav": 24.01,
       "navDate": "05/21",
       "navSource": "MoneyDJ BCD",
-      "fetchedAt": "2026-07-16T12:08:04.604255+00:00",
+      "fetchedAt": "2026-07-21T10:37:54.278141+00:00",
       "return2w": -0.87,
       "return2wStartDate": "2026-05-07",
       "return2wEndDate": "2026-05-21",
@@ -10718,7 +10730,31 @@
       "return1m": -7.16,
       "return1mStartDate": "2026-06-15",
       "return1mEndDate": "2026-07-15"
+    },
+    "ACII87": {
+      "nav": 32.26,
+      "navDate": "07/20",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.646984+00:00",
+      "return2w": -11.25,
+      "return2wStartDate": "2026-07-06",
+      "return2wEndDate": "2026-07-20",
+      "return1m": -17.56,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-20"
+    },
+    "ACII88": {
+      "nav": 32.23,
+      "navDate": "07/20",
+      "navSource": "MoneyDJ BCD",
+      "fetchedAt": "2026-07-21T10:37:54.728026+00:00",
+      "return2w": -11.26,
+      "return2wStartDate": "2026-07-06",
+      "return2wEndDate": "2026-07-20",
+      "return1m": -17.57,
+      "return1mStartDate": "2026-06-18",
+      "return1mEndDate": "2026-07-20"
     }
   },
-  "nextTopOffset": 80
+  "nextTopOffset": 90
 }
