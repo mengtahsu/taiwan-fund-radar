@@ -137,7 +137,7 @@ let marginMeta = {
   source: "籌碼資料未載入",
   updatedAt: null,
   items: [],
-  activeWindow: 260
+  activeWindow: 66
 };
 let monthlyNavMeta = {
   source: "月底淨值未載入",
@@ -2556,7 +2556,7 @@ function renderMarginChart() {
   const rows = (marginMeta.items || [])
     .filter((item) => Number(item.marginBalanceMillion) > 0 && Number(item.twiiClose) > 0)
     .sort((a, b) => String(a.date).localeCompare(String(b.date)));
-  const activeWindow = Number(marginMeta.activeWindow) || 260;
+  const activeWindow = Number(marginMeta.activeWindow) || 66;
   const visibleRows = rows.slice(-activeWindow);
   if (visibleRows.length < 2) {
     els.marginChart.innerHTML = '<div class="market-empty">融資餘額資料不足</div>';
@@ -2591,7 +2591,12 @@ function renderMarginChart() {
   `;
   if (els.marginStatus) {
     const first = visibleRows[0];
-    const windowLabel = activeWindow === 260 ? "1年" : `${activeWindow}日`;
+    const marginWindowLabels = {
+      22: "1個月",
+      66: "3個月",
+      126: "半年"
+    };
+    const windowLabel = marginWindowLabels[activeWindow] || `${activeWindow}日`;
     els.marginStatus.textContent = `資料 ${first.date} 到 ${latest.date}，目前選 ${windowLabel} 視窗；融資金額餘額與台股指數交疊`;
   }
 }
@@ -2832,14 +2837,14 @@ async function loadMarginData() {
       source: payload.source || "TWSE 融資餘額",
       updatedAt: payload.updatedAt || null,
       items: Array.isArray(payload.items) ? payload.items : [],
-      activeWindow: marginMeta.activeWindow || 260
+      activeWindow: marginMeta.activeWindow || 66
     };
   } catch (_error) {
     marginMeta = {
       source: "籌碼資料未載入",
       updatedAt: null,
       items: [],
-      activeWindow: marginMeta.activeWindow || 260
+      activeWindow: marginMeta.activeWindow || 66
     };
   } finally {
     renderMarginChart();
@@ -2848,7 +2853,7 @@ async function loadMarginData() {
 
 document.querySelectorAll("[data-margin-window]").forEach((button) => {
   button.addEventListener("click", () => {
-    marginMeta.activeWindow = Number(button.dataset.marginWindow) || 260;
+    marginMeta.activeWindow = Number(button.dataset.marginWindow) || 66;
     renderMarginChart();
   });
 });
