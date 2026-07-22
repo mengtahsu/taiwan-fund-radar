@@ -184,6 +184,7 @@ let portfolioSnapshotsSaving = false;
 let periodDetailStore = new Map();
 let periodHistoryStore = new Map();
 let fundDisplayLimit = DISPLAY_LIMIT;
+let portfolioPeriodsLoading = false;
 
 const SNAPSHOT_SELECT =
   "period_type,period_key,period_date,invested,value,profit,valued,missing,details,source_updated_at";
@@ -1372,6 +1373,13 @@ function periodHistoryYear(item, periodType) {
   return String(item.key || "").slice(0, 4) || "未填日期";
 }
 
+function periodHistoryTitle(periodType) {
+  if (periodType === "day") {
+    return "每天歷史";
+  }
+  return periodType === "month" ? "每月歷史" : "每週歷史";
+}
+
 function renderPeriodRow(item, periodType) {
   const profit = item.profit || 0;
   const percent = item.invested > 0 && item.valued > 0 ? (profit / item.invested) * 100 : null;
@@ -1433,7 +1441,7 @@ async function loadPortfolioPeriodHistory(periodType) {
     );
     const data = {
       loaded: true,
-      title: periodType === "month" ? "每月歷史" : "每週歷史",
+      title: periodHistoryTitle(periodType),
       html: periodRows.length ? renderPeriodHistoryContent(periodRows, periodType) : "<p>目前沒有可用的歷史明細。</p>",
       count: periodRows.length
     };
@@ -1442,7 +1450,7 @@ async function loadPortfolioPeriodHistory(periodType) {
   } catch (_error) {
     return {
       loaded: true,
-      title: periodType === "month" ? "每月歷史" : "每週歷史",
+      title: periodHistoryTitle(periodType),
       html: "<p>讀取歷史明細失敗，請稍後再試。</p>",
       count: 0
     };
@@ -1493,7 +1501,7 @@ function showPeriodDetailModal(key) {
 async function showPeriodHistoryModal(key) {
   let data = periodHistoryStore.get(key);
   if (!data || !data.loaded) {
-    const title = key === "month" ? "每月歷史" : "每週歷史";
+    const title = periodHistoryTitle(key);
     const modal = ensurePeriodDetailModal();
     modal.querySelector("#periodDetailTitle").textContent = title;
     modal.querySelector(".period-modal-body").innerHTML = "<p>讀取歷史明細中...</p>";
@@ -1600,35 +1608,7 @@ async function submitSellModal(event) {
   await loadPurchases();
 }
 
-function renderPortfolioStats() {
-  if (!els.portfolioStats) {
-    return;
-  }
-  if (!currentUser || !purchases.length) {
-    els.portfolioStats.innerHTML = "";
-    return;
-  }
-  const currentSnapshotSource = portfolioSnapshotSource();
-  const canUseSnapshots =
-    portfolioPeriodSnapshots.loaded &&
-    portfolioPeriodSnapshots.sourceUpdatedAt === currentSnapshotSource &&
-    !portfolioSnapshotsDirty &&
-    (portfolioPeriodSnapshots.months.size > 0 || portfolioPeriodSnapshots.weeks.size > 0 || portfolioPeriodSnapshots.days.size > 0);
-  const summary = portfolioSummary({ includePeriods: !canUseSnapshots });
-  if (canUseSnapshots) {
-    summary.months = new Map(portfolioPeriodSnapshots.months);
-    summary.weeks = new Map(portfolioPeriodSnapshots.weeks);
-    summary.days = new Map(portfolioPeriodSnapshots.days);
-  } else {
-    void savePortfolioPeriodSnapshots(summary);
-  }
-  const profit = summary.realizedProfit + summary.unrealizedProfit;
-  const profitPercent =
-    summary.valuedCostBasis > 0 && summary.valuedCount > 0 ? (profit / summary.valuedCostBasis) * 100 : null;
-  const profitClass = profit >= 0 ? "up" : "down";
-  const topHoldings = [...summary.holdings.values()]
-    .sort((a, b) => b.invested - a.invested)
-    .slice(0, 3);
+function renderPortfolioPeriodSections(summary, canUseSnapshots) {
   const monthlyAllRows = [...summary.months.values()].sort((a, b) => b.key.localeCompare(a.key));
   const weeklyAllRows = [...summary.weeks.values()].sort((a, b) => b.key.localeCompare(a.key));
   const dailyAllRows = [...summary.days.values()].sort((a, b) => b.key.localeCompare(a.key));
@@ -1641,47 +1621,33 @@ function renderPortfolioStats() {
   const weeklyHasHistory = canUseSnapshots
     ? weeklyRows.length >= PERIOD_DISPLAY_LIMIT
     : weeklyAllRows.length > PERIOD_DISPLAY_LIMIT;
+  const dailyHasHistory = canUseSnapshots
+    ? dailyRows.length >= DAILY_PERIOD_DISPLAY_LIMIT
+    : dailyAllRows.length > DAILY_PERIOD_DISPLAY_LIMIT;
   periodDetailStore = new Map();
   periodHistoryStore = new Map();
   if (monthlyHasHistory) {
     periodHistoryStore.set("month", {
       loaded: !canUseSnapshots,
-      title: "每月歷史",
+      title: periodHistoryTitle("month"),
       html: canUseSnapshots ? "" : renderPeriodHistoryContent(monthlyAllRows, "month")
     });
   }
   if (weeklyHasHistory) {
     periodHistoryStore.set("week", {
       loaded: !canUseSnapshots,
-      title: "每週歷史",
+      title: periodHistoryTitle("week"),
       html: canUseSnapshots ? "" : renderPeriodHistoryContent(weeklyAllRows, "week")
     });
   }
-  els.portfolioStats.innerHTML = `
-    <div class="portfolio-stat">
-      <span>投入金額</span>
-      <strong>${twd(summary.invested)}</strong>
-    </div>
-    <div class="portfolio-stat">
-      <span>估算現值</span>
-      <strong>${summary.valuedCount ? twd(summary.currentValue) : "-"}</strong>
-    </div>
-    <div class="portfolio-stat">
-      <span>總賺賠</span>
-      <strong class="${profitClass}">${summary.valuedCount ? `${twd(profit)} ${profitPercent === null ? "" : `(${formatPercent(profitPercent)})`}` : "-"}</strong>
-    </div>
-    <div class="portfolio-stat">
-      <span>可估算筆數</span>
-      <strong>${summary.valuedCount} / ${purchases.length}</strong>
-    </div>
-    <div class="holding-breakdown">
-      <h4>前三大投入</h4>
-      ${
-        topHoldings.length
-          ? topHoldings.map((item) => `<p>${escapeHtml(item.name)}：${twd(item.invested)}</p>`).join("")
-          : "<p>尚無資料</p>"
-      }
-    </div>
+  if (dailyHasHistory) {
+    periodHistoryStore.set("day", {
+      loaded: !canUseSnapshots,
+      title: periodHistoryTitle("day"),
+      html: canUseSnapshots ? "" : renderPeriodHistoryContent(dailyAllRows, "day")
+    });
+  }
+  return `
     <div class="monthly-breakdown">
       <h4>每月賺賠</h4>
       ${
@@ -1707,8 +1673,12 @@ function renderPortfolioStats() {
           ? dailyRows.map((item) => renderPeriodRow(item, "day")).join("")
           : "<p>尚無資料</p>"
       }
+      ${dailyHasHistory ? `<button class="period-history-button" type="button" data-period-history="day">看全部每天歷史</button>` : ""}
     </div>
   `;
+}
+
+function bindPortfolioPeriodButtons() {
   document.querySelectorAll("[data-period-detail]").forEach((button) => {
     button.addEventListener("click", () => showPeriodDetailModal(button.dataset.periodDetail));
   });
@@ -1717,6 +1687,88 @@ function renderPortfolioStats() {
       void showPeriodHistoryModal(button.dataset.periodHistory);
     });
   });
+}
+
+function renderPortfolioPeriodPlaceholder() {
+  return `
+    <div class="monthly-breakdown period-loading">
+      <h4>每月賺賠</h4>
+      <p>讀取中...</p>
+    </div>
+    <div class="weekly-breakdown period-loading">
+      <h4>每週賺賠</h4>
+      <p>讀取中...</p>
+    </div>
+    <div class="daily-breakdown period-loading">
+      <h4>每天賺賠</h4>
+      <p>讀取中...</p>
+    </div>
+  `;
+}
+
+function renderPortfolioStats(options = {}) {
+  if (!els.portfolioStats) {
+    return;
+  }
+  if (!currentUser || !purchases.length) {
+    els.portfolioStats.innerHTML = "";
+    return;
+  }
+  const includePeriods = options.includePeriods !== false;
+  const currentSnapshotSource = portfolioSnapshotSource();
+  const canUseSnapshots =
+    portfolioPeriodSnapshots.loaded &&
+    portfolioPeriodSnapshots.sourceUpdatedAt === currentSnapshotSource &&
+    !portfolioSnapshotsDirty &&
+    (portfolioPeriodSnapshots.months.size > 0 || portfolioPeriodSnapshots.weeks.size > 0 || portfolioPeriodSnapshots.days.size > 0);
+  const summary = portfolioSummary({ includePeriods: includePeriods && !canUseSnapshots });
+  if (includePeriods) {
+    if (canUseSnapshots) {
+      summary.months = new Map(portfolioPeriodSnapshots.months);
+      summary.weeks = new Map(portfolioPeriodSnapshots.weeks);
+      summary.days = new Map(portfolioPeriodSnapshots.days);
+    } else {
+      void savePortfolioPeriodSnapshots(summary);
+    }
+  }
+  const profit = summary.realizedProfit + summary.unrealizedProfit;
+  const profitPercent =
+    summary.valuedCostBasis > 0 && summary.valuedCount > 0 ? (profit / summary.valuedCostBasis) * 100 : null;
+  const profitClass = profit >= 0 ? "up" : "down";
+  const topHoldings = [...summary.holdings.values()]
+    .sort((a, b) => b.invested - a.invested)
+    .slice(0, 3);
+  const periodHtml = includePeriods ? renderPortfolioPeriodSections(summary, canUseSnapshots) : renderPortfolioPeriodPlaceholder();
+  els.portfolioStats.innerHTML = `
+    <div class="portfolio-stat">
+      <span>投入金額</span>
+      <strong>${twd(summary.invested)}</strong>
+    </div>
+    <div class="portfolio-stat">
+      <span>估算現值</span>
+      <strong>${summary.valuedCount ? twd(summary.currentValue) : "-"}</strong>
+    </div>
+    <div class="portfolio-stat">
+      <span>總賺賠</span>
+      <strong class="${profitClass}">${summary.valuedCount ? `${twd(profit)} ${profitPercent === null ? "" : `(${formatPercent(profitPercent)})`}` : "-"}</strong>
+    </div>
+    <div class="portfolio-stat">
+      <span>可估算筆數</span>
+      <strong>${summary.valuedCount} / ${purchases.length}</strong>
+    </div>
+    <div class="holding-breakdown">
+      <h4>前三大投入</h4>
+      ${
+        topHoldings.length
+          ? topHoldings.map((item) => `<p>${escapeHtml(item.name)}：${twd(item.invested)}</p>`).join("")
+          : "<p>尚無資料</p>"
+      }
+    </div>
+    ${periodHtml}
+  `;
+  if (includePeriods) {
+    bindPortfolioPeriodButtons();
+  }
 }
 
 function renderAuthState() {
@@ -1800,7 +1852,27 @@ function applyPendingPurchaseFund() {
   }
 }
 
-function renderPurchases() {
+function portfolioPeriodsReady() {
+  return Boolean(monthlyNavMeta.updatedAt) && !portfolioPeriodsLoading;
+}
+
+async function loadPortfolioPeriodsInBackground(options = {}) {
+  if (!db || !currentUser) {
+    resetPortfolioSnapshots();
+    return;
+  }
+  portfolioPeriodsLoading = true;
+  try {
+    await loadPortfolioPeriodSnapshots();
+  } finally {
+    portfolioPeriodsLoading = false;
+  }
+  if (options.render !== false) {
+    renderPurchases({ includePeriods: portfolioPeriodsReady() });
+  }
+}
+
+function renderPurchases(options = {}) {
   if (!els.purchaseList) {
     return;
   }
@@ -1825,7 +1897,8 @@ function renderPurchases() {
     els.purchaseList.innerHTML = '<div class="empty">基金資料尚未載入，暫不估算現值。</div>';
     return;
   }
-  renderPortfolioStats();
+  const includePeriods = options.includePeriods ?? portfolioPeriodsReady();
+  renderPortfolioStats({ includePeriods });
   const sortByProfit = (items) => [...items].sort((a, b) => {
     const aProfit = purchaseValuation(a).profitPercent;
     const bProfit = purchaseValuation(b).profitPercent;
@@ -1936,13 +2009,14 @@ async function loadPurchases(options = {}) {
     return;
   }
   purchases = data || [];
-  await loadPortfolioPeriodSnapshots();
+  portfolioPeriodsLoading = true;
   if (options.requestNavHistory !== false) {
     requestOwnedFundNavHistory();
   }
   if (options.render !== false) {
-    renderPurchases();
+    renderPurchases({ includePeriods: false });
   }
+  void loadPortfolioPeriodsInBackground({ render: options.render });
 }
 
 async function requestOwnedFundNavHistory() {
