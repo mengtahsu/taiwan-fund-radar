@@ -185,6 +185,9 @@ let periodDetailStore = new Map();
 let periodHistoryStore = new Map();
 let fundDisplayLimit = DISPLAY_LIMIT;
 
+const SNAPSHOT_SELECT =
+  "period_type,period_key,period_date,invested,value,profit,valued,missing,details,source_updated_at";
+
 const els = {
   query: document.querySelector("#queryInput"),
   type: document.querySelector("#typeSelect"),
@@ -1205,27 +1208,46 @@ function periodMapFromSnapshotRows(rows, periodType) {
   );
 }
 
+function recentPeriodMapFromSummaryMap(map, limit) {
+  return new Map([...map.entries()].sort((a, b) => b[0].localeCompare(a[0])).slice(0, limit));
+}
+
+async function fetchPortfolioSnapshotRows(periodType, limit) {
+  let query = db
+    .from("portfolio_period_snapshots")
+    .select(SNAPSHOT_SELECT)
+    .eq("user_id", currentUser.id)
+    .eq("period_type", periodType)
+    .order("period_key", { ascending: false });
+  if (limit) {
+    query = query.limit(limit);
+  }
+  const { data, error } = await query;
+  if (error) {
+    throw error;
+  }
+  return data || [];
+}
+
 async function loadPortfolioPeriodSnapshots() {
   if (!db || !currentUser) {
     resetPortfolioSnapshots();
     return;
   }
   try {
-    const { data, error } = await db
-      .from("portfolio_period_snapshots")
-      .select("period_type,period_key,period_date,invested,value,profit,valued,missing,details,source_updated_at")
-      .eq("user_id", currentUser.id);
-    if (error) {
-      throw error;
-    }
-    const rows = data || [];
+    const [monthRows, weekRows, dayRows] = await Promise.all([
+      fetchPortfolioSnapshotRows("month", PERIOD_DISPLAY_LIMIT),
+      fetchPortfolioSnapshotRows("week", PERIOD_DISPLAY_LIMIT),
+      fetchPortfolioSnapshotRows("day", DAILY_PERIOD_DISPLAY_LIMIT)
+    ]);
+    const rows = [...monthRows, ...weekRows, ...dayRows];
     portfolioPeriodSnapshots = {
       loaded: true,
       supported: true,
       sourceUpdatedAt: rows[0]?.source_updated_at || null,
-      months: periodMapFromSnapshotRows(rows, "month"),
-      weeks: periodMapFromSnapshotRows(rows, "week"),
-      days: periodMapFromSnapshotRows(rows, "day")
+      months: periodMapFromSnapshotRows(monthRows, "month"),
+      weeks: periodMapFromSnapshotRows(weekRows, "week"),
+      days: periodMapFromSnapshotRows(dayRows, "day")
     };
   } catch (_error) {
     portfolioPeriodSnapshots = {
@@ -1286,9 +1308,9 @@ async function savePortfolioPeriodSnapshots(summary) {
       loaded: true,
       supported: true,
       sourceUpdatedAt: portfolioSnapshotSource(),
-      months: new Map(summary.months),
-      weeks: new Map(summary.weeks),
-      days: new Map(summary.days)
+      months: recentPeriodMapFromSummaryMap(summary.months, PERIOD_DISPLAY_LIMIT),
+      weeks: recentPeriodMapFromSummaryMap(summary.weeks, PERIOD_DISPLAY_LIMIT),
+      days: recentPeriodMapFromSummaryMap(summary.days, DAILY_PERIOD_DISPLAY_LIMIT)
     };
     portfolioSnapshotsDirty = false;
   } catch (_error) {
@@ -1398,6 +1420,35 @@ function renderPeriodHistoryContent(rows, periodType) {
     .join("");
 }
 
+async function loadPortfolioPeriodHistory(periodType) {
+  if (!db || !currentUser) {
+    return null;
+  }
+  try {
+    const sourceUpdatedAt = portfolioSnapshotSource();
+    const rows = await fetchPortfolioSnapshotRows(periodType);
+    const currentRows = rows.filter((row) => row.source_updated_at === sourceUpdatedAt);
+    const periodRows = [...periodMapFromSnapshotRows(currentRows, periodType).values()].sort((a, b) =>
+      b.key.localeCompare(a.key)
+    );
+    const data = {
+      loaded: true,
+      title: periodType === "month" ? "每月歷史" : "每週歷史",
+      html: periodRows.length ? renderPeriodHistoryContent(periodRows, periodType) : "<p>目前沒有可用的歷史明細。</p>",
+      count: periodRows.length
+    };
+    periodHistoryStore.set(periodType, data);
+    return data;
+  } catch (_error) {
+    return {
+      loaded: true,
+      title: periodType === "month" ? "每月歷史" : "每週歷史",
+      html: "<p>讀取歷史明細失敗，請稍後再試。</p>",
+      count: 0
+    };
+  }
+}
+
 function ensurePeriodDetailModal() {
   let modal = document.querySelector("#periodDetailModal");
   if (modal) {
@@ -1439,8 +1490,16 @@ function showPeriodDetailModal(key) {
   modal.hidden = false;
 }
 
-function showPeriodHistoryModal(key) {
-  const data = periodHistoryStore.get(key);
+async function showPeriodHistoryModal(key) {
+  let data = periodHistoryStore.get(key);
+  if (!data || !data.loaded) {
+    const title = key === "month" ? "每月歷史" : "每週歷史";
+    const modal = ensurePeriodDetailModal();
+    modal.querySelector("#periodDetailTitle").textContent = title;
+    modal.querySelector(".period-modal-body").innerHTML = "<p>讀取歷史明細中...</p>";
+    modal.hidden = false;
+    data = await loadPortfolioPeriodHistory(key);
+  }
   if (!data) {
     return;
   }
@@ -1576,18 +1635,26 @@ function renderPortfolioStats() {
   const monthlyRows = monthlyAllRows.slice(0, PERIOD_DISPLAY_LIMIT);
   const weeklyRows = weeklyAllRows.slice(0, PERIOD_DISPLAY_LIMIT);
   const dailyRows = dailyAllRows.slice(0, DAILY_PERIOD_DISPLAY_LIMIT);
+  const monthlyHasHistory = canUseSnapshots
+    ? monthlyRows.length >= PERIOD_DISPLAY_LIMIT
+    : monthlyAllRows.length > PERIOD_DISPLAY_LIMIT;
+  const weeklyHasHistory = canUseSnapshots
+    ? weeklyRows.length >= PERIOD_DISPLAY_LIMIT
+    : weeklyAllRows.length > PERIOD_DISPLAY_LIMIT;
   periodDetailStore = new Map();
   periodHistoryStore = new Map();
-  if (monthlyAllRows.length > PERIOD_DISPLAY_LIMIT) {
+  if (monthlyHasHistory) {
     periodHistoryStore.set("month", {
+      loaded: !canUseSnapshots,
       title: "每月歷史",
-      html: renderPeriodHistoryContent(monthlyAllRows, "month")
+      html: canUseSnapshots ? "" : renderPeriodHistoryContent(monthlyAllRows, "month")
     });
   }
-  if (weeklyAllRows.length > PERIOD_DISPLAY_LIMIT) {
+  if (weeklyHasHistory) {
     periodHistoryStore.set("week", {
+      loaded: !canUseSnapshots,
       title: "每週歷史",
-      html: renderPeriodHistoryContent(weeklyAllRows, "week")
+      html: canUseSnapshots ? "" : renderPeriodHistoryContent(weeklyAllRows, "week")
     });
   }
   els.portfolioStats.innerHTML = `
@@ -1622,7 +1689,7 @@ function renderPortfolioStats() {
           ? monthlyRows.map((item) => renderPeriodRow(item, "month")).join("")
           : "<p>尚無資料</p>"
       }
-      ${monthlyAllRows.length > PERIOD_DISPLAY_LIMIT ? `<button class="period-history-button" type="button" data-period-history="month">看全部每月歷史（${monthlyAllRows.length} 筆）</button>` : ""}
+      ${monthlyHasHistory ? `<button class="period-history-button" type="button" data-period-history="month">看全部每月歷史</button>` : ""}
     </div>
     <div class="weekly-breakdown">
       <h4>每週賺賠</h4>
@@ -1631,7 +1698,7 @@ function renderPortfolioStats() {
           ? weeklyRows.map((item) => renderPeriodRow(item, "week")).join("")
           : "<p>尚無資料</p>"
       }
-      ${weeklyAllRows.length > PERIOD_DISPLAY_LIMIT ? `<button class="period-history-button" type="button" data-period-history="week">看全部每週歷史（${weeklyAllRows.length} 筆）</button>` : ""}
+      ${weeklyHasHistory ? `<button class="period-history-button" type="button" data-period-history="week">看全部每週歷史</button>` : ""}
     </div>
     <div class="daily-breakdown">
       <h4>每天賺賠</h4>
@@ -1646,7 +1713,9 @@ function renderPortfolioStats() {
     button.addEventListener("click", () => showPeriodDetailModal(button.dataset.periodDetail));
   });
   document.querySelectorAll("[data-period-history]").forEach((button) => {
-    button.addEventListener("click", () => showPeriodHistoryModal(button.dataset.periodHistory));
+    button.addEventListener("click", () => {
+      void showPeriodHistoryModal(button.dataset.periodHistory);
+    });
   });
 }
 
