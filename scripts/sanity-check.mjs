@@ -100,6 +100,53 @@ function ageHours(value) {
   return (Date.now() - time) / 36e5;
 }
 
+function clamp(value, minimum, maximum) {
+  return Math.min(Math.max(value, minimum), maximum);
+}
+
+function numeric(value) {
+  return Number.isFinite(Number(value)) ? Number(value) : 0;
+}
+
+function parseShortNavDate(value, sourceValue) {
+  const match = String(value || "").match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (!match) {
+    return null;
+  }
+  const sourceDate = new Date(sourceValue || Date.now());
+  const date = new Date(sourceDate.getFullYear(), Number(match[1]) - 1, Number(match[2]));
+  if (date.getTime() - sourceDate.getTime() > 31 * 86400000) {
+    date.setFullYear(date.getFullYear() - 1);
+  }
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function navAgeDays(fund, sourceValue) {
+  const navDate = parseShortNavDate(fund.navDate, sourceValue);
+  const sourceDate = new Date(sourceValue || Date.now());
+  if (!navDate || Number.isNaN(sourceDate.getTime())) {
+    return Infinity;
+  }
+  return Math.floor((sourceDate - navDate) / 86400000);
+}
+
+function growthScoreForFund(fund, benchmark) {
+  const return3mScore = clamp(numeric(fund.return3m) / 60, 0, 1);
+  const excess2wScore =
+    fund.return2w === undefined || benchmark.return2w === undefined
+      ? 0
+      : clamp((numeric(fund.return2w) - numeric(benchmark.return2w) + 10) / 25, 0, 1);
+  const excess1mScore =
+    fund.return1m === undefined || benchmark.return1m === undefined
+      ? 0
+      : clamp((numeric(fund.return1m) - numeric(benchmark.return1m) + 12) / 30, 0, 1);
+  const momentumScore = return3mScore * 0.45 + excess2wScore * 0.3 + excess1mScore * 0.25;
+  const returnScore = clamp(numeric(fund.return3y) / 80, 0, 1);
+  const sharpeScore = clamp(numeric(fund.sharpe) / 2, 0, 1);
+  const riskFit = 1 - Math.max(0, numeric(fund.risk) - 5) / 4;
+  return Math.round((returnScore * 0.25 + momentumScore * 0.45 + sharpeScore * 0.2 + riskFit * 0.1) * 100);
+}
+
 const funds = Array.isArray(fundPayload?.funds) ? fundPayload.funds : [];
 assert(funds.length >= 1000, `data/funds.json fund count too small: ${funds.length}`);
 assert(Boolean(fundPayload?.updatedAt), "data/funds.json missing updatedAt");
@@ -110,6 +157,22 @@ assert(invalidNavFunds.length === 0, `funds with invalid NAV: ${invalidNavFunds.
 
 const missingNavDateFunds = funds.filter((fund) => Number(fund.nav) > 0 && !fund.navDate);
 assert(missingNavDateFunds.length === 0, `funds with NAV but no navDate: ${missingNavDateFunds.slice(0, 5).map((fund) => fund.fundId || fund.name).join(", ")}`);
+
+const twiiBenchmark = (Array.isArray(marketPayload?.markets) ? marketPayload.markets : []).find((market) => market.id === "twii") || {};
+const topScreenedFunds = funds
+  .map((fund) => ({
+    ...fund,
+    computedScore: growthScoreForFund(fund, twiiBenchmark),
+    navAge: navAgeDays(fund, fundPayload?.updatedAt)
+  }))
+  .filter((fund) => String(fund.type || "") !== "ETF" && numeric(fund.risk) <= 5 && numeric(fund.return3y) >= 20 && fund.navAge <= 14)
+  .sort((a, b) => b.computedScore - a.computedScore)
+  .slice(0, 50);
+const missingRecentTopFunds = topScreenedFunds.filter((fund) => fund.return2w === undefined || fund.return1m === undefined);
+assert(
+  missingRecentTopFunds.length <= 10,
+  `too many top screened funds missing recent returns: ${missingRecentTopFunds.length}/50`
+);
 
 const yuantaA = funds.find((fund) => fund.fundId === "ACYT161");
 const yuantaB = funds.find((fund) => fund.fundId === "ACYT162");

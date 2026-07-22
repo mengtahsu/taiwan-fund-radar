@@ -148,6 +148,7 @@ let monthlyNavMeta = {
 const DISPLAY_LIMIT = 50;
 const PERIOD_DISPLAY_LIMIT = 12;
 const DAILY_PERIOD_DISPLAY_LIMIT = 10;
+const MAX_FUND_NAV_AGE_DAYS = 14;
 const MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"];
 const MARKET_DISPLAY_LABELS = {
   twii: "台股",
@@ -273,12 +274,43 @@ function excessReturn1m(fund) {
   return excessReturn(fund, "return1m");
 }
 
+function sourceDateForNavAge() {
+  const date = new Date(sourceMeta.updatedAt || Date.now());
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function parseShortNavDate(value) {
+  const match = String(value || "").match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (!match) {
+    return null;
+  }
+  const sourceDate = sourceDateForNavAge();
+  const year = sourceDate.getFullYear();
+  const date = new Date(year, Number(match[1]) - 1, Number(match[2]));
+  if (date.getTime() - sourceDate.getTime() > 31 * 86400000) {
+    date.setFullYear(year - 1);
+  }
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function navAgeDays(fund) {
+  const date = parseShortNavDate(fund.navDate);
+  if (!date) {
+    return Infinity;
+  }
+  return Math.floor((sourceDateForNavAge() - date) / 86400000);
+}
+
+function hasFreshNav(fund) {
+  return navAgeDays(fund) <= MAX_FUND_NAV_AGE_DAYS;
+}
+
 function recentMomentumScore(fund) {
   const return3mScore = clamp((fund.return3m ?? 0) / 60, 0, 1);
   const excess2w = excessReturn2w(fund);
   const excess1m = excessReturn1m(fund);
-  const excess2wScore = excess2w === null ? 0.45 : clamp((excess2w + 10) / 25, 0, 1);
-  const excess1mScore = excess1m === null ? 0.45 : clamp((excess1m + 12) / 30, 0, 1);
+  const excess2wScore = excess2w === null ? 0 : clamp((excess2w + 10) / 25, 0, 1);
+  const excess1mScore = excess1m === null ? 0 : clamp((excess1m + 12) / 30, 0, 1);
   return return3mScore * 0.45 + excess2wScore * 0.3 + excess1mScore * 0.25;
 }
 
@@ -317,9 +349,9 @@ function scoreFund(fund) {
 
 function scoreTitle() {
   return {
-    growth: "自訂綜合分數：三年年化 25%、近期動能 45%、Sharpe 20%、風險符合度 10%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股",
-    income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股",
-    stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股"
+    growth: "自訂綜合分數：三年年化 25%、近期動能 45%、Sharpe 20%、風險符合度 10%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股，缺近期資料不加分",
+    income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股，缺近期資料不加分",
+    stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月報酬、近 1 月與近 2 週相對台股，缺近期資料不加分"
   }[goal()];
 }
 
@@ -351,6 +383,7 @@ function filteredFunds() {
         (typeValue === "non-etf" ? fund.type !== "ETF" : typeValue === "fubon-buyable" ? Boolean(fund.fubonBuyUrl) : fund.type === typeValue);
       return (
         (!q || haystack.includes(q)) &&
+        hasFreshNav(fund) &&
         typeMatched &&
         (els.region.value === "all" || fund.region === els.region.value) &&
         fund.risk <= maxRisk &&
