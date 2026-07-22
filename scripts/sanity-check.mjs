@@ -295,6 +295,8 @@ assert(appSource.includes("基金資料尚未載入，暫不估算現值"), "app
 assert(appSource.includes("NAV_REFRESH_FUNCTION_URL"), "refresh flow should define a single-fund NAV refresh function endpoint");
 assert(appSource.includes("refreshOwnedFundNavFromFunction"), "refresh flow should attempt immediate owned-fund NAV refresh");
 assert(appSource.includes("applyLatestNavToPeriodData"), "instant NAV refresh should update current month/week period data");
+assert(appSource.includes("LOCAL_NAV_OVERRIDES_KEY"), "instant NAV refresh should persist local NAV overrides");
+assert(appSource.includes("applyLocalNavOverridesToFunds"), "fund load should reapply persisted NAV overrides");
 assert(appSource.includes("markPortfolioSnapshotsDirty();"), "instant NAV refresh should force portfolio period snapshots to recalculate");
 assert(appSource.indexOf("await loadMonthlyNavData();") < appSource.indexOf("const instantRefresh = await refreshOwnedFundNavFromFunction();"), "refresh flow should load monthly NAV history before applying instant NAV override");
 assert(appSource.includes("DAILY_PERIOD_DISPLAY_LIMIT = 10"), "daily profit should show at most 10 days");

@@ -163,6 +163,8 @@ const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK";
 const NAV_REFRESH_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/refresh-nav`;
 const SITE_URL = "https://mengtahsu.github.io/taiwan-fund-radar/";
+const LOCAL_NAV_OVERRIDES_KEY = "taiwanFundRadar.latestNavOverrides.v1";
+const LOCAL_NAV_OVERRIDE_MAX_AGE_DAYS = 7;
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const isPortfolioView = new URLSearchParams(window.location.search).get("view") === "portfolio";
 
@@ -293,6 +295,67 @@ function parseShortNavDate(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function navDateComparableValue(value) {
+  const fullDate = String(value || "");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(fullDate)) {
+    return new Date(`${fullDate}T00:00:00`).getTime();
+  }
+  const shortDate = parseShortNavDate(fullDate);
+  return shortDate ? shortDate.getTime() : null;
+}
+
+function isOverrideFresh(record) {
+  const fetchedAt = new Date(record?.fetchedAt || 0);
+  if (Number.isNaN(fetchedAt.getTime())) {
+    return false;
+  }
+  return Date.now() - fetchedAt.getTime() <= LOCAL_NAV_OVERRIDE_MAX_AGE_DAYS * 86400000;
+}
+
+function loadLocalNavOverrides() {
+  try {
+    const payload = JSON.parse(window.localStorage.getItem(LOCAL_NAV_OVERRIDES_KEY) || "{}");
+    return payload && typeof payload === "object" ? payload : {};
+  } catch (_error) {
+    return {};
+  }
+}
+
+function saveLocalNavOverrides(records) {
+  try {
+    const freshRecords = Object.fromEntries(
+      Object.entries(records || {}).filter(([, record]) => isOverrideFresh(record))
+    );
+    window.localStorage.setItem(LOCAL_NAV_OVERRIDES_KEY, JSON.stringify(freshRecords));
+  } catch (_error) {
+    // Local persistence is an optimization; the page should keep working without it.
+  }
+}
+
+function persistLatestNavItems(items) {
+  if (!Array.isArray(items) || !items.length) {
+    return;
+  }
+  const records = loadLocalNavOverrides();
+  items.forEach((item) => {
+    const fundId = String(item?.fundId || "");
+    const nav = Number(item?.nav);
+    const navDate = String(item?.navDate || "");
+    if (!fundId || !Number.isFinite(nav) || nav <= 0 || !navDate) {
+      return;
+    }
+    records[fundId] = {
+      fundId,
+      nav,
+      navDate,
+      navFullDate: item.navFullDate || "",
+      navSource: item.navSource || "MoneyDJ mobile",
+      fetchedAt: new Date().toISOString()
+    };
+  });
+  saveLocalNavOverrides(records);
+}
+
 function navAgeDays(fund) {
   const date = parseShortNavDate(fund.navDate);
   if (!date) {
@@ -303,6 +366,41 @@ function navAgeDays(fund) {
 
 function hasFreshNav(fund) {
   return navAgeDays(fund) <= MAX_FUND_NAV_AGE_DAYS;
+}
+
+function shouldApplyNavOverride(fund, record) {
+  if (!isOverrideFresh(record)) {
+    return false;
+  }
+  const recordDate = navDateComparableValue(record.navFullDate || record.navDate);
+  const fundDate = navDateComparableValue(fund.navDate);
+  if (recordDate === null) {
+    return false;
+  }
+  return fundDate === null || recordDate >= fundDate;
+}
+
+function applyLocalNavOverridesToFunds() {
+  const records = loadLocalNavOverrides();
+  const fundById = new Map(funds.map((fund) => [String(fund.fundId || ""), fund]));
+  let applied = 0;
+  Object.entries(records).forEach(([fundId, record]) => {
+    const fund = fundById.get(fundId);
+    const nav = Number(record?.nav);
+    if (!fund || !Number.isFinite(nav) || nav <= 0 || !record?.navDate || !shouldApplyNavOverride(fund, record)) {
+      return;
+    }
+    fund.nav = nav;
+    fund.navDate = String(record.navDate);
+    fund.navSource = record.navSource || "MoneyDJ mobile";
+    applyLatestNavToPeriodData(record, fund);
+    applied += 1;
+  });
+  saveLocalNavOverrides(records);
+  if (applied > 0) {
+    markPortfolioSnapshotsDirty();
+  }
+  return applied;
 }
 
 function recentMomentumScore(fund) {
@@ -2121,8 +2219,9 @@ async function fetchLatestFundValues() {
   if (!parsed.funds.every(validateFund)) {
     throw new Error("更新資料格式不符合欄位需求。");
   }
-  funds = parsed.funds;
   sourceMeta = parsed.meta;
+  funds = parsed.funds;
+  applyLocalNavOverridesToFunds();
   fundDataLoaded = true;
 }
 
@@ -2130,6 +2229,7 @@ function applyLatestNavItems(items) {
   if (!Array.isArray(items) || !items.length) {
     return 0;
   }
+  persistLatestNavItems(items);
   const fundById = new Map(funds.map((fund) => [String(fund.fundId || ""), fund]));
   let updated = 0;
   let periodUpdated = false;
@@ -2214,6 +2314,9 @@ async function loadMonthlyNavData() {
       items: {}
     };
   } finally {
+    if (fundDataLoaded) {
+      applyLocalNavOverridesToFunds();
+    }
     renderPurchases();
   }
 }
