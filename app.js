@@ -2649,18 +2649,27 @@ function renderMarkets() {
     .join("");
 }
 
-function chartPath(points, getValue, width, height, padding) {
-  const values = points.map(getValue).filter((value) => Number.isFinite(value));
+function relativeChangeSeries(points, getValue) {
+  const first = Number(getValue(points[0]));
+  if (!Number.isFinite(first) || first === 0) {
+    return [];
+  }
+  return points.map((point) => ((Number(getValue(point)) / first) - 1) * 100);
+}
+
+function chartY(value, height, padding, minimum, maximum) {
+  const span = maximum - minimum || 1;
+  return padding + (1 - (value - minimum) / span) * (height - padding * 2);
+}
+
+function chartPath(values, width, height, padding, minimum, maximum) {
   if (values.length < 2) {
     return "";
   }
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-  return points
-    .map((point, index) => {
-      const x = padding + (index / Math.max(1, points.length - 1)) * (width - padding * 2);
-      const y = padding + (1 - (getValue(point) - min) / span) * (height - padding * 2);
+  return values
+    .map((value, index) => {
+      const x = padding + (index / Math.max(1, values.length - 1)) * (width - padding * 2);
+      const y = chartY(value, height, padding, minimum, maximum);
       return `${index === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
     })
     .join(" ");
@@ -2707,8 +2716,18 @@ function renderMarginChart() {
   const width = 680;
   const height = 220;
   const padding = 22;
-  const twiiPath = chartPath(visibleRows, (item) => Number(item.twiiClose), width, height, padding);
-  const marginPath = chartPath(visibleRows, (item) => Number(item.marginBalanceMillion), width, height, padding);
+  const twiiSeries = relativeChangeSeries(visibleRows, (item) => item.twiiClose);
+  const marginSeries = relativeChangeSeries(visibleRows, (item) => item.marginBalanceMillion);
+  const combinedSeries = [...twiiSeries, ...marginSeries, 0];
+  const seriesMinimum = Math.min(...combinedSeries);
+  const seriesMaximum = Math.max(...combinedSeries);
+  const seriesSpan = seriesMaximum - seriesMinimum || 1;
+  const domainPadding = Math.max(seriesSpan * 0.08, 1);
+  const chartMinimum = seriesMinimum - domainPadding;
+  const chartMaximum = seriesMaximum + domainPadding;
+  const zeroY = chartY(0, height, padding, chartMinimum, chartMaximum);
+  const twiiPath = chartPath(twiiSeries, width, height, padding, chartMinimum, chartMaximum);
+  const marginPath = chartPath(marginSeries, width, height, padding, chartMinimum, chartMaximum);
   const latest = visibleRows.at(-1);
   const marginChange = marginWindowChange(visibleRows, "marginBalanceMillion");
   const twiiChange = marginWindowChange(visibleRows, "twiiClose");
@@ -2716,7 +2735,7 @@ function renderMarginChart() {
   const twiiClass = (twiiChange || 0) >= 0 ? "up" : "down";
   els.marginChart.innerHTML = `
     <svg class="margin-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="台股指數與融資餘額趨勢">
-      <path class="grid-line" d="M${padding} ${height / 2} H${width - padding}"></path>
+      <path class="grid-line" d="M${padding} ${zeroY.toFixed(1)} H${width - padding}"></path>
       <path class="margin-line twii-line" d="${twiiPath}"></path>
       <path class="margin-line balance-line" d="${marginPath}"></path>
     </svg>
@@ -2733,7 +2752,7 @@ function renderMarginChart() {
       126: "半年"
     };
     const windowLabel = marginWindowLabels[activeWindow] || `${activeWindow}日`;
-    els.marginStatus.textContent = `資料 ${first.date} 到 ${latest.date}，目前選 ${windowLabel} 視窗；融資金額餘額與台股指數交疊`;
+    els.marginStatus.textContent = `資料 ${first.date} 到 ${latest.date}，${windowLabel}視窗；兩者皆以起點 0% 比較`;
   }
 }
 
