@@ -328,7 +328,10 @@ assert(appSource.includes("renderMarginChart"), "app.js should render margin bal
 assert(appSource.includes("data/margin.json"), "app.js should load margin history data");
 assert(appSource.includes("relativeChangeSeries"), "margin chart should compare both series from the same 0% baseline");
 assert(appSource.includes("combinedSeries"), "margin chart should use one shared percentage scale");
-assert(appSource.includes("兩者皆以起點 0% 比較"), "margin chart should explain its shared percentage baseline");
+assert(appSource.includes("marginToTwiiRatio"), "margin chart should calculate margin balance relative to TWII");
+assert(appSource.includes("ratioSeries"), "margin chart should plot margin-to-TWII strength");
+assert(appSource.includes("融資／台股＝融資餘額÷台股指數"), "margin chart should explain the margin-to-TWII ratio");
+assert(appSource.includes("三者皆以起點 0% 比較"), "margin chart should explain its shared percentage baseline");
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
 assert(appSource.includes("fund-info-block"), "fund nav/performance/metrics should be grouped on the left side");
 assert(appSource.includes("metric-line"), "fund metrics should be arranged in two readable lines");

@@ -234,6 +234,12 @@ body.portfolio-view .margin-section {
   stroke: var(--gold);
 }
 
+.ratio-line {
+  stroke: #4776a8;
+  stroke-width: 3.5;
+  stroke-dasharray: 10 7;
+}
+
 .margin-legend {
   display: grid;
   gap: 6px;
@@ -261,6 +267,10 @@ body.portfolio-view .margin-section {
 
 .balance-dot {
   background: var(--gold);
+}
+
+.ratio-dot {
+  background: #4776a8;
 }
 
 .margin-legend strong.up {

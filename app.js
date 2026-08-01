@@ -2694,6 +2694,23 @@ function marginValueText(value) {
   return `${(Number(value) / 100).toLocaleString("zh-TW", { maximumFractionDigits: 0 })} 億`;
 }
 
+function marginToTwiiRatio(item) {
+  const marginBalanceMillion = Number(item?.marginBalanceMillion);
+  const twiiClose = Number(item?.twiiClose);
+  if (!Number.isFinite(marginBalanceMillion) || !Number.isFinite(twiiClose) || twiiClose <= 0) {
+    return null;
+  }
+  return (marginBalanceMillion / 100) / twiiClose;
+}
+
+function marginRatioText(item) {
+  const ratio = marginToTwiiRatio(item);
+  if (!Number.isFinite(ratio)) {
+    return "-";
+  }
+  return `${ratio.toLocaleString("zh-TW", { minimumFractionDigits: 3, maximumFractionDigits: 3 })} 億/點`;
+}
+
 function renderMarginChart() {
   if (!els.marginChart) {
     return;
@@ -2718,7 +2735,8 @@ function renderMarginChart() {
   const padding = 22;
   const twiiSeries = relativeChangeSeries(visibleRows, (item) => item.twiiClose);
   const marginSeries = relativeChangeSeries(visibleRows, (item) => item.marginBalanceMillion);
-  const combinedSeries = [...twiiSeries, ...marginSeries, 0];
+  const ratioSeries = relativeChangeSeries(visibleRows, marginToTwiiRatio);
+  const combinedSeries = [...twiiSeries, ...marginSeries, ...ratioSeries, 0];
   const seriesMinimum = Math.min(...combinedSeries);
   const seriesMaximum = Math.max(...combinedSeries);
   const seriesSpan = seriesMaximum - seriesMinimum || 1;
@@ -2728,20 +2746,25 @@ function renderMarginChart() {
   const zeroY = chartY(0, height, padding, chartMinimum, chartMaximum);
   const twiiPath = chartPath(twiiSeries, width, height, padding, chartMinimum, chartMaximum);
   const marginPath = chartPath(marginSeries, width, height, padding, chartMinimum, chartMaximum);
+  const ratioPath = chartPath(ratioSeries, width, height, padding, chartMinimum, chartMaximum);
   const latest = visibleRows.at(-1);
   const marginChange = marginWindowChange(visibleRows, "marginBalanceMillion");
   const twiiChange = marginWindowChange(visibleRows, "twiiClose");
+  const ratioChange = Number.isFinite(ratioSeries.at(-1)) ? ratioSeries.at(-1) : null;
   const marginClass = (marginChange || 0) >= 0 ? "up" : "down";
   const twiiClass = (twiiChange || 0) >= 0 ? "up" : "down";
+  const ratioClass = (ratioChange || 0) >= 0 ? "up" : "down";
   els.marginChart.innerHTML = `
-    <svg class="margin-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="台股指數與融資餘額趨勢">
+    <svg class="margin-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="台股指數、融資餘額與融資相對台股趨勢">
       <path class="grid-line" d="M${padding} ${zeroY.toFixed(1)} H${width - padding}"></path>
       <path class="margin-line twii-line" d="${twiiPath}"></path>
       <path class="margin-line balance-line" d="${marginPath}"></path>
+      <path class="margin-line ratio-line" d="${ratioPath}"></path>
     </svg>
     <div class="margin-legend">
       <span><i class="twii-dot"></i>台股 ${formatMarketPrice(latest.twiiClose)} <strong class="${twiiClass}">${twiiChange === null ? "" : formatPercent(twiiChange)}</strong></span>
       <span><i class="balance-dot"></i>融資 ${marginValueText(latest.marginBalanceMillion)} <strong class="${marginClass}">${marginChange === null ? "" : formatPercent(marginChange)}</strong></span>
+      <span><i class="ratio-dot"></i>融資／台股 ${marginRatioText(latest)} <strong class="${ratioClass}">${ratioChange === null ? "" : formatPercent(ratioChange)}</strong></span>
     </div>
   `;
   if (els.marginStatus) {
@@ -2752,7 +2775,7 @@ function renderMarginChart() {
       126: "半年"
     };
     const windowLabel = marginWindowLabels[activeWindow] || `${activeWindow}日`;
-    els.marginStatus.textContent = `資料 ${first.date} 到 ${latest.date}，${windowLabel}視窗；兩者皆以起點 0% 比較`;
+    els.marginStatus.textContent = `資料 ${first.date} 到 ${latest.date}，${windowLabel}視窗；融資／台股＝融資餘額÷台股指數，三者皆以起點 0% 比較`;
   }
 }
 
