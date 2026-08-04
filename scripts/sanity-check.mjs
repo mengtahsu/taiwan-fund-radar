@@ -349,6 +349,10 @@ assert(indexSource.includes('id="returnInput" type="range" min="-5" max="80" ste
 assert(!indexSource.includes('href="./#compare"'), "top navigation should not show compare");
 assert(!indexSource.includes('id="compare"'), "compare section should be removed");
 
+const workflowSource = fs.readFileSync(".github/workflows/pages.yml", "utf8");
+assert(workflowSource.includes('cron: "55 3,11,19 * * *"'), "scheduled updates should avoid GitHub's top-of-hour congestion");
+assert(workflowSource.includes("timezone: Asia/Taipei"), "scheduled updates should declare the Taiwan timezone");
+
 if (failures.length) {
   console.error("Sanity check failed:");
   for (const failure of failures) {
