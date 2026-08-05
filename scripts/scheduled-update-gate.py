@@ -70,6 +70,8 @@ def write_output(should_update: bool, reason: str) -> None:
 
 def self_test() -> None:
     cases = {
+        "2026-08-05T01:25:00+08:00": False,
+        "2026-08-05T02:25:00+08:00": False,
         "2026-08-05T02:55:00+08:00": False,
         "2026-08-05T03:25:00+08:00": False,
         "2026-08-05T03:40:00+08:00": True,

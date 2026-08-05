@@ -2877,7 +2877,7 @@ function twiiTrendPath(rows, key, width, height, padding, minimum, maximum) {
 
 function dailyCapitalValuesForRows(rows) {
   const sourceMatches = portfolioDailyCapital.sourceUpdatedAt === portfolioSnapshotSource();
-  if (!currentUser || !portfolioDailyCapital.loaded || !sourceMatches || portfolioSnapshotsDirty) {
+  if (!currentUser || !portfolioDailyCapital.loaded || !sourceMatches) {
     return [];
   }
   const capitalRows = portfolioDailyCapital.rows || [];

@@ -366,6 +366,7 @@ assert(appSource.includes('DAILY_CAPITAL_SELECT = "period_key,period_date,invest
 assert(appSource.includes("fetchPortfolioDailyCapitalRows"), "TWII trend should load lightweight daily-profit capital snapshots");
 assert(appSource.includes("dailyCapitalValuesForRows"), "TWII trend should align daily-profit capital with TWII dates");
 assert(appSource.includes("portfolioDailyCapital.sourceUpdatedAt === portfolioSnapshotSource()"), "TWII trend should reject stale daily-capital snapshots");
+assert(!appSource.includes("!sourceMatches || portfolioSnapshotsDirty"), "fresh daily-profit calculations should remain drawable while snapshots are being saved");
 assert(appSource.includes("twiiCapitalPath"), "TWII trend should overlay the daily invested-capital series");
 assert(appSource.includes("twii-capital-line"), "TWII trend should render the invested-capital line");
 assert(appSource.includes("renderTwiiTrendChart();\n  portfolioPeriodsLoading = true"), "purchase loading should redraw the capital overlay immediately");
@@ -397,6 +398,8 @@ const workflowSource = fs.readFileSync(".github/workflows/pages.yml", "utf8");
 assert(workflowSource.includes('cron: "55 3,11,19 * * *"'), "scheduled updates should avoid GitHub's top-of-hour congestion");
 assert(workflowSource.includes('cron: "55 2,10,18 * * *"'), "scheduled updates should include an early fallback attempt");
 assert(workflowSource.includes('cron: "25 3,11,19 * * *"'), "scheduled updates should include a middle fallback attempt");
+assert(workflowSource.includes('cron: "25 1,9,17 * * *"'), "scheduled updates should compensate for delays up to 2.5 hours");
+assert((workflowSource.match(/timezone: Asia\/Taipei/g) || []).length === 6, "scheduled updates should provide six guarded attempts per target");
 assert(workflowSource.includes("timezone: Asia/Taipei"), "scheduled updates should declare the Taiwan timezone");
 assert(workflowSource.includes("scripts/scheduled-update-gate.py"), "scheduled retries should use the freshness gate");
 assert(workflowSource.includes("cancel-in-progress: false"), "fallback attempts must not cancel an update already in progress");

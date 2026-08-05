@@ -6,7 +6,13 @@ on:
     branches:
       - main
   schedule:
-    # Three lightweight attempts protect each target from GitHub scheduler delays.
+    # Early gate-only attempts compensate for GitHub scheduler delays of up to 2.5 hours.
+    - cron: "25 1,9,17 * * *"
+      timezone: Asia/Taipei
+    - cron: "55 1,9,17 * * *"
+      timezone: Asia/Taipei
+    - cron: "25 2,10,18 * * *"
+      timezone: Asia/Taipei
     - cron: "55 2,10,18 * * *"
       timezone: Asia/Taipei
     - cron: "25 3,11,19 * * *"
