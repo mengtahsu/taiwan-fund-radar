@@ -6,8 +6,11 @@ on:
     branches:
       - main
   schedule:
-    # Start just before 04:00, 12:00, and 20:00 so the 1-2 minute update
-    # avoids GitHub's congested top-of-hour scheduler and finishes near target time.
+    # Three lightweight attempts protect each target from GitHub scheduler delays.
+    - cron: "55 2,10,18 * * *"
+      timezone: Asia/Taipei
+    - cron: "25 3,11,19 * * *"
+      timezone: Asia/Taipei
     - cron: "55 3,11,19 * * *"
       timezone: Asia/Taipei
 
@@ -18,7 +21,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   update-and-deploy:
@@ -33,10 +36,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Decide whether this attempt should update
+        id: schedule_gate
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: python3 scripts/scheduled-update-gate.py
+
       - name: Configure Pages
+        if: steps.schedule_gate.outputs.should_update == 'true'
         uses: actions/configure-pages@v5
 
       - name: Restore update caches
+        if: steps.schedule_gate.outputs.should_update == 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -49,7 +60,7 @@ jobs:
             update-caches-
 
       - name: Create source config
-        if: env.FUND_SOURCE_URL != ''
+        if: steps.schedule_gate.outputs.should_update == 'true' && env.FUND_SOURCE_URL != ''
         run: |
           python3 - <<'PY'
           import json
@@ -74,20 +85,23 @@ jobs:
           PY
 
       - name: Update fund data
-        if: env.FUND_SOURCE_URL != ''
+        if: steps.schedule_gate.outputs.should_update == 'true' && env.FUND_SOURCE_URL != ''
         run: python3 update_funds.py --config config/source.json --once
 
       - name: Update Taiwan fund data with channel links
-        if: env.FUND_SOURCE_URL == ''
+        if: steps.schedule_gate.outputs.should_update == 'true' && env.FUND_SOURCE_URL == ''
         run: timeout 6m python3 update_funds.py --provider combined-tw-funds --once || echo "Fund update timed out or failed; deploying committed data/funds.json"
 
       - name: Update market data
+        if: steps.schedule_gate.outputs.should_update == 'true'
         run: timeout 1m python3 update_funds.py --provider markets --once || echo "Market update timed out or failed; deploying committed data/markets.json if present"
 
       - name: Update margin data
+        if: steps.schedule_gate.outputs.should_update == 'true'
         run: timeout 3m python3 update_funds.py --provider margin --once || echo "Margin update timed out or failed; deploying committed data/margin.json if present"
 
       - name: Run sanity checks
+        if: steps.schedule_gate.outputs.should_update == 'true'
         run: |
           set +e
           sanity_output=$(node scripts/sanity-check.mjs 2>&1)
@@ -102,10 +116,12 @@ jobs:
           exit "$sanity_status"
 
       - name: Upload Pages artifact
+        if: steps.schedule_gate.outputs.should_update == 'true'
         uses: actions/upload-pages-artifact@v4
         with:
           path: .
 
       - name: Deploy to GitHub Pages
+        if: steps.schedule_gate.outputs.should_update == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
