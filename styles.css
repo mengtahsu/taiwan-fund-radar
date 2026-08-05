@@ -308,10 +308,29 @@ body.portfolio-view .margin-section {
   font-size: 22px;
 }
 
-.twii-trend-heading > span {
+.twii-range-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.twii-range-tabs button {
+  flex: 0 0 auto;
+  min-width: 42px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
   color: var(--muted);
   font-size: 12px;
   font-weight: 900;
+  white-space: nowrap;
+}
+
+.twii-range-tabs button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 .twii-trend-chart {
@@ -1587,6 +1606,15 @@ footer a {
 
   .twii-trend-legend span {
     gap: 3px;
+  }
+
+  .twii-trend-heading h3 {
+    font-size: 19px;
+  }
+
+  .twii-range-tabs button {
+    min-width: 38px;
+    padding: 0 6px;
   }
 
   .detail-grid {

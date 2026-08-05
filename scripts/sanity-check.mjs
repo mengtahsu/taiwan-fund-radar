@@ -355,7 +355,8 @@ assert(appSource.includes("marginToTwiiRatio"), "margin chart should calculate m
 assert(appSource.includes("ratioSeries"), "margin chart should plot margin-to-TWII strength");
 assert(appSource.includes("融資／台股＝融資餘額÷台股指數"), "margin chart should explain the margin-to-TWII ratio");
 assert(appSource.includes("三者皆以起點 0% 比較"), "margin chart should explain its shared percentage baseline");
-assert(appSource.includes("TWII_TREND_VISIBLE_DAYS = 44"), "TWII trend should show about two months at once");
+assert(appSource.includes("TWII_TREND_MONTHS = [2, 6, 12]"), "TWII trend should support 2, 6, and 12-month windows");
+assert(appSource.includes("shiftIsoDateMonths"), "TWII range selection should use calendar months instead of estimated trading days");
 assert(appSource.includes("renderTwiiTrendChart"), "app.js should render the TWII moving-average chart");
 assert(appSource.includes('fetch("data/twii_history.json"'), "app.js should load TWII history data");
 assert(appSource.includes('addEventListener("pointermove"'), "TWII trend should support finger dragging");
@@ -377,6 +378,9 @@ const indexSource = fs.readFileSync("index.html", "utf8");
 assert(indexSource.includes("融資餘額趨勢"), "index should include margin trend section");
 assert(indexSource.includes("指數、月線、季線"), "index should include TWII moving-average trend section");
 assert(indexSource.includes('id="twiiTrendChart"'), "index should include the draggable TWII trend chart");
+for (const months of [2, 6, 12]) {
+  assert(indexSource.includes(`data-twii-range="${months}"`), `index should include the ${months}-month TWII range button`);
+}
 assert(indexSource.includes('id="returnInput" type="range" min="-5" max="80" step="0.5" value="20"'), "minimum 3-year annualized return default should be 20");
 assert(!indexSource.includes('href="./#compare"'), "top navigation should not show compare");
 assert(!indexSource.includes('id="compare"'), "compare section should be removed");
