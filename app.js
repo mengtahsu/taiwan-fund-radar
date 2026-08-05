@@ -2126,6 +2126,7 @@ async function loadPurchases(options = {}) {
   if (!db || !currentUser) {
     purchases = [];
     resetPortfolioSnapshots();
+    renderTwiiTrendChart();
     if (options.render !== false) {
       renderPurchases();
     }
@@ -2145,6 +2146,7 @@ async function loadPurchases(options = {}) {
   }
   if (error) {
     purchases = [];
+    renderTwiiTrendChart();
     if (options.render !== false) {
       renderPurchases();
     }
@@ -2152,6 +2154,7 @@ async function loadPurchases(options = {}) {
     return;
   }
   purchases = data || [];
+  renderTwiiTrendChart();
   portfolioPeriodsLoading = true;
   if (options.requestNavHistory !== false) {
     requestOwnedFundNavHistory();
@@ -2811,6 +2814,33 @@ function twiiTrendPath(rows, key, width, height, padding, minimum, maximum) {
     .join(" ");
 }
 
+function capitalAtDate(dateValue, purchaseItems = purchases) {
+  return purchaseItems.reduce((total, item) => {
+    const amount = Number(item.amount) || 0;
+    const buyDate = String(item.buy_date || "");
+    const sellDate = String(item.sell_date || "");
+    const isHeldAtClose = amount > 0 && buyDate && buyDate <= dateValue && (!sellDate || sellDate > dateValue);
+    return total + (isHeldAtClose ? amount : 0);
+  }, 0);
+}
+
+function twiiCapitalPath(rows, values, width, height, padding, maximum) {
+  if (rows.length < 2 || values.length !== rows.length || maximum <= 0) {
+    return "";
+  }
+  return values
+    .map((value, index) => {
+      const x = padding.left + (index / Math.max(1, rows.length - 1)) * (width - padding.left - padding.right);
+      const plotHeight = height - padding.top - padding.bottom;
+      const y = padding.top + (1 - value / maximum) * plotHeight;
+      if (index === 0) {
+        return `M${x.toFixed(1)} ${y.toFixed(1)}`;
+      }
+      return `H${x.toFixed(1)} V${y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+
 function shiftIsoDateMonths(dateValue, monthsBack) {
   const [year, month, day] = String(dateValue || "").split("-").map(Number);
   if (![year, month, day].every(Number.isFinite)) {
@@ -2880,23 +2910,32 @@ function renderTwiiTrendChart() {
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
   const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
+  const capitalValues = currentUser ? visibleRows.map((row) => capitalAtDate(row.date) || 0) : [];
+  const capitalMaximum = capitalValues.length ? Math.max(...capitalValues) : 0;
+  const capitalScaleMaximum = capitalMaximum > 0 ? capitalMaximum * 1.08 : 0;
+  const capitalPath = twiiCapitalPath(visibleRows, capitalValues, width, height, padding, capitalScaleMaximum);
   const latest = visibleRows.at(-1);
+  const latestCapital = capitalValues.length ? capitalValues.at(-1) : null;
 
   els.twiiTrendChart.innerHTML = `
-    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線與60日季線">
+    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${latestCapital === null ? "" : "與每日在場本金"}">
       ${twiiMonthLabels(visibleRows, width, height, padding)}
       <path class="twii-trend-line twii-ma60-line" d="${ma60Path}"></path>
       <path class="twii-trend-line twii-ma20-line" d="${ma20Path}"></path>
       <path class="twii-trend-line twii-close-line" d="${closePath}"></path>
+      ${capitalPath ? `<path class="twii-trend-line twii-capital-line" d="${capitalPath}"></path>` : ""}
+      ${capitalPath ? `<text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top + 15}" text-anchor="end">本${compactTwdWan(capitalMaximum)}</text>` : ""}
     </svg>
     <div class="twii-trend-legend">
       <span><i class="twii-close-dot"></i>指數 ${formatMarketPrice(latest.close)}</span>
       <span><i class="twii-ma20-dot"></i>月線 ${formatMarketPrice(latest.ma20)}</span>
       <span><i class="twii-ma60-dot"></i>季線 ${formatMarketPrice(latest.ma60)}</span>
+      ${latestCapital === null ? "" : `<span><i class="twii-capital-dot"></i>本金 ${compactTwdWan(latestCapital)}</span>`}
     </div>
   `;
   if (els.twiiTrendStatus) {
-    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史`;
+    const capitalNote = latestCapital === null ? "" : "；本金使用獨立比例";
+    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}`;
   }
 }
 

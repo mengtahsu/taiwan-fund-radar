@@ -377,6 +377,12 @@ body.portfolio-view .margin-section {
   stroke: #4776a8;
 }
 
+.twii-capital-line {
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-dasharray: 9 6;
+}
+
 .twii-month-line {
   stroke: var(--line);
   stroke-width: 1;
@@ -390,7 +396,7 @@ body.portfolio-view .margin-section {
 
 .twii-trend-legend {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
   color: var(--muted);
   font-size: 12px;
@@ -421,6 +427,16 @@ body.portfolio-view .margin-section {
 
 .twii-ma60-dot {
   background: #4776a8;
+}
+
+.twii-capital-dot {
+  background: var(--accent);
+}
+
+.twii-capital-scale {
+  fill: var(--accent-dark);
+  font-size: 15px;
+  font-weight: 900;
 }
 
 .market-row {

@@ -361,6 +361,11 @@ assert(appSource.includes("renderTwiiTrendChart"), "app.js should render the TWI
 assert(appSource.includes('fetch("data/twii_history.json"'), "app.js should load TWII history data");
 assert(appSource.includes('addEventListener("pointermove"'), "TWII trend should support finger dragging");
 assert(appSource.includes("twiiMonthLabels"), "TWII trend should label months and year boundaries");
+assert(appSource.includes("function capitalAtDate"), "TWII trend should calculate invested capital for each trading date");
+assert(appSource.includes("buyDate <= dateValue && (!sellDate || sellDate > dateValue)"), "daily capital should add purchases on buy date and remove them on sell date");
+assert(appSource.includes("twiiCapitalPath"), "TWII trend should overlay the daily invested-capital series");
+assert(appSource.includes("twii-capital-line"), "TWII trend should render the invested-capital line");
+assert(appSource.includes("renderTwiiTrendChart();\n  portfolioPeriodsLoading = true"), "purchase loading should redraw the capital overlay immediately");
 assert(updateFundsSource.includes("def moving_average"), "TWII moving averages should be calculated by the updater");
 assert(updateFundsSource.includes('"monthly": 20, "quarterly": 60'), "TWII updater should use 20-day and 60-day averages");
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
