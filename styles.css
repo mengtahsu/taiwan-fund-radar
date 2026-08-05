@@ -288,6 +288,122 @@ body.portfolio-view .margin-section {
   font-weight: 800;
 }
 
+.twii-trend-block {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.twii-trend-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.twii-trend-heading h3 {
+  margin: 2px 0 0;
+  font-size: 22px;
+}
+
+.twii-trend-heading > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.twii-trend-chart {
+  outline: none;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+
+.twii-trend-chart:active {
+  cursor: grabbing;
+}
+
+.twii-trend-chart:focus-visible {
+  outline: 3px solid rgba(13, 126, 115, 0.25);
+  outline-offset: 3px;
+}
+
+.twii-trend-svg {
+  display: block;
+  width: 100%;
+  height: 220px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.twii-trend-line {
+  fill: none;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.twii-close-line {
+  stroke: #181d1b;
+}
+
+.twii-ma20-line {
+  stroke: var(--gold);
+}
+
+.twii-ma60-line {
+  stroke: #4776a8;
+}
+
+.twii-month-line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.twii-axis-label {
+  fill: var(--muted);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.twii-trend-legend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.twii-trend-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.twii-trend-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.twii-close-dot {
+  background: #181d1b;
+}
+
+.twii-ma20-dot {
+  background: var(--gold);
+}
+
+.twii-ma60-dot {
+  background: #4776a8;
+}
+
 .market-row {
   display: flex;
   align-items: baseline;
@@ -1462,6 +1578,15 @@ footer a {
 
   .market-row strong {
     font-size: 22px;
+  }
+
+  .twii-trend-legend {
+    gap: 3px;
+    font-size: 11px;
+  }
+
+  .twii-trend-legend span {
+    gap: 3px;
   }
 
   .detail-grid {

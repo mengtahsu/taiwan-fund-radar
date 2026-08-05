@@ -89,6 +89,7 @@ function purchaseValuation(funds, item) {
 const fundPayload = readJson("data/funds.json");
 const marketPayload = readJson("data/markets.json");
 const marginPayload = readJson("data/margin.json");
+const twiiHistoryPayload = readJson("data/twii_history.json");
 const navCachePayload = readJson("data/nav_cache.json");
 const monthlyNavPayload = readJson("data/monthly_nav.json");
 
@@ -287,6 +288,21 @@ if (latestMargin?.date && latestPairedMargin?.date) {
   assert(pairedLagDays <= 7, `latest margin/TWII paired row is too old: ${latestPairedMargin.date}`);
 }
 
+const twiiHistoryItems = Array.isArray(twiiHistoryPayload?.items) ? twiiHistoryPayload.items : [];
+assert(twiiHistoryItems.length >= 1400, `TWII history too short: ${twiiHistoryItems.length}`);
+assert(twiiHistoryItems[0]?.date <= "2020-01-15", `TWII history should begin in 2020: ${twiiHistoryItems[0]?.date}`);
+assert(ageHours(twiiHistoryPayload?.updatedAt) <= 96, `twii_history.json too old: ${twiiHistoryPayload?.updatedAt}`);
+const latestTwiiHistory = twiiHistoryItems.at(-1);
+assert(Number(latestTwiiHistory?.close) > 0, "latest TWII history close invalid");
+const latestTwiiLagDays = (Date.now() - Date.parse(latestTwiiHistory?.date || "")) / 86400000;
+assert(latestTwiiLagDays <= 10, `latest TWII history row is too old: ${latestTwiiHistory?.date}`);
+assert(twiiHistoryItems.every((item, index) => index === 0 || item.date > twiiHistoryItems[index - 1].date), "TWII history dates should be strictly increasing");
+for (const [window, key] of [[20, "ma20"], [60, "ma60"]]) {
+  const closes = twiiHistoryItems.slice(-window).map((item) => Number(item.close));
+  const expected = closes.reduce((sum, value) => sum + value, 0) / window;
+  assert(Math.abs(Number(latestTwiiHistory?.[key]) - expected) <= 0.02, `${key} does not match ${window}-day average`);
+}
+
 const appSource = fs.readFileSync("app.js", "utf8");
 const styleSource = fs.readFileSync("styles.css", "utf8");
 const updateFundsSource = fs.readFileSync("update_funds.py", "utf8");
@@ -339,6 +355,13 @@ assert(appSource.includes("marginToTwiiRatio"), "margin chart should calculate m
 assert(appSource.includes("ratioSeries"), "margin chart should plot margin-to-TWII strength");
 assert(appSource.includes("融資／台股＝融資餘額÷台股指數"), "margin chart should explain the margin-to-TWII ratio");
 assert(appSource.includes("三者皆以起點 0% 比較"), "margin chart should explain its shared percentage baseline");
+assert(appSource.includes("TWII_TREND_VISIBLE_DAYS = 44"), "TWII trend should show about two months at once");
+assert(appSource.includes("renderTwiiTrendChart"), "app.js should render the TWII moving-average chart");
+assert(appSource.includes('fetch("data/twii_history.json"'), "app.js should load TWII history data");
+assert(appSource.includes('addEventListener("pointermove"'), "TWII trend should support finger dragging");
+assert(appSource.includes("twiiMonthLabels"), "TWII trend should label months and year boundaries");
+assert(updateFundsSource.includes("def moving_average"), "TWII moving averages should be calculated by the updater");
+assert(updateFundsSource.includes('"monthly": 20, "quarterly": 60'), "TWII updater should use 20-day and 60-day averages");
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
 assert(appSource.includes("fund-info-block"), "fund nav/performance/metrics should be grouped on the left side");
 assert(appSource.includes("metric-line"), "fund metrics should be arranged in two readable lines");
@@ -352,6 +375,8 @@ assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not
 
 const indexSource = fs.readFileSync("index.html", "utf8");
 assert(indexSource.includes("融資餘額趨勢"), "index should include margin trend section");
+assert(indexSource.includes("指數、月線、季線"), "index should include TWII moving-average trend section");
+assert(indexSource.includes('id="twiiTrendChart"'), "index should include the draggable TWII trend chart");
 assert(indexSource.includes('id="returnInput" type="range" min="-5" max="80" step="0.5" value="20"'), "minimum 3-year annualized return default should be 20");
 assert(!indexSource.includes('href="./#compare"'), "top navigation should not show compare");
 assert(!indexSource.includes('id="compare"'), "compare section should be removed");
@@ -363,6 +388,7 @@ assert(workflowSource.includes('cron: "25 3,11,19 * * *"'), "scheduled updates s
 assert(workflowSource.includes("timezone: Asia/Taipei"), "scheduled updates should declare the Taiwan timezone");
 assert(workflowSource.includes("scripts/scheduled-update-gate.py"), "scheduled retries should use the freshness gate");
 assert(workflowSource.includes("cancel-in-progress: false"), "fallback attempts must not cancel an update already in progress");
+assert(workflowSource.includes("--provider twii-history"), "scheduled updates should refresh TWII moving-average history");
 
 if (failures.length) {
   console.error("Sanity check failed:");

@@ -139,6 +139,14 @@ let marginMeta = {
   items: [],
   activeWindow: 66
 };
+const TWII_TREND_VISIBLE_DAYS = 44;
+let twiiTrendMeta = {
+  source: "台股均線資料未載入",
+  updatedAt: null,
+  items: [],
+  startIndex: null
+};
+let twiiTrendDrag = null;
 let monthlyNavMeta = {
   source: "月底淨值未載入",
   updatedAt: null,
@@ -211,6 +219,8 @@ const els = {
   marketList: document.querySelector("#marketList"),
   marginChart: document.querySelector("#marginChart"),
   marginStatus: document.querySelector("#marginStatus"),
+  twiiTrendChart: document.querySelector("#twiiTrendChart"),
+  twiiTrendStatus: document.querySelector("#twiiTrendStatus"),
   reset: document.querySelector("#resetBtn"),
   authStatus: document.querySelector("#authStatus"),
   authForm: document.querySelector("#authForm"),
@@ -2779,6 +2789,156 @@ function renderMarginChart() {
   }
 }
 
+function twiiTrendPath(rows, key, width, height, padding, minimum, maximum) {
+  let drawing = false;
+  return rows
+    .map((row, index) => {
+      const value = Number(row[key]);
+      if (!Number.isFinite(value)) {
+        drawing = false;
+        return "";
+      }
+      const x = padding.left + (index / Math.max(1, rows.length - 1)) * (width - padding.left - padding.right);
+      const plotHeight = height - padding.top - padding.bottom;
+      const y = padding.top + (1 - (value - minimum) / (maximum - minimum || 1)) * plotHeight;
+      const command = drawing ? "L" : "M";
+      drawing = true;
+      return `${command}${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .filter(Boolean)
+    .join(" ");
+}
+
+function twiiMonthLabels(rows, width, height, padding) {
+  const labels = [];
+  rows.forEach((row, index) => {
+    const [year, month] = String(row.date || "").split("-");
+    const previousParts = index > 0 ? String(rows[index - 1].date || "").split("-") : [];
+    if (index > 0 && year === previousParts[0] && month === previousParts[1]) {
+      return;
+    }
+    const x = padding.left + (index / Math.max(1, rows.length - 1)) * (width - padding.left - padding.right);
+    const label = index > 0 && year !== previousParts[0] ? `${year}年` : `${Number(month)}月`;
+    labels.push(`
+      <path class="twii-month-line" d="M${x.toFixed(1)} ${padding.top} V${height - padding.bottom}"></path>
+      <text class="twii-axis-label" x="${x.toFixed(1)}" y="${height - 11}" text-anchor="${index === 0 ? "start" : "middle"}">${label}</text>
+    `);
+  });
+  return labels.join("");
+}
+
+function renderTwiiTrendChart() {
+  if (!els.twiiTrendChart) {
+    return;
+  }
+  const rows = (twiiTrendMeta.items || [])
+    .filter((item) => item.date && Number(item.close) > 0)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  if (rows.length < TWII_TREND_VISIBLE_DAYS) {
+    els.twiiTrendChart.innerHTML = '<div class="market-empty">台股均線資料不足</div>';
+    if (els.twiiTrendStatus) {
+      els.twiiTrendStatus.textContent = twiiTrendMeta.source;
+    }
+    return;
+  }
+
+  const maxStart = Math.max(0, rows.length - TWII_TREND_VISIBLE_DAYS);
+  if (!Number.isInteger(twiiTrendMeta.startIndex)) {
+    twiiTrendMeta.startIndex = maxStart;
+  }
+  twiiTrendMeta.startIndex = Math.max(0, Math.min(maxStart, twiiTrendMeta.startIndex));
+  const visibleRows = rows.slice(twiiTrendMeta.startIndex, twiiTrendMeta.startIndex + TWII_TREND_VISIBLE_DAYS);
+  const values = visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite));
+  const seriesMinimum = Math.min(...values);
+  const seriesMaximum = Math.max(...values);
+  const domainPadding = Math.max((seriesMaximum - seriesMinimum) * 0.08, 100);
+  const chartMinimum = seriesMinimum - domainPadding;
+  const chartMaximum = seriesMaximum + domainPadding;
+  const width = 680;
+  const height = 250;
+  const padding = { top: 18, right: 18, bottom: 42, left: 18 };
+  const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
+  const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
+  const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
+  const latest = visibleRows.at(-1);
+
+  els.twiiTrendChart.innerHTML = `
+    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線與60日季線">
+      ${twiiMonthLabels(visibleRows, width, height, padding)}
+      <path class="twii-trend-line twii-ma60-line" d="${ma60Path}"></path>
+      <path class="twii-trend-line twii-ma20-line" d="${ma20Path}"></path>
+      <path class="twii-trend-line twii-close-line" d="${closePath}"></path>
+    </svg>
+    <div class="twii-trend-legend">
+      <span><i class="twii-close-dot"></i>指數 ${formatMarketPrice(latest.close)}</span>
+      <span><i class="twii-ma20-dot"></i>月線 ${formatMarketPrice(latest.ma20)}</span>
+      <span><i class="twii-ma60-dot"></i>季線 ${formatMarketPrice(latest.ma60)}</span>
+    </div>
+  `;
+  if (els.twiiTrendStatus) {
+    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史`;
+  }
+}
+
+function moveTwiiTrendWindow(nextStart) {
+  const maxStart = Math.max(0, (twiiTrendMeta.items || []).length - TWII_TREND_VISIBLE_DAYS);
+  const clamped = Math.max(0, Math.min(maxStart, Math.round(nextStart)));
+  if (clamped === twiiTrendMeta.startIndex) {
+    return;
+  }
+  twiiTrendMeta.startIndex = clamped;
+  renderTwiiTrendChart();
+}
+
+function initTwiiTrendInteraction() {
+  if (!els.twiiTrendChart) {
+    return;
+  }
+  els.twiiTrendChart.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
+    }
+    twiiTrendDrag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startIndex: Number(twiiTrendMeta.startIndex) || 0
+    };
+    els.twiiTrendChart.setPointerCapture(event.pointerId);
+  });
+  els.twiiTrendChart.addEventListener("pointermove", (event) => {
+    if (!twiiTrendDrag || event.pointerId !== twiiTrendDrag.pointerId) {
+      return;
+    }
+    const width = Math.max(1, els.twiiTrendChart.clientWidth);
+    const dayWidth = width / Math.max(1, TWII_TREND_VISIBLE_DAYS - 1);
+    const dayDelta = Math.round((event.clientX - twiiTrendDrag.startX) / dayWidth);
+    if (dayDelta !== 0) {
+      event.preventDefault();
+      moveTwiiTrendWindow(twiiTrendDrag.startIndex - dayDelta);
+    }
+  });
+  const endDrag = (event) => {
+    if (twiiTrendDrag && event.pointerId === twiiTrendDrag.pointerId) {
+      twiiTrendDrag = null;
+    }
+  };
+  els.twiiTrendChart.addEventListener("pointerup", endDrag);
+  els.twiiTrendChart.addEventListener("pointercancel", endDrag);
+  els.twiiTrendChart.addEventListener("keydown", (event) => {
+    const moves = { ArrowLeft: -5, ArrowRight: 5, PageUp: -22, PageDown: 22 };
+    if (event.key === "Home") {
+      event.preventDefault();
+      moveTwiiTrendWindow(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      moveTwiiTrendWindow((twiiTrendMeta.items || []).length - TWII_TREND_VISIBLE_DAYS);
+    } else if (moves[event.key]) {
+      event.preventDefault();
+      moveTwiiTrendWindow((Number(twiiTrendMeta.startIndex) || 0) + moves[event.key]);
+    }
+  });
+}
+
 function marketUrl(market) {
   const fixedUrls = {
     txf: "https://tw.stock.yahoo.com/quote/WTX%26",
@@ -3029,6 +3189,31 @@ async function loadMarginData() {
   }
 }
 
+async function loadTwiiTrendData() {
+  try {
+    const response = await fetch("data/twii_history.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("找不到台股均線資料。");
+    }
+    const payload = await response.json();
+    twiiTrendMeta = {
+      source: payload.source || "台股日收盤資料",
+      updatedAt: payload.updatedAt || null,
+      items: Array.isArray(payload.items) ? payload.items : [],
+      startIndex: null
+    };
+  } catch (_error) {
+    twiiTrendMeta = {
+      source: "台股均線資料未載入",
+      updatedAt: null,
+      items: [],
+      startIndex: null
+    };
+  } finally {
+    renderTwiiTrendChart();
+  }
+}
+
 document.querySelectorAll("[data-margin-window]").forEach((button) => {
   button.addEventListener("click", () => {
     marginMeta.activeWindow = Number(button.dataset.marginWindow) || 66;
@@ -3037,7 +3222,9 @@ document.querySelectorAll("[data-margin-window]").forEach((button) => {
 });
 
 initAuth();
+initTwiiTrendInteraction();
 loadLatestData();
 loadMonthlyNavData();
 loadMarketData();
 loadMarginData();
+loadTwiiTrendData();

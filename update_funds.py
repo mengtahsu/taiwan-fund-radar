@@ -65,6 +65,8 @@ WEEKLY_NAV_WEEKS = 52
 DAILY_NAV_DAYS = 90
 MARGIN_HISTORY_DAYS = 430
 MARGIN_FETCH_WORKERS = 8
+TWII_TREND_START_DATE = "2020-01-01"
+TWII_TREND_FETCH_DAYS = 2500
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
 
@@ -744,6 +746,72 @@ def update_margin_once(root: Path, output_path: str = "data/margin.json") -> Non
     payload = build_margin_payload(root)
     atomic_write_json(target, payload)
     print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(payload['items'])} margin rows)")
+
+
+def moving_average(values: list[float], window: int) -> list[float | None]:
+    results: list[float | None] = []
+    rolling_sum = 0.0
+    for index, value in enumerate(values):
+        rolling_sum += value
+        if index >= window:
+            rolling_sum -= values[index - window]
+        results.append(round(rolling_sum / window, 2) if index + 1 >= window else None)
+    return results
+
+
+def build_twii_trend_payload(root: Path) -> dict[str, Any]:
+    data = fetch_yahoo_chart_range("^TWII", days=TWII_TREND_FETCH_DAYS)
+    result = (data.get("chart") or {}).get("result") or []
+    if not result:
+        raise ValueError("Yahoo TWII history returned no rows")
+
+    timestamps = result[0].get("timestamp") or []
+    quote = ((result[0].get("indicators") or {}).get("quote") or [{}])[0]
+    closes = quote.get("close") or []
+    rows_by_date: dict[str, float] = {}
+    for timestamp, close in zip(timestamps, closes):
+        if close is None or float(close) <= 0:
+            continue
+        date = datetime.fromtimestamp(timestamp, timezone.utc).strftime("%Y-%m-%d")
+        rows_by_date[date] = round(float(close), 2)
+
+    existing = load_json_file(root / "data/twii_history.json", {"items": []})
+    for item in existing.get("items", []):
+        date = str(item.get("date") or "")
+        close = float(item.get("close") or 0)
+        if date and close > 0 and date not in rows_by_date:
+            rows_by_date[date] = round(close, 2)
+
+    all_rows = sorted(rows_by_date.items())
+    all_closes = [close for _, close in all_rows]
+    ma20 = moving_average(all_closes, 20)
+    ma60 = moving_average(all_closes, 60)
+    items = [
+        {
+            "date": date,
+            "close": close,
+            "ma20": ma20[index],
+            "ma60": ma60[index],
+        }
+        for index, (date, close) in enumerate(all_rows)
+        if date >= TWII_TREND_START_DATE
+    ]
+    if len(items) < 1000:
+        raise ValueError(f"Yahoo TWII history is incomplete: {len(items)} rows")
+    return {
+        "source": "Yahoo Taiwan Weighted Index daily history",
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "startDate": TWII_TREND_START_DATE,
+        "windows": {"monthly": 20, "quarterly": 60},
+        "items": items,
+    }
+
+
+def update_twii_trend_once(root: Path, output_path: str = "data/twii_history.json") -> None:
+    target = root / output_path
+    payload = build_twii_trend_payload(root)
+    atomic_write_json(target, payload)
+    print(f"{datetime.now().isoformat(timespec='seconds')} updated {target} ({len(payload['items'])} TWII rows)")
 
 
 def fetch_yuanta_api(func_id: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -2415,6 +2483,8 @@ def watch(config: dict[str, Any] | None, root: Path, provider: str) -> None:
                     print(f"{datetime.now().isoformat(timespec='seconds')} market update failed: {exc}", file=sys.stderr)
             elif provider == "margin":
                 update_margin_once(root)
+            elif provider == "twii-history":
+                update_twii_trend_once(root)
             else:
                 if config is None:
                     raise ValueError("config is required for JSON provider")
@@ -2429,7 +2499,7 @@ def main() -> int:
     parser.add_argument("--config", default="config/source.json", help="Path to source config JSON.")
     parser.add_argument(
         "--provider",
-        choices=["json", "yahoo-tw-etf", "yuanta-funds", "megabank-tw-funds", "fubon-bank-funds", "combined-tw-funds", "markets", "margin"],
+        choices=["json", "yahoo-tw-etf", "yuanta-funds", "megabank-tw-funds", "fubon-bank-funds", "combined-tw-funds", "markets", "margin", "twii-history"],
         default="json",
         help="Data provider to use.",
     )
@@ -2460,6 +2530,8 @@ def main() -> int:
         update_markets_once(root)
     elif args.provider == "margin":
         update_margin_once(root)
+    elif args.provider == "twii-history":
+        update_twii_trend_once(root)
     else:
         if config is None:
             raise ValueError("config is required for JSON provider")
