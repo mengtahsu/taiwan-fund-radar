@@ -278,7 +278,14 @@ assert(marginItems.length >= 20, `margin history too short: ${marginItems.length
 assert(ageHours(marginPayload?.updatedAt) <= 96, `margin.json too old: ${marginPayload?.updatedAt}`);
 const latestMargin = marginItems.at(-1);
 assert(Number(latestMargin?.marginBalanceMillion) > 0, "latest margin balance invalid");
-assert(Number(latestMargin?.twiiClose) > 0, "latest margin TWII close invalid");
+const latestPairedMargin = [...marginItems]
+  .reverse()
+  .find((item) => Number(item?.marginBalanceMillion) > 0 && Number(item?.twiiClose) > 0);
+assert(Boolean(latestPairedMargin), "margin history has no row paired with a TWII close");
+if (latestMargin?.date && latestPairedMargin?.date) {
+  const pairedLagDays = Math.round((Date.parse(latestMargin.date) - Date.parse(latestPairedMargin.date)) / 86400000);
+  assert(pairedLagDays <= 7, `latest margin/TWII paired row is too old: ${latestPairedMargin.date}`);
+}
 
 const appSource = fs.readFileSync("app.js", "utf8");
 const styleSource = fs.readFileSync("styles.css", "utf8");

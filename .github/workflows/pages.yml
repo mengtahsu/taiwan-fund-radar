@@ -88,7 +88,18 @@ jobs:
         run: timeout 3m python3 update_funds.py --provider margin --once || echo "Margin update timed out or failed; deploying committed data/margin.json if present"
 
       - name: Run sanity checks
-        run: node scripts/sanity-check.mjs
+        run: |
+          set +e
+          sanity_output=$(node scripts/sanity-check.mjs 2>&1)
+          sanity_status=$?
+          echo "$sanity_output"
+          {
+            echo "### Sanity check"
+            echo '```text'
+            echo "$sanity_output"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$sanity_status"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
