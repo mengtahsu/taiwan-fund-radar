@@ -201,6 +201,14 @@ let portfolioPeriodsLoading = false;
 
 const SNAPSHOT_SELECT =
   "period_type,period_key,period_date,invested,value,profit,valued,missing,details,source_updated_at";
+const DAILY_CAPITAL_SELECT = "period_key,period_date,invested,source_updated_at";
+const DAILY_CAPITAL_CHART_LIMIT = 370;
+
+let portfolioDailyCapital = {
+  loaded: false,
+  sourceUpdatedAt: null,
+  rows: []
+};
 
 const els = {
   query: document.querySelector("#queryInput"),
@@ -1330,6 +1338,11 @@ function resetPortfolioSnapshots() {
     weeks: new Map(),
     days: new Map()
   };
+  portfolioDailyCapital = {
+    loaded: false,
+    sourceUpdatedAt: null,
+    rows: []
+  };
 }
 
 function periodMapFromSnapshotRows(rows, periodType) {
@@ -1373,16 +1386,46 @@ async function fetchPortfolioSnapshotRows(periodType, limit) {
   return data || [];
 }
 
+async function fetchPortfolioDailyCapitalRows() {
+  const { data, error } = await db
+    .from("portfolio_period_snapshots")
+    .select(DAILY_CAPITAL_SELECT)
+    .eq("user_id", currentUser.id)
+    .eq("period_type", "day")
+    .order("period_key", { ascending: false })
+    .limit(DAILY_CAPITAL_CHART_LIMIT);
+  if (error) {
+    throw error;
+  }
+  return data || [];
+}
+
+function setPortfolioDailyCapital(rows, sourceUpdatedAt) {
+  const normalizedRows = rows
+    .map((row) => ({
+      date: String(row.period_date || row.date || row.period_key || row.key || "").slice(0, 10),
+      invested: Number(row.invested) || 0
+    }))
+    .filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(row.date))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  portfolioDailyCapital = {
+    loaded: normalizedRows.length > 0,
+    sourceUpdatedAt: sourceUpdatedAt || null,
+    rows: normalizedRows
+  };
+}
+
 async function loadPortfolioPeriodSnapshots() {
   if (!db || !currentUser) {
     resetPortfolioSnapshots();
     return;
   }
   try {
-    const [monthRows, weekRows, dayRows] = await Promise.all([
+    const [monthRows, weekRows, dayRows, dailyCapitalRows] = await Promise.all([
       fetchPortfolioSnapshotRows("month", PERIOD_DISPLAY_LIMIT),
       fetchPortfolioSnapshotRows("week", PERIOD_DISPLAY_LIMIT),
-      fetchPortfolioSnapshotRows("day", DAILY_PERIOD_DISPLAY_LIMIT)
+      fetchPortfolioSnapshotRows("day", DAILY_PERIOD_DISPLAY_LIMIT),
+      fetchPortfolioDailyCapitalRows()
     ]);
     const rows = [...monthRows, ...weekRows, ...dayRows];
     portfolioPeriodSnapshots = {
@@ -1393,6 +1436,7 @@ async function loadPortfolioPeriodSnapshots() {
       weeks: periodMapFromSnapshotRows(weekRows, "week"),
       days: periodMapFromSnapshotRows(dayRows, "day")
     };
+    setPortfolioDailyCapital(dailyCapitalRows, dailyCapitalRows[0]?.source_updated_at || null);
   } catch (_error) {
     portfolioPeriodSnapshots = {
       loaded: false,
@@ -1401,6 +1445,11 @@ async function loadPortfolioPeriodSnapshots() {
       months: new Map(),
       weeks: new Map(),
       days: new Map()
+    };
+    portfolioDailyCapital = {
+      loaded: false,
+      sourceUpdatedAt: null,
+      rows: []
     };
   }
 }
@@ -1457,6 +1506,7 @@ async function savePortfolioPeriodSnapshots(summary) {
       days: recentPeriodMapFromSummaryMap(summary.days, DAILY_PERIOD_DISPLAY_LIMIT)
     };
     portfolioSnapshotsDirty = false;
+    renderTwiiTrendChart();
   } catch (_error) {
     portfolioPeriodSnapshots.supported = false;
   } finally {
@@ -1466,6 +1516,12 @@ async function savePortfolioPeriodSnapshots(summary) {
 
 function markPortfolioSnapshotsDirty() {
   portfolioSnapshotsDirty = true;
+  portfolioDailyCapital = {
+    loaded: false,
+    sourceUpdatedAt: null,
+    rows: []
+  };
+  renderTwiiTrendChart();
 }
 
 function renderPeriodDetailsContent(details) {
@@ -1870,9 +1926,14 @@ function renderPortfolioStats(options = {}) {
       summary.months = new Map(portfolioPeriodSnapshots.months);
       summary.weeks = new Map(portfolioPeriodSnapshots.weeks);
       summary.days = new Map(portfolioPeriodSnapshots.days);
+      if (!portfolioDailyCapital.loaded || portfolioDailyCapital.sourceUpdatedAt !== currentSnapshotSource) {
+        setPortfolioDailyCapital([...summary.days.values()], currentSnapshotSource);
+      }
     } else {
+      setPortfolioDailyCapital([...summary.days.values()], currentSnapshotSource);
       void savePortfolioPeriodSnapshots(summary);
     }
+    renderTwiiTrendChart();
   }
   const profit = summary.realizedProfit + summary.unrealizedProfit;
   const profitPercent =
@@ -2814,30 +2875,42 @@ function twiiTrendPath(rows, key, width, height, padding, minimum, maximum) {
     .join(" ");
 }
 
-function capitalAtDate(dateValue, purchaseItems = purchases) {
-  return purchaseItems.reduce((total, item) => {
-    const amount = Number(item.amount) || 0;
-    const buyDate = String(item.buy_date || "");
-    const sellDate = String(item.sell_date || "");
-    const isHeldAtClose = amount > 0 && buyDate && buyDate <= dateValue && (!sellDate || sellDate > dateValue);
-    return total + (isHeldAtClose ? amount : 0);
-  }, 0);
+function dailyCapitalValuesForRows(rows) {
+  const sourceMatches = portfolioDailyCapital.sourceUpdatedAt === portfolioSnapshotSource();
+  if (!currentUser || !portfolioDailyCapital.loaded || !sourceMatches || portfolioSnapshotsDirty) {
+    return [];
+  }
+  const capitalRows = portfolioDailyCapital.rows || [];
+  let capitalIndex = -1;
+  return rows.map((row) => {
+    while (capitalIndex + 1 < capitalRows.length && capitalRows[capitalIndex + 1].date <= row.date) {
+      capitalIndex += 1;
+    }
+    return capitalIndex >= 0 ? Number(capitalRows[capitalIndex].invested) || 0 : null;
+  });
 }
 
 function twiiCapitalPath(rows, values, width, height, padding, maximum) {
   if (rows.length < 2 || values.length !== rows.length || maximum <= 0) {
     return "";
   }
+  let drawing = false;
   return values
     .map((value, index) => {
+      if (!Number.isFinite(value)) {
+        drawing = false;
+        return "";
+      }
       const x = padding.left + (index / Math.max(1, rows.length - 1)) * (width - padding.left - padding.right);
       const plotHeight = height - padding.top - padding.bottom;
       const y = padding.top + (1 - value / maximum) * plotHeight;
-      if (index === 0) {
+      if (!drawing) {
+        drawing = true;
         return `M${x.toFixed(1)} ${y.toFixed(1)}`;
       }
       return `H${x.toFixed(1)} V${y.toFixed(1)}`;
     })
+    .filter(Boolean)
     .join(" ");
 }
 
@@ -2910,12 +2983,13 @@ function renderTwiiTrendChart() {
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
   const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
-  const capitalValues = currentUser ? visibleRows.map((row) => capitalAtDate(row.date) || 0) : [];
-  const capitalMaximum = capitalValues.length ? Math.max(...capitalValues) : 0;
+  const capitalValues = dailyCapitalValuesForRows(visibleRows);
+  const numericCapitalValues = capitalValues.filter(Number.isFinite);
+  const capitalMaximum = numericCapitalValues.length ? Math.max(...numericCapitalValues) : 0;
   const capitalScaleMaximum = capitalMaximum > 0 ? capitalMaximum * 1.08 : 0;
   const capitalPath = twiiCapitalPath(visibleRows, capitalValues, width, height, padding, capitalScaleMaximum);
   const latest = visibleRows.at(-1);
-  const latestCapital = capitalValues.length ? capitalValues.at(-1) : null;
+  const latestCapital = capitalValues.length && Number.isFinite(capitalValues.at(-1)) ? capitalValues.at(-1) : null;
 
   els.twiiTrendChart.innerHTML = `
     <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${latestCapital === null ? "" : "與每日在場本金"}">

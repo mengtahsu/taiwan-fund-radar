@@ -361,8 +361,11 @@ assert(appSource.includes("renderTwiiTrendChart"), "app.js should render the TWI
 assert(appSource.includes('fetch("data/twii_history.json"'), "app.js should load TWII history data");
 assert(appSource.includes('addEventListener("pointermove"'), "TWII trend should support finger dragging");
 assert(appSource.includes("twiiMonthLabels"), "TWII trend should label months and year boundaries");
-assert(appSource.includes("function capitalAtDate"), "TWII trend should calculate invested capital for each trading date");
-assert(appSource.includes("buyDate <= dateValue && (!sellDate || sellDate > dateValue)"), "daily capital should add purchases on buy date and remove them on sell date");
+assert(!appSource.includes("function capitalAtDate"), "TWII trend must not recalculate capital with a separate buy/sell shortcut");
+assert(appSource.includes('DAILY_CAPITAL_SELECT = "period_key,period_date,invested,source_updated_at"'), "TWII trend should read the same invested field as daily profit");
+assert(appSource.includes("fetchPortfolioDailyCapitalRows"), "TWII trend should load lightweight daily-profit capital snapshots");
+assert(appSource.includes("dailyCapitalValuesForRows"), "TWII trend should align daily-profit capital with TWII dates");
+assert(appSource.includes("portfolioDailyCapital.sourceUpdatedAt === portfolioSnapshotSource()"), "TWII trend should reject stale daily-capital snapshots");
 assert(appSource.includes("twiiCapitalPath"), "TWII trend should overlay the daily invested-capital series");
 assert(appSource.includes("twii-capital-line"), "TWII trend should render the invested-capital line");
 assert(appSource.includes("renderTwiiTrendChart();\n  portfolioPeriodsLoading = true"), "purchase loading should redraw the capital overlay immediately");
