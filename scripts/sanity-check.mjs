@@ -392,12 +392,17 @@ assert(fundBoxSource.includes("confirmationDays: 3"), "fund box top and bottom s
 assert(fundBoxSource.includes("minimumWidth: 0.1"), "fund box should have a 10% minimum width");
 assert(fundBoxSource.includes("maximumWidth: 0.2"), "fund box should reject boxes wider than 20%");
 assert(fundBoxSource.includes('status: "distribution_unadjusted"'), "fund box should block unadjusted distribution NAV");
+assert(fundBoxSource.includes("function buyDecision"), "fund box should translate technical states into a plain buy decision");
+assert(fundBoxSource.includes('label: "先不要買"'), "unfinished or failed boxes should clearly say not to buy");
+assert(fundBoxSource.includes("position <= 0.3"), "buy evaluation should require a confirmed lower-box position");
 assert(appSource.includes("exactMonthlyNavForPurchase"), "owned-fund boxes should match exact MoneyDJ fund IDs");
 assert(appSource.includes('/(不配息|累積型|累積)/.test(name)'), "fund box distribution detection should prioritize accumulating class names");
 assert(appSource.includes("buildFundBoxStore(activePurchases)"), "same-fund purchases should share one box calculation");
 assert(appSource.includes('valuation.isSold ? "" : renderFundBoxTrigger(item)'), "sold purchases should not show fund boxes");
 assert(appSource.includes("fundBoxChart"), "fund box details should include a NAV chart");
 assert(appSource.includes("完整邏輯與算法"), "fund box modal should disclose the full algorithm");
+assert(appSource.includes("依箱型規則"), "fund box modal should lead with a plain-language decision");
+assert(appSource.includes("技術狀態："), "fund box modal should keep the technical state as supporting detail");
 assert(appSource.includes("配息未還原｜暫不判斷"), "fund box UI should explain unadjusted distribution data");
 assert(styleSource.includes(".fund-box-rect.provisional"), "provisional boxes should have distinct chart styling");
 assert(styleSource.includes(".fund-box-rect.confirmed"), "confirmed boxes should have distinct chart styling");

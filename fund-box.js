@@ -50,6 +50,57 @@
     return Math.max(0, Math.min(1, (value - bottom) / (top - bottom)));
   }
 
+  function buyDecision(analysis) {
+    const status = String(analysis?.status || "");
+    const position = Number(analysis?.position);
+    if (status === "inside") {
+      if (Number.isFinite(position) && position <= 0.3) {
+        return {
+          code: "evaluate",
+          label: "可以評估",
+          detail: "正式箱已完成，而且淨值位於箱體下方 30% 內；仍需確認基金風險與最新淨值。",
+          tone: "positive"
+        };
+      }
+      return {
+        code: "wait",
+        label: "先觀望",
+        detail: "正式箱已完成，但目前不在箱體下方 30% 內，先不要追價。",
+        tone: "warning"
+      };
+    }
+    if (status === "provisional_inside" || status === "forming") {
+      return {
+        code: "wait",
+        label: "先觀望",
+        detail: status === "provisional_inside" ? "只有暫定箱底，自然箱底尚未確認。" : "新箱的頂與底尚未確認。",
+        tone: "warning"
+      };
+    }
+    if (status === "breakout_building") {
+      return {
+        code: "avoid",
+        label: "先不要買",
+        detail: "剛突破舊箱頂，但新箱尚未完成，先不要追價。",
+        tone: "danger"
+      };
+    }
+    if (["provisional_breakdown", "false_breakout", "breakdown_rebuilding", "wide_rebuilding"].includes(status)) {
+      return {
+        code: "avoid",
+        label: "先不要買",
+        detail: "目前出現跌破、突破失敗或箱體失效訊號。",
+        tone: "danger"
+      };
+    }
+    return {
+      code: "unavailable",
+      label: "無法判斷",
+      detail: "資料不足、過舊，或配息尚未還原，不能產生買進判斷。",
+      tone: "muted"
+    };
+  }
+
   function analyzeFundBox(rawRows, options = {}) {
     const settings = { ...DEFAULTS, ...options };
     const rows = normalizeRows(rawRows, settings.historyPoints);
@@ -323,6 +374,7 @@
     VERSION,
     DEFAULTS,
     analyzeFundBox,
+    buyDecision,
     normalizeRows
   });
 })(globalThis);

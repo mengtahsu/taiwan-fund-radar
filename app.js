@@ -1996,6 +1996,11 @@ function fundBoxCurrentCalculation(entry) {
 
 function renderFundBoxDetail(entry) {
   const { analysis } = entry;
+  const decision = window.FundBox?.buyDecision?.(analysis) || {
+    label: "無法判斷",
+    detail: "箱型判斷尚未載入。",
+    tone: "muted"
+  };
   const latestDate = analysis.latest?.date || "-";
   const latestNav = analysis.latest ? moneyNumber(analysis.latest.nav) : "-";
   const statusText = fundBoxStatusText(analysis);
@@ -2009,9 +2014,11 @@ function renderFundBoxDetail(entry) {
           ? `<p class="fund-box-notice">目前只有 ${analysis.rows.length} 筆有效每日淨值，至少需要 20 筆。</p>`
           : "";
   return `
-    <div class="fund-box-current ${fundBoxToneClass(analysis)}">
-      <span>目前狀態</span>
-      <strong>${escapeHtml(statusText)}</strong>
+    <div class="fund-box-current ${escapeHtml(decision.tone)}">
+      <span>依箱型規則</span>
+      <strong>${escapeHtml(decision.label)}</strong>
+      <small class="fund-box-decision-detail">${escapeHtml(decision.detail)}</small>
+      <small class="fund-box-technical-status">技術狀態：${escapeHtml(statusText)}</small>
       <small>最新淨值 ${escapeHtml(latestNav)}｜${escapeHtml(latestDate)}</small>
     </div>
     ${blockedNotice}
@@ -2023,6 +2030,7 @@ function renderFundBoxDetail(entry) {
     <section class="fund-box-method">
       <h4>完整邏輯與算法</h4>
       <ol>
+        <li>買進顯示採保守規則：只有正式箱完成且淨值位於箱體下方 30% 內，才顯示「可以評估」；這仍不是買進建議。</li>
         <li>使用最近 60 個交易日的每日淨值，至少需要 20 筆；資料超過 7 天未更新時停止產生新訊號。</li>
         <li>淨值創出候選新高後，接下來 3 個交易日都沒有超過它，才確認箱頂；期間再創新高就重新計算 3 天。</li>
         <li>箱頂確認後立即設定暫定箱底：箱頂 × 90%，並計算暫定箱內位置。</li>

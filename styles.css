@@ -1463,6 +1463,20 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.fund-box-current.warning strong {
+  color: #8a5b00;
+}
+
+.fund-box-decision-detail {
+  color: var(--ink) !important;
+  font-size: 13px !important;
+}
+
+.fund-box-technical-status {
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+}
+
 .fund-box-current small {
   grid-column: 1 / -1;
 }

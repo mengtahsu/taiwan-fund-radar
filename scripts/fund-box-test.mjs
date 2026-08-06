@@ -1,6 +1,6 @@
 import "../fund-box.js";
 
-const { analyzeFundBox } = globalThis.FundBox;
+const { analyzeFundBox, buyDecision } = globalThis.FundBox;
 
 function assert(condition, message) {
   if (!condition) {
@@ -85,4 +85,9 @@ const stale = analyzeFundBox(rows(Array.from({ length: 20 }, (_, index) => 100 +
 });
 assert(stale.status === "stale", "stale NAV history must not produce current signals");
 
-console.log("Fund box tests passed: 9 scenarios");
+assert(buyDecision(breakout).label === "先不要買", "an unfinished breakout must not look like a buy signal");
+assert(buyDecision({ ...narrow, position: 0.2 }).label === "可以評估", "a confirmed lower-box position may be evaluated");
+assert(buyDecision(narrow).label === "先觀望", "a confirmed upper-box position should not be chased");
+assert(buyDecision(distributionBlocked).label === "無法判斷", "blocked distribution data must not produce a buy judgment");
+
+console.log("Fund box tests passed: 9 scenarios and 4 buy decisions");
