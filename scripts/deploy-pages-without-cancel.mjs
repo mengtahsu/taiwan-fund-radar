@@ -140,7 +140,7 @@ async function ensureDeployment(artifact, oidcToken) {
 
 async function monitorDeployment(deployment) {
   const deploymentId = deployment.id || buildVersion;
-  for (let attempt = 1; attempt <= 24; attempt += 1) {
+  for (let attempt = 1; attempt <= 360; attempt += 1) {
     await sleep(5_000);
     const status = await deploymentStatus(deploymentId);
     if (!status) {
@@ -155,7 +155,7 @@ async function monitorDeployment(deployment) {
       throw new Error(`Pages deployment ended with ${status.status}`);
     }
   }
-  console.log("::warning::Pages is still queued after two minutes; leaving the deployment active instead of cancelling it.");
+  console.log("::warning::Pages is still queued after 30 minutes; leaving the deployment active instead of cancelling it.");
 }
 
 const artifact = await artifactId();

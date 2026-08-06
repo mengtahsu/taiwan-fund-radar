@@ -135,6 +135,7 @@ jobs:
       - name: Deploy to GitHub Pages
         if: steps.schedule_gate.outputs.should_update == 'true'
         id: deployment
+        timeout-minutes: 35
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/deploy-pages-without-cancel.mjs

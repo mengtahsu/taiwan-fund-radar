@@ -440,7 +440,8 @@ assert(workflowSource.includes("timezone: Asia/Taipei"), "scheduled updates shou
 assert(workflowSource.includes("scripts/scheduled-update-gate.py"), "scheduled retries should use the freshness gate");
 assert(workflowSource.includes("cancel-in-progress: false"), "fallback attempts must not cancel an update already in progress");
 assert(workflowSource.includes("scripts/deploy-pages-without-cancel.mjs"), "Pages deployment should preserve slow queued deployments");
-assert(pagesDeploySource.includes("leaving the deployment active instead of cancelling it"), "slow Pages deployments must remain queued");
+assert(workflowSource.includes("timeout-minutes: 35"), "Pages deployment job should remain active through long queues");
+assert(pagesDeploySource.includes("still queued after 30 minutes"), "slow Pages deployments must remain queued");
 assert(!pagesDeploySource.includes('cancelDeployment(buildVersion)'), "Pages deployment must not cancel its own queued build on timeout");
 assert(workflowSource.includes("--provider twii-history"), "scheduled updates should refresh TWII moving-average history");
 
