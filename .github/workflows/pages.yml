@@ -136,3 +136,5 @@ jobs:
         if: steps.schedule_gate.outputs.should_update == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 1800000
