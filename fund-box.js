@@ -1,10 +1,10 @@
 (function attachFundBox(globalScope) {
   "use strict";
 
-  const VERSION = "1.0";
+  const VERSION = "1.1";
   const DEFAULTS = Object.freeze({
     confirmationDays: 3,
-    historyPoints: 60,
+    historyPoints: 126,
     minimumPoints: 20,
     minimumWidth: 0.1,
     maximumWidth: 0.2,
@@ -50,54 +50,134 @@
     return Math.max(0, Math.min(1, (value - bottom) / (top - bottom)));
   }
 
+  function lowZoneMetrics(analysis) {
+    const rows = Array.isArray(analysis?.rows) ? analysis.rows : [];
+    if (!rows.length || !analysis?.latest) {
+      return null;
+    }
+    const minimum = Math.min(...rows.map((row) => row.nav));
+    let lowIndex = -1;
+    rows.forEach((row, index) => {
+      if (row.nav === minimum) {
+        lowIndex = index;
+      }
+    });
+    const spanDays = Math.max(0, Math.round((Date.parse(`${rows.at(-1).date}T00:00:00Z`) - Date.parse(`${rows[0].date}T00:00:00Z`)) / 86400000));
+    const periodLabel = spanDays >= 150 ? "近半年" : spanDays >= 75 ? "近3個月" : "目前區間";
+    return {
+      minimum,
+      lowDate: rows[lowIndex]?.date || "",
+      stableDays: Math.max(0, rows.length - 1 - lowIndex),
+      distance: relativeChange(analysis.latest.nav, minimum),
+      periodLabel,
+      spanDays
+    };
+  }
+
   function buyDecision(analysis) {
     const status = String(analysis?.status || "");
-    const position = Number(analysis?.position);
-    if (status === "inside") {
-      if (Number.isFinite(position) && position <= 0.3) {
-        return {
-          code: "evaluate",
-          label: "可以評估",
-          detail: "正式箱已完成，而且淨值位於箱體下方 30% 內；仍需確認基金風險與最新淨值。",
-          tone: "positive"
-        };
-      }
+    if (["distribution_unadjusted", "stale", "insufficient"].includes(status)) {
       return {
-        code: "wait",
-        label: "先觀望",
-        detail: "正式箱已完成，但目前不在箱體下方 30% 內，先不要追價。",
-        tone: "warning"
-      };
-    }
-    if (status === "provisional_inside" || status === "forming") {
-      return {
-        code: "wait",
-        label: "先觀望",
-        detail: status === "provisional_inside" ? "只有暫定箱底，自然箱底尚未確認。" : "新箱的頂與底尚未確認。",
-        tone: "warning"
-      };
-    }
-    if (status === "breakout_building") {
-      return {
-        code: "avoid",
-        label: "先不要買",
-        detail: "剛突破舊箱頂，但新箱尚未完成，先不要追價。",
-        tone: "danger"
+        code: "unavailable",
+        label: "低點無法判斷",
+        detail: "資料不足、過舊，或配息尚未還原，不能判斷幾個月低點。",
+        tone: "muted"
       };
     }
     if (["provisional_breakdown", "false_breakout", "breakdown_rebuilding", "wide_rebuilding"].includes(status)) {
       return {
         code: "avoid",
-        label: "先不要買",
-        detail: "目前出現跌破、突破失敗或箱體失效訊號。",
+        label: "暫緩加碼",
+        detail: "目前有跌破、突破失敗或箱體失效訊號，先等風險穩定。",
         tone: "danger"
       };
     }
+    const low = lowZoneMetrics(analysis);
+    if (!low || !Number.isFinite(low.distance)) {
+      return {
+        code: "unavailable",
+        label: "低點無法判斷",
+        detail: "目前沒有足夠的歷史淨值。",
+        tone: "muted"
+      };
+    }
+    if (low.distance <= 0.05 && low.stableDays >= 3) {
+      return {
+        code: "evaluate",
+        label: "低點區可分批",
+        detail: `${low.periodLabel}最低淨值 ${low.minimum.toFixed(2)}，目前高於低點 ${(low.distance * 100).toFixed(1)}%，而且低點已止穩 3 個交易日。`,
+        tone: "positive",
+        low
+      };
+    }
+    if (low.distance <= 0.05) {
+      return {
+        code: "wait_stable",
+        label: "低點尚未止穩",
+        detail: `${low.periodLabel}最低淨值 ${low.minimum.toFixed(2)} 剛出現，先等 3 個交易日不再破底。`,
+        tone: "warning",
+        low
+      };
+    }
     return {
-      code: "unavailable",
-      label: "無法判斷",
-      detail: "資料不足、過舊，或配息尚未還原，不能產生買進判斷。",
-      tone: "muted"
+      code: "wait_low",
+      label: "先等低點區",
+      detail: `${low.periodLabel}最低淨值 ${low.minimum.toFixed(2)}，目前高出 ${(low.distance * 100).toFixed(1)}%；等回到低點 5% 內再分批評估。`,
+      tone: "warning",
+      low
+    };
+  }
+
+  function holdingDecision(analysis) {
+    const status = String(analysis?.status || "");
+    if (["distribution_unadjusted", "stale", "insufficient"].includes(status)) {
+      return { label: "持有無法判斷", detail: "資料不足、過舊，或配息尚未還原。", tone: "muted" };
+    }
+    const activeBottom = Number(analysis?.bottom);
+    const provisionalBottom = Number(analysis?.provisionalBottom);
+    const referenceBottom = Number(analysis?.reference?.bottom);
+    let bottom = 0;
+    let bottomKind = "";
+    if (activeBottom > 0) {
+      bottom = activeBottom;
+      bottomKind = "正式箱底";
+    } else if (referenceBottom > 0) {
+      bottom = referenceBottom;
+      bottomKind = analysis.reference.kind === "confirmed" ? "舊正式箱底" : "舊暫定箱底";
+    } else if (provisionalBottom > 0) {
+      bottom = provisionalBottom;
+      bottomKind = "暫定箱底";
+    }
+    if (bottom > 0 && Number(analysis?.latest?.nav) < bottom) {
+      let consecutiveDays = 0;
+      for (let index = analysis.rows.length - 1; index >= 0 && analysis.rows[index].nav < bottom; index -= 1) {
+        consecutiveDays += 1;
+      }
+      if (consecutiveDays >= 3) {
+        return {
+          label: "停損訊號",
+          detail: `已連續 ${consecutiveDays} 個交易日低於${bottomKind} ${bottom.toFixed(2)}。`,
+          tone: "danger",
+          bottom,
+          bottomKind
+        };
+      }
+      return {
+        label: "停損警戒",
+        detail: `跌破${bottomKind} ${bottom.toFixed(2)}，但尚未連續 3 個交易日。`,
+        tone: "danger",
+        bottom,
+        bottomKind
+      };
+    }
+    return {
+      label: "續抱，不停利",
+      detail: bottom > 0
+        ? `目前停損線採用${bottomKind} ${bottom.toFixed(2)}；尚未跌破，不因上漲或突破箱頂停利。`
+        : "目前還沒有可用箱底；先續抱觀察，不因上漲停利。",
+      tone: "positive",
+      bottom: bottom || null,
+      bottomKind: bottomKind || null
     };
   }
 
@@ -375,6 +455,8 @@
     DEFAULTS,
     analyzeFundBox,
     buyDecision,
+    holdingDecision,
+    lowZoneMetrics,
     normalizeRows
   });
 })(globalThis);

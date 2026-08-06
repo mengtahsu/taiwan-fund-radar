@@ -1444,10 +1444,19 @@ textarea {
 
 .fund-box-current {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 2px 12px;
+  gap: 9px;
   padding: 10px 0 12px;
   border-bottom: 1px solid var(--line);
+}
+
+.fund-box-action {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 12px;
+}
+
+.fund-box-action small {
+  grid-column: 1 / -1;
 }
 
 .fund-box-current span,
@@ -1457,17 +1466,29 @@ textarea {
   font-weight: 800;
 }
 
-.fund-box-current strong {
+.fund-box-action strong {
   min-width: 0;
   font-size: 16px;
   overflow-wrap: anywhere;
 }
 
-.fund-box-current.warning strong {
+.fund-box-action.warning strong {
   color: #8a5b00;
 }
 
-.fund-box-decision-detail {
+.fund-box-action.positive strong {
+  color: var(--accent-dark);
+}
+
+.fund-box-action.danger strong {
+  color: var(--danger);
+}
+
+.fund-box-action.muted strong {
+  color: var(--muted);
+}
+
+.fund-box-action small {
   color: var(--ink) !important;
   font-size: 13px !important;
 }
@@ -1585,6 +1606,18 @@ textarea {
   stroke-width: 1;
 }
 
+.fund-box-stop-line {
+  stroke: var(--danger);
+  stroke-dasharray: 5 4;
+  stroke-width: 2.5;
+}
+
+.fund-box-stop-label {
+  fill: var(--danger);
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .fund-box-buy-label {
   fill: #40556e;
 }
@@ -1622,6 +1655,12 @@ textarea {
 
 .fund-box-legend i.historical {
   background: #9aa49f;
+}
+
+.fund-box-legend i.stop {
+  height: 0;
+  border-top: 2px dashed var(--danger);
+  background: transparent;
 }
 
 .fund-box-chart-empty {
@@ -1947,12 +1986,8 @@ footer a {
     font-size: 17px;
   }
 
-  .fund-box-current {
+  .fund-box-action {
     grid-template-columns: 1fr;
-  }
-
-  .fund-box-current small {
-    grid-column: auto;
   }
 
   .fund-box-chart {

@@ -1870,6 +1870,7 @@ function fundBoxEventLabel(type) {
 
 function fundBoxChart(entry) {
   const { analysis } = entry;
+  const holdingDecision = window.FundBox?.holdingDecision?.(analysis);
   const rows = analysis.rows || [];
   if (rows.length < 2) {
     return '<div class="fund-box-chart-empty">每日淨值資料不足，暫時無法繪圖。</div>';
@@ -1879,6 +1880,9 @@ function fundBoxChart(entry) {
   const padding = { top: 24, right: 30, bottom: 42, left: 42 };
   const values = rows.map((row) => row.nav);
   (analysis.segments || []).forEach((segment) => values.push(segment.top, segment.bottom));
+  if (Number(holdingDecision?.bottom) > 0) {
+    values.push(Number(holdingDecision.bottom));
+  }
   const minimumValue = Math.min(...values);
   const maximumValue = Math.max(...values);
   const domainPadding = Math.max((maximumValue - minimumValue) * 0.08, maximumValue * 0.01);
@@ -1936,6 +1940,13 @@ function fundBoxChart(entry) {
       `;
     })
     .join("");
+  const stopBottom = Number(holdingDecision?.bottom);
+  const stopLine = stopBottom > 0
+    ? `
+      <line class="fund-box-stop-line" x1="${padding.left}" y1="${y(stopBottom).toFixed(1)}" x2="${width - padding.right}" y2="${y(stopBottom).toFixed(1)}"></line>
+      <text class="fund-box-stop-label" x="${width - padding.right}" y="${Math.max(14, y(stopBottom) - 6).toFixed(1)}" text-anchor="end">停損箱底 ${escapeHtml(moneyNumber(stopBottom))}</text>
+    `
+    : "";
   const dateLabel = (value) => String(value || "").slice(5).replace("-", "/");
   return `
     <div class="fund-box-chart-wrap">
@@ -1943,6 +1954,7 @@ function fundBoxChart(entry) {
         <line class="fund-box-grid" x1="${padding.left}" y1="${y(maximumValue).toFixed(1)}" x2="${width - padding.right}" y2="${y(maximumValue).toFixed(1)}"></line>
         <line class="fund-box-grid" x1="${padding.left}" y1="${y(minimumValue).toFixed(1)}" x2="${width - padding.right}" y2="${y(minimumValue).toFixed(1)}"></line>
         ${segments}
+        ${stopLine}
         ${purchaseMarkers}
         <path class="fund-box-nav-line" d="${navPath}"></path>
         ${events}
@@ -1957,6 +1969,7 @@ function fundBoxChart(entry) {
       <span><i class="confirmed"></i>正式箱</span>
       <span><i class="provisional"></i>暫定箱</span>
       <span><i class="historical"></i>舊箱</span>
+      ${stopBottom > 0 ? '<span><i class="stop"></i>停損箱底</span>' : ""}
     </div>
   `;
 }
@@ -1996,8 +2009,13 @@ function fundBoxCurrentCalculation(entry) {
 
 function renderFundBoxDetail(entry) {
   const { analysis } = entry;
-  const decision = window.FundBox?.buyDecision?.(analysis) || {
-    label: "無法判斷",
+  const entryDecision = window.FundBox?.buyDecision?.(analysis) || {
+    label: "低點無法判斷",
+    detail: "箱型判斷尚未載入。",
+    tone: "muted"
+  };
+  const holdingDecision = window.FundBox?.holdingDecision?.(analysis) || {
+    label: "持有無法判斷",
     detail: "箱型判斷尚未載入。",
     tone: "muted"
   };
@@ -2014,10 +2032,17 @@ function renderFundBoxDetail(entry) {
           ? `<p class="fund-box-notice">目前只有 ${analysis.rows.length} 筆有效每日淨值，至少需要 20 筆。</p>`
           : "";
   return `
-    <div class="fund-box-current ${escapeHtml(decision.tone)}">
-      <span>依箱型規則</span>
-      <strong>${escapeHtml(decision.label)}</strong>
-      <small class="fund-box-decision-detail">${escapeHtml(decision.detail)}</small>
+    <div class="fund-box-current">
+      <div class="fund-box-action ${escapeHtml(entryDecision.tone)}">
+        <span>買點判斷</span>
+        <strong>${escapeHtml(entryDecision.label)}</strong>
+        <small>${escapeHtml(entryDecision.detail)}</small>
+      </div>
+      <div class="fund-box-action ${escapeHtml(holdingDecision.tone)}">
+        <span>賣點判斷</span>
+        <strong>${escapeHtml(holdingDecision.label)}</strong>
+        <small>${escapeHtml(holdingDecision.detail)}</small>
+      </div>
       <small class="fund-box-technical-status">技術狀態：${escapeHtml(statusText)}</small>
       <small>最新淨值 ${escapeHtml(latestNav)}｜${escapeHtml(latestDate)}</small>
     </div>
@@ -2030,8 +2055,12 @@ function renderFundBoxDetail(entry) {
     <section class="fund-box-method">
       <h4>完整邏輯與算法</h4>
       <ol>
-        <li>買進顯示採保守規則：只有正式箱完成且淨值位於箱體下方 30% 內，才顯示「可以評估」；這仍不是買進建議。</li>
-        <li>使用最近 60 個交易日的每日淨值，至少需要 20 筆；資料超過 7 天未更新時停止產生新訊號。</li>
+        <li>進場採「幾個月低點」策略：保留最近約半年、最多 126 個交易日的淨值，找這段期間的最低淨值。</li>
+        <li>目前淨值回到期間低點上方 5% 內，而且低點後連續 3 個交易日不再破底，才顯示「低點區可分批」。</li>
+        <li>持有採「不停利，只停損」策略：上漲、突破箱頂或跌回舊箱頂都不叫你停利，只要尚未跌破目前採用的箱底就續抱。</li>
+        <li>停損箱底優先使用正式箱底；突破築新箱時沿用舊箱底；尚無正式箱底時使用箱頂下方 10% 的暫定箱底。</li>
+        <li>停損箱底被連續 3 個交易日跌破，才顯示「停損訊號」；只跌破 1 至 2 個交易日先顯示「停損警戒」，避免單日雜訊直接叫你退出。</li>
+        <li>至少需要 20 筆每日淨值；資料超過 7 天未更新時停止產生新訊號。資料尚未更新到半年時，畫面會如實標示目前實際涵蓋的區間。</li>
         <li>淨值創出候選新高後，接下來 3 個交易日都沒有超過它，才確認箱頂；期間再創新高就重新計算 3 天。</li>
         <li>箱頂確認後立即設定暫定箱底：箱頂 × 90%，並計算暫定箱內位置。</li>
         <li>箱頂後的候選低點若連續 3 個交易日未被跌破，確認為自然箱底；期間出現更低淨值就重新計算 3 天。</li>

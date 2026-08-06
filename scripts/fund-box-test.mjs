@@ -1,6 +1,6 @@
 import "../fund-box.js";
 
-const { analyzeFundBox, buyDecision } = globalThis.FundBox;
+const { analyzeFundBox, buyDecision, holdingDecision } = globalThis.FundBox;
 
 function assert(condition, message) {
   if (!condition) {
@@ -85,9 +85,32 @@ const stale = analyzeFundBox(rows(Array.from({ length: 20 }, (_, index) => 100 +
 });
 assert(stale.status === "stale", "stale NAV history must not produce current signals");
 
-assert(buyDecision(breakout).label === "先不要買", "an unfinished breakout must not look like a buy signal");
-assert(buyDecision({ ...narrow, position: 0.2 }).label === "可以評估", "a confirmed lower-box position may be evaluated");
-assert(buyDecision(narrow).label === "先觀望", "a confirmed upper-box position should not be chased");
-assert(buyDecision(distributionBlocked).label === "無法判斷", "blocked distribution data must not produce a buy judgment");
+const stableLowRows = rows([110, 108, 104, 100, 95, 90, 91, 92, 93]);
+const stableLowAnalysis = { ...narrow, rows: stableLowRows, latest: stableLowRows.at(-1), status: "inside" };
+const freshLowRows = rows([110, 108, 104, 100, 95, 90]);
+const freshLowAnalysis = { ...narrow, rows: freshLowRows, latest: freshLowRows.at(-1), status: "inside" };
+assert(buyDecision(stableLowAnalysis).label === "低點區可分批", "a stabilized multi-month low should allow installments");
+assert(buyDecision(freshLowAnalysis).label === "低點尚未止穩", "a fresh low should wait for three stable trading days");
+assert(buyDecision(breakout).label === "先等低點區", "a breakout far above the multi-month low should wait");
+assert(buyDecision(distributionBlocked).label === "低點無法判斷", "blocked distribution data must not produce a low-zone judgment");
 
-console.log("Fund box tests passed: 9 scenarios and 4 buy decisions");
+const threeDayBreakdown = {
+  ...narrow,
+  status: "breakdown_rebuilding",
+  reference: { bottom: 99, kind: "confirmed" },
+  rows: rows([102, 100, 98, 97, 96]),
+  latest: { date: "2026-01-05", nav: 96 }
+};
+const oneDayBreakdown = {
+  ...threeDayBreakdown,
+  rows: rows([102, 100, 98]),
+  latest: { date: "2026-01-03", nav: 98 }
+};
+assert(holdingDecision(narrow).label === "續抱，不停利", "a healthy box should remain a hold without profit-taking");
+assert(Math.abs(holdingDecision(narrow).bottom - 99) < 0.0001, "a healthy box should expose its active stop-loss bottom");
+assert(holdingDecision(falseBreakout).label === "續抱，不停利", "a failed breakout above the confirmed bottom should not trigger profit-taking");
+assert(holdingDecision(provisionalBreakdown).label === "停損警戒", "a provisional bottom breach should expose a stop-loss warning");
+assert(holdingDecision(oneDayBreakdown).label === "停損警戒", "the first close below a confirmed bottom should only warn");
+assert(holdingDecision(threeDayBreakdown).label === "停損訊號", "three closes below a confirmed bottom should trigger a stop-loss signal");
+
+console.log("Fund box tests passed: 9 scenarios, 4 entry decisions, and 5 holding decisions");
