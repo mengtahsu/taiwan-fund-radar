@@ -430,6 +430,7 @@ assert(!indexSource.includes('href="./#compare"'), "top navigation should not sh
 assert(!indexSource.includes('id="compare"'), "compare section should be removed");
 
 const workflowSource = fs.readFileSync(".github/workflows/pages.yml", "utf8");
+const pagesDeploySource = fs.readFileSync("scripts/deploy-pages-without-cancel.mjs", "utf8");
 assert(workflowSource.includes('cron: "55 3,11,19 * * *"'), "scheduled updates should avoid GitHub's top-of-hour congestion");
 assert(workflowSource.includes('cron: "55 2,10,18 * * *"'), "scheduled updates should include an early fallback attempt");
 assert(workflowSource.includes('cron: "25 3,11,19 * * *"'), "scheduled updates should include a middle fallback attempt");
@@ -438,7 +439,9 @@ assert((workflowSource.match(/timezone: Asia\/Taipei/g) || []).length === 6, "sc
 assert(workflowSource.includes("timezone: Asia/Taipei"), "scheduled updates should declare the Taiwan timezone");
 assert(workflowSource.includes("scripts/scheduled-update-gate.py"), "scheduled retries should use the freshness gate");
 assert(workflowSource.includes("cancel-in-progress: false"), "fallback attempts must not cancel an update already in progress");
-assert(workflowSource.includes("timeout: 600000"), "Pages deployment should use GitHub's maximum supported timeout");
+assert(workflowSource.includes("scripts/deploy-pages-without-cancel.mjs"), "Pages deployment should preserve slow queued deployments");
+assert(pagesDeploySource.includes("leaving the deployment active instead of cancelling it"), "slow Pages deployments must remain queued");
+assert(!pagesDeploySource.includes('cancelDeployment(buildVersion)'), "Pages deployment must not cancel its own queued build on timeout");
 assert(workflowSource.includes("--provider twii-history"), "scheduled updates should refresh TWII moving-average history");
 
 if (failures.length) {

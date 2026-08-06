@@ -135,8 +135,6 @@ jobs:
       - name: Deploy to GitHub Pages
         if: steps.schedule_gate.outputs.should_update == 'true'
         id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          # deploy-pages caps this at 10 minutes. A retry needs a new commit after
-          # GitHub cancels the deployment associated with the previous commit.
-          timeout: 600000
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/deploy-pages-without-cancel.mjs
