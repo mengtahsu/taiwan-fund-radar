@@ -196,6 +196,7 @@ let portfolioSnapshotsDirty = false;
 let portfolioSnapshotsSaving = false;
 let periodDetailStore = new Map();
 let periodHistoryStore = new Map();
+let fundBoxStore = new Map();
 let fundDisplayLimit = DISPLAY_LIMIT;
 let portfolioPeriodsLoading = false;
 
@@ -814,6 +815,137 @@ function monthlyNavForPurchase(item) {
   const fund = currentFundForPurchase(item);
   const fundId = fund?.fundId || "";
   return fundId ? items[fundId] || null : null;
+}
+
+function fundBoxKeyForPurchase(item) {
+  return moneyDjFundId(item.fund_id) || String(item.fund_id || `purchase:${item.id}`);
+}
+
+function exactMonthlyNavForPurchase(item) {
+  const items = monthlyNavMeta.items || {};
+  const fundId = moneyDjFundId(item.fund_id);
+  if (fundId && items[fundId]) {
+    return items[fundId];
+  }
+  return items[item.fund_id] || null;
+}
+
+function isDistributingFund(fund, item) {
+  const name = displayFundName(item?.fund_name || fund?.name || "");
+  if (/(不配息|累積型|累積)/.test(name)) {
+    return false;
+  }
+  if (/(月配息?|季配息?|年配息?|配息)/.test(name)) {
+    return true;
+  }
+  const dividend = String(fund?.dividend || "").trim();
+  if (dividend) {
+    return dividend.includes("配") && !dividend.includes("不配") && !dividend.includes("累積");
+  }
+  return false;
+}
+
+function fundBoxPercent(value, digits = 1) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return "-";
+  }
+  const percent = Math.abs(number) < 0.0005 ? 0 : number * 100;
+  return `${percent > 0 ? "+" : ""}${percent.toFixed(digits)}%`;
+}
+
+function fundBoxStatusText(analysis) {
+  const position = Number.isFinite(analysis.position) ? `${Math.round(analysis.position * 100)}%` : "-";
+  switch (analysis.status) {
+    case "inside":
+      return `箱內${position}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
+    case "provisional_inside":
+      return `暫定箱內${position}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.provisionalBottom)}`;
+    case "provisional_breakdown":
+      return `跌破暫定底｜低於暫定底${fundBoxPercent(analysis.difference)}`;
+    case "breakout_building":
+      return `突破築箱中｜高於舊頂${fundBoxPercent(analysis.difference)}`;
+    case "false_breakout":
+      return `突破失敗｜跌回舊頂${fundBoxPercent(analysis.difference)}`;
+    case "breakdown_rebuilding":
+      return `跌破正式底｜低於正式底${fundBoxPercent(analysis.difference)}`;
+    case "wide_rebuilding":
+      return "跌破重築｜自然箱寬超過20%";
+    case "distribution_unadjusted":
+      return "配息未還原｜暫不判斷";
+    case "stale":
+      return `箱型待更新｜資料${compactDate(analysis.latest?.date)}`;
+    case "insufficient":
+      return "箱型資料不足";
+    default:
+      return "新箱形成中";
+  }
+}
+
+function fundBoxToneClass(analysis) {
+  if (analysis.tone === "danger") {
+    return "danger";
+  }
+  if (analysis.tone === "positive") {
+    return "positive";
+  }
+  if (["distribution_unadjusted", "stale", "insufficient", "forming"].includes(analysis.status)) {
+    return "muted";
+  }
+  return "normal";
+}
+
+function buildFundBoxStore(activePurchases) {
+  const nextStore = new Map();
+  activePurchases.forEach((item) => {
+    const key = fundBoxKeyForPurchase(item);
+    let entry = nextStore.get(key);
+    if (!entry) {
+      const fund = currentFundForPurchase(item);
+      const navItem = exactMonthlyNavForPurchase(item);
+      const distributing = isDistributingFund(fund, item);
+      const adjusted = navItem?.adjusted === true || navItem?.navType === "adjusted";
+      const analysis = window.FundBox
+        ? window.FundBox.analyzeFundBox(navItem?.days || [], { distributing, adjusted })
+        : {
+            version: "-",
+            rows: [],
+            segments: [],
+            events: [],
+            status: "insufficient",
+            tone: "muted",
+            latest: null
+          };
+      entry = {
+        key,
+        fund,
+        fundId: moneyDjFundId(item.fund_id),
+        name: item.fund_name || fund?.name || key,
+        navItem,
+        distributing,
+        adjusted,
+        analysis,
+        purchases: []
+      };
+      nextStore.set(key, entry);
+    }
+    entry.purchases.push(item);
+  });
+  fundBoxStore = nextStore;
+}
+
+function renderFundBoxTrigger(item) {
+  const key = fundBoxKeyForPurchase(item);
+  const entry = fundBoxStore.get(key);
+  if (!entry) {
+    return "";
+  }
+  const text = fundBoxStatusText(entry.analysis);
+  return `
+    <button class="fund-box-trigger ${fundBoxToneClass(entry.analysis)}" type="button" data-fund-box="${escapeHtml(key)}" aria-label="查看${escapeHtml(item.fund_name || "基金")}箱型詳細資料">
+      ${escapeHtml(text)}
+    </button>
+  `;
 }
 
 function upsertPeriodNav(rows, keyName, keyValue, date, nav) {
@@ -1723,6 +1855,244 @@ function hidePeriodDetailModal() {
   }
 }
 
+function fundBoxEventLabel(type) {
+  const labels = {
+    breakout: "突破",
+    breakdown: "跌破",
+    false_breakout: "突破失敗",
+    provisional_breakdown: "跌暫底",
+    wide_breakdown: "寬箱失效"
+  };
+  return labels[type] || "";
+}
+
+function fundBoxChart(entry) {
+  const { analysis } = entry;
+  const rows = analysis.rows || [];
+  if (rows.length < 2) {
+    return '<div class="fund-box-chart-empty">每日淨值資料不足，暫時無法繪圖。</div>';
+  }
+  const width = 680;
+  const height = 300;
+  const padding = { top: 24, right: 30, bottom: 42, left: 42 };
+  const values = rows.map((row) => row.nav);
+  (analysis.segments || []).forEach((segment) => values.push(segment.top, segment.bottom));
+  const minimumValue = Math.min(...values);
+  const maximumValue = Math.max(...values);
+  const domainPadding = Math.max((maximumValue - minimumValue) * 0.08, maximumValue * 0.01);
+  const minimum = Math.max(0, minimumValue - domainPadding);
+  const maximum = maximumValue + domainPadding;
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const x = (index) => padding.left + (index / Math.max(1, rows.length - 1)) * plotWidth;
+  const y = (value) => padding.top + (1 - (value - minimum) / Math.max(0.0001, maximum - minimum)) * plotHeight;
+  const navPath = rows
+    .map((row, index) => `${index ? "L" : "M"}${x(index).toFixed(1)} ${y(row.nav).toFixed(1)}`)
+    .join(" ");
+  const segments = (analysis.segments || [])
+    .map((segment) => {
+      const left = x(segment.startIndex);
+      const right = x(Math.max(segment.startIndex, segment.endIndex));
+      const top = y(segment.top);
+      const bottom = y(segment.bottom);
+      const className = `fund-box-rect ${segment.kind}${segment.current ? " current" : " historical"}`;
+      const labels = segment.current
+        ? `
+          <text class="fund-box-bound-label" x="${Math.max(left + 40, right - 4).toFixed(1)}" y="${Math.min(bottom - 16, top + 14).toFixed(1)}" text-anchor="end">頂 ${escapeHtml(moneyNumber(segment.top))}</text>
+          <text class="fund-box-bound-label" x="${Math.max(left + 40, right - 4).toFixed(1)}" y="${Math.max(top + 30, bottom - 5).toFixed(1)}" text-anchor="end">底 ${escapeHtml(moneyNumber(segment.bottom))}</text>
+        `
+        : "";
+      return `
+        <rect class="${className}" x="${left.toFixed(1)}" y="${top.toFixed(1)}" width="${Math.max(3, right - left).toFixed(1)}" height="${Math.max(2, bottom - top).toFixed(1)}"></rect>
+        ${labels}
+      `;
+    })
+    .join("");
+  const visibleEventTypes = new Set(["breakout", "breakdown", "false_breakout", "provisional_breakdown", "wide_breakdown"]);
+  const events = (analysis.events || [])
+    .filter((event) => visibleEventTypes.has(event.type))
+    .map((event) => {
+      const label = fundBoxEventLabel(event.type);
+      const eventX = x(event.index);
+      const eventY = y(event.nav);
+      return `
+        <circle class="fund-box-event ${escapeHtml(event.type)}" cx="${eventX.toFixed(1)}" cy="${eventY.toFixed(1)}" r="4"></circle>
+        <text class="fund-box-event-label" x="${eventX.toFixed(1)}" y="${Math.max(12, eventY - 8).toFixed(1)}" text-anchor="middle">${escapeHtml(label)}</text>
+      `;
+    })
+    .join("");
+  const purchaseMarkers = entry.purchases
+    .map((purchase, markerIndex) => {
+      const index = rows.findIndex((row) => row.date >= purchase.buy_date);
+      if (index < 0 || purchase.buy_date > rows.at(-1).date) {
+        return "";
+      }
+      const markerX = x(index);
+      return `
+        <line class="fund-box-buy-line" x1="${markerX.toFixed(1)}" y1="${padding.top}" x2="${markerX.toFixed(1)}" y2="${height - padding.bottom}"></line>
+        <text class="fund-box-buy-label" x="${markerX.toFixed(1)}" y="${height - padding.bottom + 14 + (markerIndex % 2) * 12}" text-anchor="middle">買</text>
+      `;
+    })
+    .join("");
+  const dateLabel = (value) => String(value || "").slice(5).replace("-", "/");
+  return `
+    <div class="fund-box-chart-wrap">
+      <svg class="fund-box-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(entry.name)}最近${rows.length}個交易日淨值與箱型">
+        <line class="fund-box-grid" x1="${padding.left}" y1="${y(maximumValue).toFixed(1)}" x2="${width - padding.right}" y2="${y(maximumValue).toFixed(1)}"></line>
+        <line class="fund-box-grid" x1="${padding.left}" y1="${y(minimumValue).toFixed(1)}" x2="${width - padding.right}" y2="${y(minimumValue).toFixed(1)}"></line>
+        ${segments}
+        ${purchaseMarkers}
+        <path class="fund-box-nav-line" d="${navPath}"></path>
+        ${events}
+        <text class="fund-box-axis-label" x="${padding.left}" y="${height - 8}" text-anchor="start">${escapeHtml(dateLabel(rows[0].date))}</text>
+        <text class="fund-box-axis-label" x="${width - padding.right}" y="${height - 8}" text-anchor="end">${escapeHtml(dateLabel(rows.at(-1).date))}</text>
+        <text class="fund-box-axis-label" x="${padding.left - 6}" y="${y(maximumValue).toFixed(1)}" text-anchor="end">${escapeHtml(moneyNumber(maximumValue))}</text>
+        <text class="fund-box-axis-label" x="${padding.left - 6}" y="${y(minimumValue).toFixed(1)}" text-anchor="end">${escapeHtml(moneyNumber(minimumValue))}</text>
+      </svg>
+    </div>
+    <div class="fund-box-legend" aria-label="箱型圖例">
+      <span><i class="nav"></i>淨值</span>
+      <span><i class="confirmed"></i>正式箱</span>
+      <span><i class="provisional"></i>暫定箱</span>
+      <span><i class="historical"></i>舊箱</span>
+    </div>
+  `;
+}
+
+function fundBoxCurrentCalculation(entry) {
+  const { analysis } = entry;
+  const lines = [];
+  if (analysis.topDetail) {
+    lines.push(`候選箱頂 ${moneyNumber(analysis.topDetail.value)} 出現在 ${analysis.topDetail.date}，後續 3 個交易日未超過，於 ${analysis.topDetail.confirmedDate} 確認。`);
+    lines.push(`10% 暫定箱底：${moneyNumber(analysis.topDetail.value)} × 90% = ${moneyNumber(analysis.provisionalBottom)}。`);
+  } else if (analysis.candidateTop) {
+    lines.push(`目前候選箱頂為 ${moneyNumber(analysis.candidateTop.value)}（${analysis.candidateTop.date}），已累積 ${analysis.candidateTop.stableDays} 個未創高交易日。`);
+  }
+  if (analysis.naturalBottomDetail) {
+    const naturalWidth = (analysis.topDetail.value - analysis.naturalBottomDetail.value) / analysis.topDetail.value;
+    lines.push(`自然箱底 ${moneyNumber(analysis.naturalBottomDetail.value)} 出現在 ${analysis.naturalBottomDetail.date}，於 ${analysis.naturalBottomDetail.confirmedDate} 完成確認；自然箱寬 ${(naturalWidth * 100).toFixed(1)}%。`);
+  } else if (analysis.candidateBottom) {
+    lines.push(`自然箱底仍在確認，目前候選低點為 ${moneyNumber(analysis.candidateBottom.value)}（${analysis.candidateBottom.date}）。`);
+  }
+  if (analysis.status === "inside") {
+    lines.push(`箱內位置：(${moneyNumber(analysis.latest.nav)} - ${moneyNumber(analysis.bottom)}) ÷ (${moneyNumber(analysis.top)} - ${moneyNumber(analysis.bottom)}) = ${Math.round(analysis.position * 100)}%。`);
+  } else if (analysis.status === "provisional_inside") {
+    lines.push(`暫定箱內位置：(${moneyNumber(analysis.latest.nav)} - ${moneyNumber(analysis.provisionalBottom)}) ÷ (${moneyNumber(analysis.top)} - ${moneyNumber(analysis.provisionalBottom)}) = ${Math.round(analysis.position * 100)}%。`);
+  } else if (analysis.status === "provisional_breakdown") {
+    lines.push(`跌破暫定底：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.provisionalBottom)} - 1 = ${fundBoxPercent(analysis.difference)}。`);
+  } else if (analysis.status === "breakout_building") {
+    lines.push(`高於舊箱頂：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.reference.top)} - 1 = ${fundBoxPercent(analysis.difference)}。`);
+  } else if (analysis.status === "false_breakout") {
+    lines.push(`突破後跌回舊箱頂：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.reference.top)} - 1 = ${fundBoxPercent(analysis.difference)}。`);
+  } else if (analysis.status === "breakdown_rebuilding") {
+    lines.push(`低於正式箱底：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.reference.bottom)} - 1 = ${fundBoxPercent(analysis.difference)}。`);
+  }
+  return lines.length
+    ? `<ol class="fund-box-calculation">${lines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ol>`
+    : '<p class="fund-box-muted">箱頂尚未完成三日確認，目前沒有可套用的箱體公式。</p>';
+}
+
+function renderFundBoxDetail(entry) {
+  const { analysis } = entry;
+  const latestDate = analysis.latest?.date || "-";
+  const latestNav = analysis.latest ? moneyNumber(analysis.latest.nav) : "-";
+  const statusText = fundBoxStatusText(analysis);
+  const dividendStatus = entry.distributing ? (entry.adjusted ? "已使用還原淨值" : "配息未還原") : "不配息／累積型";
+  const blockedNotice =
+    analysis.status === "distribution_unadjusted"
+      ? '<p class="fund-box-notice danger">這是配息型基金，目前歷史資料沒有可靠的配息還原值。圖表只顯示原始淨值，不提供箱型判斷，以免把除息誤判成跌破。</p>'
+      : analysis.status === "stale"
+        ? `<p class="fund-box-notice danger">最新歷史淨值停在 ${escapeHtml(latestDate)}，已超過 7 天，因此暫停產生新訊號。</p>`
+        : analysis.status === "insufficient"
+          ? `<p class="fund-box-notice">目前只有 ${analysis.rows.length} 筆有效每日淨值，至少需要 20 筆。</p>`
+          : "";
+  return `
+    <div class="fund-box-current ${fundBoxToneClass(analysis)}">
+      <span>目前狀態</span>
+      <strong>${escapeHtml(statusText)}</strong>
+      <small>最新淨值 ${escapeHtml(latestNav)}｜${escapeHtml(latestDate)}</small>
+    </div>
+    ${blockedNotice}
+    ${fundBoxChart(entry)}
+    <section class="fund-box-method">
+      <h4>這檔基金怎麼算</h4>
+      ${fundBoxCurrentCalculation(entry)}
+    </section>
+    <section class="fund-box-method">
+      <h4>完整邏輯與算法</h4>
+      <ol>
+        <li>使用最近 60 個交易日的每日淨值，至少需要 20 筆；資料超過 7 天未更新時停止產生新訊號。</li>
+        <li>淨值創出候選新高後，接下來 3 個交易日都沒有超過它，才確認箱頂；期間再創新高就重新計算 3 天。</li>
+        <li>箱頂確認後立即設定暫定箱底：箱頂 × 90%，並計算暫定箱內位置。</li>
+        <li>箱頂後的候選低點若連續 3 個交易日未被跌破，確認為自然箱底；期間出現更低淨值就重新計算 3 天。</li>
+        <li>自然箱寬小於 10%時，正式箱底維持在箱頂下方 10%；自然箱寬介於 10%至 20%時，使用自然箱底。</li>
+        <li>自然箱寬超過 20%時，不把大跌視為正常整理，舊箱失效並從較低位置重新築箱。</li>
+        <li>突破箱頂後保留舊箱供參考並向上築新箱；新箱成立前跌回舊頂以下，標示為突破失敗。</li>
+        <li>跌破暫定底是風險警示，但仍等待自然底確認；跌破正式底則讓舊箱失效並重新築箱。</li>
+        <li>正式箱底只從自然底確認日開始生效，系統不使用未來資料回頭改寫當時的歷史訊號。</li>
+        <li>配息型基金必須使用可靠的還原淨值；無法還原時不判斷箱型。所有狀態只供觀察，不構成買賣建議。</li>
+      </ol>
+    </section>
+    <section class="fund-box-data">
+      <h4>資料說明</h4>
+      <p>算法：基金箱型 v${escapeHtml(analysis.version || window.FundBox?.VERSION || "-")}</p>
+      <p>資料：${escapeHtml(monthlyNavMeta.source || "MoneyDJ 每日淨值")}</p>
+      <p>區間：${escapeHtml(analysis.rows[0]?.date || "-")} 至 ${escapeHtml(latestDate)}｜${analysis.rows.length} 筆</p>
+      <p>配息處理：${escapeHtml(dividendStatus)}</p>
+    </section>
+  `;
+}
+
+function ensureFundBoxModal() {
+  let modal = document.querySelector("#fundBoxModal");
+  if (modal) {
+    return modal;
+  }
+  modal = document.createElement("div");
+  modal.id = "fundBoxModal";
+  modal.className = "period-modal fund-box-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div class="period-modal-panel fund-box-modal-panel" role="dialog" aria-modal="true" aria-labelledby="fundBoxTitle">
+      <button class="period-modal-close" type="button" aria-label="關閉">×</button>
+      <h3 id="fundBoxTitle"></h3>
+      <div class="period-modal-body fund-box-modal-body"></div>
+    </div>
+  `;
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.closest(".period-modal-close")) {
+      hideFundBoxModal();
+    }
+  });
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function showFundBoxModal(key) {
+  const entry = fundBoxStore.get(key);
+  if (!entry) {
+    return;
+  }
+  const modal = ensureFundBoxModal();
+  modal.querySelector("#fundBoxTitle").textContent = displayFundName(entry.name) || entry.name;
+  modal.querySelector(".fund-box-modal-body").innerHTML = renderFundBoxDetail(entry);
+  modal.hidden = false;
+  const chartWrap = modal.querySelector(".fund-box-chart-wrap");
+  if (chartWrap) {
+    window.requestAnimationFrame(() => {
+      chartWrap.scrollLeft = chartWrap.scrollWidth;
+    });
+  }
+  modal.querySelector(".period-modal-close").focus();
+}
+
+function hideFundBoxModal() {
+  const modal = document.querySelector("#fundBoxModal");
+  if (modal) {
+    modal.hidden = true;
+  }
+}
+
 function ensureSellModal() {
   let modal = document.querySelector("#sellModal");
   if (modal) {
@@ -2143,6 +2513,7 @@ function renderPurchases(options = {}) {
           </div>
           <p>${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${moneyNumber(item.nav)}</p>
           <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
+          ${valuation.isSold ? "" : renderFundBoxTrigger(item)}
           ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
         </div>
         <div class="purchase-actions">
@@ -2156,6 +2527,7 @@ function renderPurchases(options = {}) {
   };
   const activePurchases = sortByProfit(purchases.filter((item) => !item.sell_date));
   const soldPurchases = sortSoldByDate(purchases.filter((item) => item.sell_date));
+  buildFundBoxStore(activePurchases);
   els.purchaseList.innerHTML = `
     ${activePurchases.length ? activePurchases.map(renderPurchaseItem).join("") : '<div class="empty">目前沒有持有中的基金。</div>'}
     ${
@@ -2180,6 +2552,9 @@ function renderPurchases(options = {}) {
   });
   document.querySelectorAll("[data-clear-sale]").forEach((button) => {
     button.addEventListener("click", () => clearPurchaseSale(button.dataset.clearSale));
+  });
+  document.querySelectorAll("[data-fund-box]").forEach((button) => {
+    button.addEventListener("click", () => showFundBoxModal(button.dataset.fundBox));
   });
 }
 

@@ -115,7 +115,7 @@ jobs:
         if: steps.schedule_gate.outputs.should_update == 'true'
         run: |
           set +e
-          sanity_output=$(node scripts/sanity-check.mjs 2>&1)
+          sanity_output=$(node scripts/fund-box-test.mjs 2>&1 && node scripts/sanity-check.mjs 2>&1)
           sanity_status=$?
           echo "$sanity_output"
           {

@@ -305,12 +305,14 @@ for (const [window, key] of [[20, "ma20"], [60, "ma60"]]) {
 
 const appSource = fs.readFileSync("app.js", "utf8");
 const styleSource = fs.readFileSync("styles.css", "utf8");
+const fundBoxSource = fs.readFileSync("fund-box.js", "utf8");
 const updateFundsSource = fs.readFileSync("update_funds.py", "utf8");
 const refreshNavFunctionSource = fs.readFileSync("supabase/functions/refresh-nav/index.ts", "utf8");
 assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_funds.py should parse MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");
 assert(updateFundsSource.includes("period_return_from_series(series, RECENT_RETURN_DAYS)"), "recent returns should still use BCD historical NAV series");
+assert(updateFundsSource.includes('if any(keyword in name for keyword in ["不配息", "累積"])'), "fund normalization should not misclassify accumulating classes as distributing");
 assert(refreshNavFunctionSource.includes("https://m.moneydj.com/a1.aspx"), "refresh-nav function should fetch MoneyDJ mobile fund pages");
 assert(refreshNavFunctionSource.includes("parseMoneyDjMobileLatestNav"), "refresh-nav function should parse MoneyDJ mobile latest NAV");
 assert(appSource.includes("fundDataLoaded"), "app.js missing fundDataLoaded guard");
@@ -382,6 +384,20 @@ assert(appSource.includes('performanceTag("3月", fund.return3m)'), "fund cards 
 assert(appSource.includes('performanceTag("1年", fund.return1y)'), "fund cards should keep only 1-year performance in tags");
 assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</span>'), "fund cards should not render dividend tags");
 assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not render extra type/currency tags");
+assert(fundBoxSource.includes('const VERSION = "1.0"'), "fund box algorithm should declare a version");
+assert(fundBoxSource.includes("confirmationDays: 3"), "fund box top and bottom should require three-day confirmation");
+assert(fundBoxSource.includes("minimumWidth: 0.1"), "fund box should have a 10% minimum width");
+assert(fundBoxSource.includes("maximumWidth: 0.2"), "fund box should reject boxes wider than 20%");
+assert(fundBoxSource.includes('status: "distribution_unadjusted"'), "fund box should block unadjusted distribution NAV");
+assert(appSource.includes("exactMonthlyNavForPurchase"), "owned-fund boxes should match exact MoneyDJ fund IDs");
+assert(appSource.includes('/(不配息|累積型|累積)/.test(name)'), "fund box distribution detection should prioritize accumulating class names");
+assert(appSource.includes("buildFundBoxStore(activePurchases)"), "same-fund purchases should share one box calculation");
+assert(appSource.includes('valuation.isSold ? "" : renderFundBoxTrigger(item)'), "sold purchases should not show fund boxes");
+assert(appSource.includes("fundBoxChart"), "fund box details should include a NAV chart");
+assert(appSource.includes("完整邏輯與算法"), "fund box modal should disclose the full algorithm");
+assert(appSource.includes("配息未還原｜暫不判斷"), "fund box UI should explain unadjusted distribution data");
+assert(styleSource.includes(".fund-box-rect.provisional"), "provisional boxes should have distinct chart styling");
+assert(styleSource.includes(".fund-box-rect.confirmed"), "confirmed boxes should have distinct chart styling");
 
 const indexSource = fs.readFileSync("index.html", "utf8");
 assert(indexSource.includes("融資餘額趨勢"), "index should include margin trend section");
@@ -391,6 +407,7 @@ for (const months of [2, 6, 12]) {
   assert(indexSource.includes(`data-twii-range="${months}"`), `index should include the ${months}-month TWII range button`);
 }
 assert(indexSource.includes('id="returnInput" type="range" min="-5" max="80" step="0.5" value="20"'), "minimum 3-year annualized return default should be 20");
+assert(indexSource.indexOf("fund-box.js") < indexSource.indexOf("app.js"), "fund box algorithm should load before the app");
 assert(!indexSource.includes('href="./#compare"'), "top navigation should not show compare");
 assert(!indexSource.includes('id="compare"'), "compare section should be removed");
 

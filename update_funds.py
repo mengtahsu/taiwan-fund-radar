@@ -1310,7 +1310,7 @@ def normalize_moneydj_domestic_fund(
         "aum": round(aum or 0.0, 2),
         "nav": round(nav or 0.0, 4),
         "navDate": nav_date,
-        "dividend": "配息" if any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型",
+        "dividend": "累積型" if any(keyword in name for keyword in ["不配息", "累積"]) else "配息" if any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型",
         "minRsp": 1000,
         "tags": tags,
         "moneyDjUrl": f"https://m.moneydj.com/a1.aspx?a={fund_code}",
@@ -1383,7 +1383,7 @@ def normalize_megabank_fund(
         "volatility": round(volatility, 2),
         "sharpe": round(sharpe, 2),
         "aum": round(aum or 0.0, 2),
-        "dividend": "配息" if any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型",
+        "dividend": "累積型" if any(keyword in name for keyword in ["不配息", "累積"]) else "配息" if any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型",
         "minRsp": 1000,
         "tags": tags,
         "moneyDjUrl": f"{MEGABANK_BASE_URL}/w/wr/wr01_{fund_code}.djhtm",
@@ -1950,7 +1950,14 @@ def normalize_fubon_fund(item: ET.Element) -> dict[str, Any] | None:
         "3": ["單筆申購", "定期定額"],
     }.get(fund_kind, ["申購"])
     interest_rate = optional_number(fubon_text(item, "WITH_INTEREST_RATE"))
-    dividend = "配息" if (interest_rate is not None and interest_rate > -900) or any(keyword in name for keyword in ["配息", "月配", "季配", "年配"]) else "累積型"
+    dividend = (
+        "累積型"
+        if any(keyword in name for keyword in ["不配息", "累積"])
+        else "配息"
+        if (interest_rate is not None and interest_rate > -900)
+        or any(keyword in name for keyword in ["配息", "月配", "季配", "年配"])
+        else "累積型"
+    )
 
     tags = [
         "富邦銀行可買",
