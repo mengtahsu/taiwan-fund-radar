@@ -313,6 +313,29 @@ body.portfolio-view .margin-section {
   gap: 4px;
 }
 
+.twii-trend-controls {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+}
+
+.twii-capital-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.twii-capital-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
 .twii-range-tabs button {
   flex: 0 0 auto;
   min-width: 42px;

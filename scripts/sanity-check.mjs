@@ -371,6 +371,9 @@ assert(appSource.includes("portfolioDailyCapital.sourceUpdatedAt === portfolioSn
 assert(!appSource.includes("!sourceMatches || portfolioSnapshotsDirty"), "fresh daily-profit calculations should remain drawable while snapshots are being saved");
 assert(appSource.includes("twiiCapitalPath"), "TWII trend should overlay the daily invested-capital series");
 assert(appSource.includes("twii-capital-line"), "TWII trend should render the invested-capital line");
+assert(appSource.includes("showTwiiCapital = true"), "TWII capital line should be visible by default");
+assert(appSource.includes('twiiCapitalToggle?.addEventListener("change"'), "TWII capital line should be user-toggleable");
+assert(appSource.includes("const capitalVisible = showTwiiCapital"), "TWII capital toggle should also control its legend and status note");
 assert(appSource.includes("renderTwiiTrendChart();\n  portfolioPeriodsLoading = true"), "purchase loading should redraw the capital overlay immediately");
 assert(updateFundsSource.includes("def moving_average"), "TWII moving averages should be calculated by the updater");
 assert(updateFundsSource.includes('"monthly": 20, "quarterly": 60'), "TWII updater should use 20-day and 60-day averages");
@@ -403,6 +406,7 @@ const indexSource = fs.readFileSync("index.html", "utf8");
 assert(indexSource.includes("融資餘額趨勢"), "index should include margin trend section");
 assert(indexSource.includes("指數、月線、季線"), "index should include TWII moving-average trend section");
 assert(indexSource.includes('id="twiiTrendChart"'), "index should include the draggable TWII trend chart");
+assert(indexSource.includes('id="twiiCapitalToggle" type="checkbox" checked'), "TWII trend should include a default-on capital-line toggle");
 for (const months of [2, 6, 12]) {
   assert(indexSource.includes(`data-twii-range="${months}"`), `index should include the ${months}-month TWII range button`);
 }

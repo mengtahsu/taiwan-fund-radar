@@ -149,6 +149,7 @@ let twiiTrendMeta = {
   visibleCount: 44
 };
 let twiiTrendDrag = null;
+let showTwiiCapital = true;
 let monthlyNavMeta = {
   source: "月底淨值未載入",
   updatedAt: null,
@@ -232,6 +233,7 @@ const els = {
   marginStatus: document.querySelector("#marginStatus"),
   twiiTrendChart: document.querySelector("#twiiTrendChart"),
   twiiTrendStatus: document.querySelector("#twiiTrendStatus"),
+  twiiCapitalToggle: document.querySelector("#twiiCapitalToggle"),
   reset: document.querySelector("#resetBtn"),
   authStatus: document.querySelector("#authStatus"),
   authForm: document.querySelector("#authForm"),
@@ -3358,16 +3360,17 @@ function renderTwiiTrendChart() {
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
   const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
-  const capitalValues = dailyCapitalValuesForRows(visibleRows);
+  const capitalValues = showTwiiCapital ? dailyCapitalValuesForRows(visibleRows) : [];
   const numericCapitalValues = capitalValues.filter(Number.isFinite);
   const capitalMaximum = numericCapitalValues.length ? Math.max(...numericCapitalValues) : 0;
   const capitalScaleMaximum = capitalMaximum > 0 ? capitalMaximum * 1.08 : 0;
   const capitalPath = twiiCapitalPath(visibleRows, capitalValues, width, height, padding, capitalScaleMaximum);
   const latest = visibleRows.at(-1);
   const latestCapital = capitalValues.length && Number.isFinite(capitalValues.at(-1)) ? capitalValues.at(-1) : null;
+  const capitalVisible = showTwiiCapital && latestCapital !== null;
 
   els.twiiTrendChart.innerHTML = `
-    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${latestCapital === null ? "" : "與每日在場本金"}">
+    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${capitalVisible ? "與每日在場本金" : ""}">
       ${twiiMonthLabels(visibleRows, width, height, padding)}
       <path class="twii-trend-line twii-ma60-line" d="${ma60Path}"></path>
       <path class="twii-trend-line twii-ma20-line" d="${ma20Path}"></path>
@@ -3379,11 +3382,11 @@ function renderTwiiTrendChart() {
       <span><i class="twii-close-dot"></i>指數 ${formatMarketPrice(latest.close)}</span>
       <span><i class="twii-ma20-dot"></i>月線 ${formatMarketPrice(latest.ma20)}</span>
       <span><i class="twii-ma60-dot"></i>季線 ${formatMarketPrice(latest.ma60)}</span>
-      ${latestCapital === null ? "" : `<span><i class="twii-capital-dot"></i>本金 ${compactTwdWan(latestCapital)}</span>`}
+      ${capitalVisible ? `<span><i class="twii-capital-dot"></i>本金 ${compactTwdWan(latestCapital)}</span>` : ""}
     </div>
   `;
   if (els.twiiTrendStatus) {
-    const capitalNote = latestCapital === null ? "" : "；本金使用獨立比例";
+    const capitalNote = capitalVisible ? "；本金使用獨立比例" : "";
     els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}`;
   }
 }
@@ -3452,6 +3455,10 @@ function initTwiiTrendInteraction() {
       twiiTrendMeta.activeMonths = TWII_TREND_MONTHS.includes(nextMonths) ? nextMonths : 2;
       renderTwiiTrendChart();
     });
+  });
+  els.twiiCapitalToggle?.addEventListener("change", () => {
+    showTwiiCapital = els.twiiCapitalToggle.checked;
+    renderTwiiTrendChart();
   });
 }
 
