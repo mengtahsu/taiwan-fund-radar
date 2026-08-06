@@ -438,7 +438,7 @@ assert((workflowSource.match(/timezone: Asia\/Taipei/g) || []).length === 6, "sc
 assert(workflowSource.includes("timezone: Asia/Taipei"), "scheduled updates should declare the Taiwan timezone");
 assert(workflowSource.includes("scripts/scheduled-update-gate.py"), "scheduled retries should use the freshness gate");
 assert(workflowSource.includes("cancel-in-progress: false"), "fallback attempts must not cancel an update already in progress");
-assert(workflowSource.includes("timeout: 1800000"), "Pages deployment should tolerate slow GitHub publishing queues");
+assert(workflowSource.includes("timeout: 600000"), "Pages deployment should use GitHub's maximum supported timeout");
 assert(workflowSource.includes("--provider twii-history"), "scheduled updates should refresh TWII moving-average history");
 
 if (failures.length) {

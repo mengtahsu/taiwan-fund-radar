@@ -137,4 +137,6 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          timeout: 1800000
+          # deploy-pages caps this at 10 minutes. A retry needs a new commit after
+          # GitHub cancels the deployment associated with the previous commit.
+          timeout: 600000
