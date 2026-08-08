@@ -856,13 +856,22 @@ function fundBoxPercent(value, digits = 1) {
   return `${percent > 0 ? "+" : ""}${percent.toFixed(digits)}%`;
 }
 
+function fundBoxWidthText(topValue, bottomValue) {
+  const top = Number(topValue);
+  const bottom = Number(bottomValue);
+  if (!Number.isFinite(top) || !Number.isFinite(bottom) || top <= 0 || bottom >= top) {
+    return "-";
+  }
+  return `${(((top - bottom) / top) * 100).toFixed(1)}%`;
+}
+
 function fundBoxStatusText(analysis) {
   const position = Number.isFinite(analysis.position) ? `${Math.round(analysis.position * 100)}%` : "-";
   switch (analysis.status) {
     case "inside":
-      return `箱內${position}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
+      return `箱內${position}｜寬${fundBoxWidthText(analysis.top, analysis.bottom)}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
     case "provisional_inside":
-      return `暫定箱內${position}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.provisionalBottom)}`;
+      return `暫定箱內${position}｜寬${fundBoxWidthText(analysis.top, analysis.provisionalBottom)}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.provisionalBottom)}`;
     case "provisional_breakdown":
       return `跌破暫定底｜低於暫定底${fundBoxPercent(analysis.difference)}`;
     case "breakout_building":
@@ -1931,19 +1940,30 @@ function fundBoxChart(entry, options = {}) {
       const right = x(visibleEnd);
       const top = y(segment.top);
       const bottom = y(segment.bottom);
-      const className = `fund-box-rect ${segment.kind}${segment.current ? " current" : " historical"}`;
-      const labels = segment.current
-        ? `
-          <text class="fund-box-bound-label" x="${Math.max(left + 40, right - 4).toFixed(1)}" y="${Math.min(bottom - 16, top + 14).toFixed(1)}" text-anchor="end">頂 ${escapeHtml(moneyNumber(segment.top))}</text>
-          <text class="fund-box-bound-label" x="${Math.max(left + 40, right - 4).toFixed(1)}" y="${Math.max(top + 30, bottom - 5).toFixed(1)}" text-anchor="end">底 ${escapeHtml(moneyNumber(segment.bottom))}</text>
-        `
-        : "";
+      const segmentKey = `${segment.startIndex}-${segment.kind}`;
+      const selected = options.selectedSegmentKey === segmentKey;
+      const className = `fund-box-rect ${segment.kind}${segment.current ? " current" : " historical"}${selected ? " selected" : ""}`;
+      const kindLabel = `${segment.current ? "" : "舊"}${segment.kind === "confirmed" ? "正式箱" : "暫定箱"}`;
+      const detailLabel = `${kindLabel}，箱頂 ${moneyNumber(segment.top)}，箱底 ${moneyNumber(segment.bottom)}，箱寬 ${fundBoxWidthText(segment.top, segment.bottom)}`;
       return `
-        <rect class="${className}" x="${left.toFixed(1)}" y="${top.toFixed(1)}" width="${Math.max(3, right - left).toFixed(1)}" height="${Math.max(2, bottom - top).toFixed(1)}"></rect>
-        ${labels}
+        <rect class="${className}" data-fund-box-segment="${escapeHtml(segmentKey)}" tabindex="0" role="button" aria-label="${escapeHtml(detailLabel)}" x="${left.toFixed(1)}" y="${top.toFixed(1)}" width="${Math.max(3, right - left).toFixed(1)}" height="${Math.max(2, bottom - top).toFixed(1)}"></rect>
       `;
     })
     .join("");
+  const selectedSegment = intersectingSegments.find(
+    (segment) => `${segment.startIndex}-${segment.kind}` === options.selectedSegmentKey
+  );
+  const selectedSegmentPopover = selectedSegment
+    ? `
+      <div class="fund-box-segment-popover" role="status">
+        <button type="button" data-fund-box-segment-close aria-label="關閉箱子資料" title="關閉">×</button>
+        <strong>${selectedSegment.current ? "" : "舊"}${selectedSegment.kind === "confirmed" ? "正式箱" : "暫定箱"}</strong>
+        <span>箱頂 ${escapeHtml(moneyNumber(selectedSegment.top))}</span>
+        <span>箱底 ${escapeHtml(moneyNumber(selectedSegment.bottom))}</span>
+        <span>箱寬 ${escapeHtml(fundBoxWidthText(selectedSegment.top, selectedSegment.bottom))}</span>
+      </div>
+    `
+    : "";
   const visibleEventTypes = new Set(["breakout", "breakdown", "false_breakout", "provisional_breakdown", "wide_breakdown"]);
   const events = (analysis.events || [])
     .filter(
@@ -2005,6 +2025,7 @@ function fundBoxChart(entry, options = {}) {
         <text class="fund-box-axis-label" x="${padding.left - 6}" y="${y(maximumValue).toFixed(1)}" text-anchor="end">${escapeHtml(moneyNumber(maximumValue))}</text>
         <text class="fund-box-axis-label" x="${padding.left - 6}" y="${y(minimumValue).toFixed(1)}" text-anchor="end">${escapeHtml(moneyNumber(minimumValue))}</text>
       </svg>
+      ${selectedSegmentPopover}
     </div>
     <div class="fund-box-legend" aria-label="箱型圖例">
       <span><i class="nav"></i>淨值</span>
@@ -2023,9 +2044,10 @@ function renderFundBoxChartSection(section, entry, state) {
 
 function setupFundBoxChart(section, entry) {
   const rows = entry.analysis.rows || [];
-  const state = { months: 2, endIndex: Math.max(0, rows.length - 1) };
+  const state = { months: 2, endIndex: Math.max(0, rows.length - 1), selectedSegmentKey: null };
   let pointerDrag = null;
   let renderFrame = 0;
+  let suppressSegmentClickUntil = 0;
   const render = () => {
     renderFundBoxChartSection(section, entry, state);
     if (pointerDrag) {
@@ -2049,6 +2071,12 @@ function setupFundBoxChart(section, entry) {
   };
 
   section.addEventListener("click", (event) => {
+    const closeSegmentButton = event.target.closest("[data-fund-box-segment-close]");
+    if (closeSegmentButton) {
+      state.selectedSegmentKey = null;
+      render();
+      return;
+    }
     const rangeButton = event.target.closest("[data-fund-box-months]");
     if (rangeButton) {
       state.months = Number(rangeButton.dataset.fundBoxMonths) === 4 ? 4 : 2;
@@ -2058,12 +2086,27 @@ function setupFundBoxChart(section, entry) {
     const shiftButton = event.target.closest("[data-fund-box-shift]");
     if (shiftButton && !shiftButton.disabled) {
       shiftWindow(shiftButton.dataset.fundBoxShift === "older" ? -1 : 1);
+      return;
+    }
+    const segment = event.target.closest("[data-fund-box-segment]");
+    if (segment && Date.now() >= suppressSegmentClickUntil) {
+      state.selectedSegmentKey = segment.dataset.fundBoxSegment;
+      render();
+    }
+  });
+
+  section.addEventListener("keydown", (event) => {
+    const segment = event.target.closest("[data-fund-box-segment]");
+    if (segment && (event.key === "Enter" || event.key === " ")) {
+      event.preventDefault();
+      state.selectedSegmentKey = segment.dataset.fundBoxSegment;
+      render();
     }
   });
 
   section.addEventListener("pointerdown", (event) => {
     const wrap = event.target.closest(".fund-box-chart-wrap");
-    if (!wrap || event.button > 0) {
+    if (!wrap || event.target.closest(".fund-box-segment-popover") || event.button > 0) {
       return;
     }
     pointerDrag = {
@@ -2071,7 +2114,8 @@ function setupFundBoxChart(section, entry) {
       startX: event.clientX,
       width: Math.max(1, wrap.clientWidth),
       visibleCount: Math.max(2, Number(wrap.dataset.visibleCount) || 20),
-      endIndex: state.endIndex
+      endIndex: state.endIndex,
+      moved: false
     };
     section.setPointerCapture(event.pointerId);
     wrap.classList.add("dragging");
@@ -2082,6 +2126,9 @@ function setupFundBoxChart(section, entry) {
       return;
     }
     const dayWidth = pointerDrag.width / Math.max(1, pointerDrag.visibleCount - 1);
+    if (Math.abs(event.clientX - pointerDrag.startX) > 6) {
+      pointerDrag.moved = true;
+    }
     const dayDelta = Math.round((event.clientX - pointerDrag.startX) / dayWidth);
     const nextEndIndex = Math.min(rows.length - 1, Math.max(0, pointerDrag.endIndex - dayDelta));
     if (nextEndIndex !== state.endIndex) {
@@ -2098,12 +2145,20 @@ function setupFundBoxChart(section, entry) {
     if (section.hasPointerCapture(event.pointerId)) {
       section.releasePointerCapture(event.pointerId);
     }
+    if (pointerDrag.moved) {
+      suppressSegmentClickUntil = Date.now() + 400;
+    }
+    const needsFinalRender = Boolean(renderFrame);
     if (renderFrame) {
       cancelAnimationFrame(renderFrame);
       renderFrame = 0;
     }
     pointerDrag = null;
-    render();
+    if (needsFinalRender) {
+      render();
+    } else {
+      section.querySelector(".fund-box-chart-wrap")?.classList.remove("dragging");
+    }
   };
   section.addEventListener("pointerup", endPointer);
   section.addEventListener("pointercancel", endPointer);

@@ -1578,6 +1578,7 @@ textarea {
 }
 
 .fund-box-chart-wrap {
+  position: relative;
   width: 100%;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -1605,7 +1606,19 @@ textarea {
 }
 
 .fund-box-rect {
+  cursor: pointer;
+  pointer-events: all;
   stroke-width: 2;
+}
+
+.fund-box-rect.selected {
+  opacity: 1;
+  stroke-width: 4;
+}
+
+.fund-box-rect:focus-visible {
+  outline: none;
+  stroke-width: 4;
 }
 
 .fund-box-rect.confirmed {
@@ -1621,6 +1634,53 @@ textarea {
 
 .fund-box-rect.historical {
   opacity: 0.4;
+}
+
+.fund-box-rect.historical.selected,
+.fund-box-rect.historical:focus-visible {
+  opacity: 1;
+}
+
+.fund-box-segment-popover {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  align-items: center;
+  gap: 3px 10px;
+  width: max-content;
+  max-width: calc(100% - 20px);
+  padding: 7px 38px 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 4px 14px rgba(20, 31, 27, 0.14);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+  transform: translateX(-50%);
+}
+
+.fund-box-segment-popover strong {
+  grid-column: 1 / -1;
+  color: var(--accent-dark);
+  font-size: 13px;
+}
+
+.fund-box-segment-popover button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 19px;
+  line-height: 1;
 }
 
 .fund-box-nav-line {
