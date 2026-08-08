@@ -1868,19 +1868,47 @@ function fundBoxEventLabel(type) {
   return labels[type] || "";
 }
 
-function fundBoxChart(entry) {
+function fundBoxVisibleWindow(rows, months, requestedEndIndex) {
+  const endIndex = Math.min(rows.length - 1, Math.max(0, Number.isFinite(requestedEndIndex) ? requestedEndIndex : rows.length - 1));
+  const endDate = new Date(`${rows[endIndex]?.date || ""}T00:00:00Z`);
+  const cutoff = new Date(endDate);
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - months);
+  const cutoffValue = cutoff.toISOString().slice(0, 10);
+  let startIndex = 0;
+  for (let index = endIndex; index >= 0; index -= 1) {
+    if (rows[index].date < cutoffValue) {
+      startIndex = index + 1;
+      break;
+    }
+  }
+  return {
+    startIndex,
+    endIndex,
+    rows: rows.slice(startIndex, endIndex + 1)
+  };
+}
+
+function fundBoxChart(entry, options = {}) {
   const { analysis } = entry;
   const holdingDecision = window.FundBox?.holdingDecision?.(analysis);
   const rows = analysis.rows || [];
   if (rows.length < 2) {
     return '<div class="fund-box-chart-empty">每日淨值資料不足，暫時無法繪圖。</div>';
   }
-  const width = 680;
-  const height = 300;
-  const padding = { top: 24, right: 30, bottom: 42, left: 42 };
-  const values = rows.map((row) => row.nav);
-  (analysis.segments || []).forEach((segment) => values.push(segment.top, segment.bottom));
-  if (Number(holdingDecision?.bottom) > 0) {
+  const months = Number(options.months) === 4 ? 4 : 2;
+  const windowData = fundBoxVisibleWindow(rows, months, options.endIndex);
+  const visibleRows = windowData.rows;
+  const atStart = windowData.startIndex === 0;
+  const atEnd = windowData.endIndex === rows.length - 1;
+  const width = Math.max(290, Math.floor(Number(options.width) || 360));
+  const height = width < 440 ? 268 : 300;
+  const padding = { top: 28, right: 14, bottom: 38, left: width < 440 ? 56 : 58 };
+  const intersectingSegments = (analysis.segments || []).filter(
+    (segment) => segment.endIndex >= windowData.startIndex && segment.startIndex <= windowData.endIndex
+  );
+  const values = visibleRows.map((row) => row.nav);
+  intersectingSegments.forEach((segment) => values.push(segment.top, segment.bottom));
+  if (atEnd && Number(holdingDecision?.bottom) > 0) {
     values.push(Number(holdingDecision.bottom));
   }
   const minimumValue = Math.min(...values);
@@ -1890,15 +1918,17 @@ function fundBoxChart(entry) {
   const maximum = maximumValue + domainPadding;
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
-  const x = (index) => padding.left + (index / Math.max(1, rows.length - 1)) * plotWidth;
+  const x = (index) => padding.left + ((index - windowData.startIndex) / Math.max(1, visibleRows.length - 1)) * plotWidth;
   const y = (value) => padding.top + (1 - (value - minimum) / Math.max(0.0001, maximum - minimum)) * plotHeight;
-  const navPath = rows
-    .map((row, index) => `${index ? "L" : "M"}${x(index).toFixed(1)} ${y(row.nav).toFixed(1)}`)
+  const navPath = visibleRows
+    .map((row, index) => `${index ? "L" : "M"}${x(windowData.startIndex + index).toFixed(1)} ${y(row.nav).toFixed(1)}`)
     .join(" ");
-  const segments = (analysis.segments || [])
+  const segments = intersectingSegments
     .map((segment) => {
-      const left = x(segment.startIndex);
-      const right = x(Math.max(segment.startIndex, segment.endIndex));
+      const visibleStart = Math.max(segment.startIndex, windowData.startIndex);
+      const visibleEnd = Math.min(Math.max(segment.startIndex, segment.endIndex), windowData.endIndex);
+      const left = x(visibleStart);
+      const right = x(visibleEnd);
       const top = y(segment.top);
       const bottom = y(segment.bottom);
       const className = `fund-box-rect ${segment.kind}${segment.current ? " current" : " historical"}`;
@@ -1916,7 +1946,9 @@ function fundBoxChart(entry) {
     .join("");
   const visibleEventTypes = new Set(["breakout", "breakdown", "false_breakout", "provisional_breakdown", "wide_breakdown"]);
   const events = (analysis.events || [])
-    .filter((event) => visibleEventTypes.has(event.type))
+    .filter(
+      (event) => visibleEventTypes.has(event.type) && event.index >= windowData.startIndex && event.index <= windowData.endIndex
+    )
     .map((event) => {
       const label = fundBoxEventLabel(event.type);
       const eventX = x(event.index);
@@ -1930,7 +1962,7 @@ function fundBoxChart(entry) {
   const purchaseMarkers = entry.purchases
     .map((purchase, markerIndex) => {
       const index = rows.findIndex((row) => row.date >= purchase.buy_date);
-      if (index < 0 || purchase.buy_date > rows.at(-1).date) {
+      if (index < windowData.startIndex || index > windowData.endIndex) {
         return "";
       }
       const markerX = x(index);
@@ -1940,7 +1972,7 @@ function fundBoxChart(entry) {
       `;
     })
     .join("");
-  const stopBottom = Number(holdingDecision?.bottom);
+  const stopBottom = atEnd ? Number(holdingDecision?.bottom) : 0;
   const stopLine = stopBottom > 0
     ? `
       <line class="fund-box-stop-line" x1="${padding.left}" y1="${y(stopBottom).toFixed(1)}" x2="${width - padding.right}" y2="${y(stopBottom).toFixed(1)}"></line>
@@ -1949,8 +1981,18 @@ function fundBoxChart(entry) {
     : "";
   const dateLabel = (value) => String(value || "").slice(5).replace("-", "/");
   return `
-    <div class="fund-box-chart-wrap">
-      <svg class="fund-box-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(entry.name)}最近${rows.length}個交易日淨值與箱型">
+    <div class="fund-box-chart-toolbar">
+      <div class="fund-box-range-tabs" aria-label="圖表顯示期間">
+        <button type="button" data-fund-box-months="2" class="${months === 2 ? "active" : ""}">2月</button>
+        <button type="button" data-fund-box-months="4" class="${months === 4 ? "active" : ""}">4月</button>
+      </div>
+      <div class="fund-box-chart-nav">
+        <button type="button" data-fund-box-shift="older" aria-label="查看更早區間" title="查看更早區間" ${atStart ? "disabled" : ""}>‹</button>
+        <button type="button" data-fund-box-shift="newer" aria-label="查看較新區間" title="查看較新區間" ${atEnd ? "disabled" : ""}>›</button>
+      </div>
+    </div>
+    <div class="fund-box-chart-wrap" data-visible-count="${visibleRows.length}">
+      <svg class="fund-box-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(entry.name)} ${escapeHtml(visibleRows[0].date)} 至 ${escapeHtml(visibleRows.at(-1).date)}淨值與箱型">
         <line class="fund-box-grid" x1="${padding.left}" y1="${y(maximumValue).toFixed(1)}" x2="${width - padding.right}" y2="${y(maximumValue).toFixed(1)}"></line>
         <line class="fund-box-grid" x1="${padding.left}" y1="${y(minimumValue).toFixed(1)}" x2="${width - padding.right}" y2="${y(minimumValue).toFixed(1)}"></line>
         ${segments}
@@ -1958,8 +2000,8 @@ function fundBoxChart(entry) {
         ${purchaseMarkers}
         <path class="fund-box-nav-line" d="${navPath}"></path>
         ${events}
-        <text class="fund-box-axis-label" x="${padding.left}" y="${height - 8}" text-anchor="start">${escapeHtml(dateLabel(rows[0].date))}</text>
-        <text class="fund-box-axis-label" x="${width - padding.right}" y="${height - 8}" text-anchor="end">${escapeHtml(dateLabel(rows.at(-1).date))}</text>
+        <text class="fund-box-axis-label" x="${padding.left}" y="${height - 8}" text-anchor="start">${escapeHtml(dateLabel(visibleRows[0].date))}</text>
+        <text class="fund-box-axis-label" x="${width - padding.right}" y="${height - 8}" text-anchor="end">${escapeHtml(dateLabel(visibleRows.at(-1).date))}</text>
         <text class="fund-box-axis-label" x="${padding.left - 6}" y="${y(maximumValue).toFixed(1)}" text-anchor="end">${escapeHtml(moneyNumber(maximumValue))}</text>
         <text class="fund-box-axis-label" x="${padding.left - 6}" y="${y(minimumValue).toFixed(1)}" text-anchor="end">${escapeHtml(moneyNumber(minimumValue))}</text>
       </svg>
@@ -1972,6 +2014,71 @@ function fundBoxChart(entry) {
       ${stopBottom > 0 ? '<span><i class="stop"></i>停損箱底</span>' : ""}
     </div>
   `;
+}
+
+function renderFundBoxChartSection(section, entry, state) {
+  const width = Math.max(290, Math.floor(section.clientWidth || 360));
+  section.innerHTML = fundBoxChart(entry, { ...state, width });
+}
+
+function setupFundBoxChart(section, entry) {
+  const rows = entry.analysis.rows || [];
+  const state = { months: 2, endIndex: Math.max(0, rows.length - 1) };
+  let pointerStart = null;
+  const render = () => renderFundBoxChartSection(section, entry, state);
+  const shiftWindow = (direction, amount = null) => {
+    const windowData = fundBoxVisibleWindow(rows, state.months, state.endIndex);
+    const pageSize = amount || Math.max(5, windowData.rows.length - 5);
+    state.endIndex = Math.min(rows.length - 1, Math.max(0, state.endIndex + direction * pageSize));
+    render();
+  };
+
+  section.addEventListener("click", (event) => {
+    const rangeButton = event.target.closest("[data-fund-box-months]");
+    if (rangeButton) {
+      state.months = Number(rangeButton.dataset.fundBoxMonths) === 4 ? 4 : 2;
+      render();
+      return;
+    }
+    const shiftButton = event.target.closest("[data-fund-box-shift]");
+    if (shiftButton && !shiftButton.disabled) {
+      shiftWindow(shiftButton.dataset.fundBoxShift === "older" ? -1 : 1);
+    }
+  });
+
+  section.addEventListener("pointerdown", (event) => {
+    const wrap = event.target.closest(".fund-box-chart-wrap");
+    if (!wrap || event.button > 0) {
+      return;
+    }
+    pointerStart = { x: event.clientX, width: wrap.clientWidth, endIndex: state.endIndex };
+    wrap.classList.add("dragging");
+  });
+
+  const finishPointer = (event) => {
+    if (!pointerStart) {
+      return;
+    }
+    const wrap = section.querySelector(".fund-box-chart-wrap");
+    const delta = event.clientX - pointerStart.x;
+    const visibleCount = Number(wrap?.dataset.visibleCount) || 20;
+    if (Math.abs(delta) >= 24) {
+      state.endIndex = pointerStart.endIndex;
+      const amount = Math.max(3, Math.round((Math.abs(delta) / Math.max(1, pointerStart.width)) * visibleCount));
+      shiftWindow(delta < 0 ? 1 : -1, amount);
+    }
+    wrap?.classList.remove("dragging");
+    pointerStart = null;
+  };
+  section.addEventListener("pointerup", finishPointer);
+  section.addEventListener("pointercancel", finishPointer);
+
+  if (typeof ResizeObserver === "function") {
+    const resizeObserver = new ResizeObserver(() => render());
+    resizeObserver.observe(section);
+    section._fundBoxResizeObserver = resizeObserver;
+  }
+  render();
 }
 
 function fundBoxCurrentCalculation(entry) {
@@ -2047,7 +2154,7 @@ function renderFundBoxDetail(entry) {
       <small>最新淨值 ${escapeHtml(latestNav)}｜${escapeHtml(latestDate)}</small>
     </div>
     ${blockedNotice}
-    ${fundBoxChart(entry)}
+    <section class="fund-box-chart-section" aria-label="箱型圖"></section>
     <section class="fund-box-method">
       <h4>這檔基金怎麼算</h4>
       ${fundBoxCurrentCalculation(entry)}
@@ -2069,6 +2176,7 @@ function renderFundBoxDetail(entry) {
         <li>突破箱頂後保留舊箱供參考並向上築新箱；新箱成立前跌回舊頂以下，標示為突破失敗。</li>
         <li>跌破暫定底是風險警示，但仍等待自然底確認；跌破正式底則讓舊箱失效並重新築箱。</li>
         <li>正式箱底只從自然底確認日開始生效，系統不使用未來資料回頭改寫當時的歷史訊號。</li>
+        <li>圖表可選 2 個月或 4 個月，並依目前畫面內的淨值與箱體重新計算垂直比例；切換或左右移動圖表只影響顯示，不會改變箱型、買點或停損算法。</li>
         <li>配息型基金必須使用可靠的還原淨值；無法還原時不判斷箱型。所有狀態只供觀察，不構成買賣建議。</li>
       </ol>
     </section>
@@ -2114,13 +2222,12 @@ function showFundBoxModal(key) {
   }
   const modal = ensureFundBoxModal();
   modal.querySelector("#fundBoxTitle").textContent = displayFundName(entry.name) || entry.name;
+  modal.querySelector(".fund-box-chart-section")?._fundBoxResizeObserver?.disconnect();
   modal.querySelector(".fund-box-modal-body").innerHTML = renderFundBoxDetail(entry);
   modal.hidden = false;
-  const chartWrap = modal.querySelector(".fund-box-chart-wrap");
-  if (chartWrap) {
-    window.requestAnimationFrame(() => {
-      chartWrap.scrollLeft = chartWrap.scrollWidth;
-    });
+  const chartSection = modal.querySelector(".fund-box-chart-section");
+  if (chartSection) {
+    setupFundBoxChart(chartSection, entry);
   }
   modal.querySelector(".period-modal-close").focus();
 }

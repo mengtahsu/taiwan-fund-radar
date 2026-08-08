@@ -411,6 +411,13 @@ assert(appSource.includes("賣點判斷"), "fund box modal should show a separat
 assert(appSource.includes("不停利，只停損"), "fund box explanation should preserve long-term winners and only stop losses");
 assert(appSource.includes("fund-box-stop-line"), "fund box chart should draw the active stop-loss bottom");
 assert(appSource.includes("停損箱底"), "fund box chart should label the active stop-loss bottom");
+assert(appSource.includes("function fundBoxVisibleWindow"), "fund box chart should calculate a calendar-month viewport");
+assert(appSource.includes('data-fund-box-months="2"'), "fund box chart should offer a two-month view");
+assert(appSource.includes('data-fund-box-months="4"'), "fund box chart should offer a four-month view");
+assert(appSource.includes('addEventListener("pointerdown"'), "fund box chart should support horizontal finger navigation");
+assert(appSource.includes("section.clientWidth"), "fund box SVG should use the actual displayed width instead of shrinking fixed coordinates");
+assert(styleSource.includes("touch-action: pan-y"), "fund box chart should reserve horizontal gestures while preserving vertical page scrolling");
+assert(styleSource.includes(".fund-box-range-tabs button.active"), "fund box range control should visibly identify the selected range");
 assert(appSource.includes("技術狀態："), "fund box modal should keep the technical state as supporting detail");
 assert(appSource.includes("配息未還原｜暫不判斷"), "fund box UI should explain unadjusted distribution data");
 assert(styleSource.includes(".fund-box-rect.provisional"), "provisional boxes should have distinct chart styling");
