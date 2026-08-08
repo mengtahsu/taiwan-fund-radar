@@ -362,6 +362,9 @@ assert(appSource.includes("shiftIsoDateMonths"), "TWII range selection should us
 assert(appSource.includes("renderTwiiTrendChart"), "app.js should render the TWII moving-average chart");
 assert(appSource.includes('fetch("data/twii_history.json"'), "app.js should load TWII history data");
 assert(appSource.includes('addEventListener("pointermove"'), "TWII trend should support finger dragging");
+assert(appSource.includes('section.addEventListener("pointermove"'), "Fund box chart should redraw while the finger is moving");
+assert(appSource.includes("section.setPointerCapture(event.pointerId)"), "Fund box chart should retain pointer capture while dragging");
+assert(appSource.includes("requestAnimationFrame"), "Interactive charts should throttle redraws with animation frames");
 assert(appSource.includes("twiiMonthLabels"), "TWII trend should label months and year boundaries");
 assert(!appSource.includes("function capitalAtDate"), "TWII trend must not recalculate capital with a separate buy/sell shortcut");
 assert(appSource.includes('DAILY_CAPITAL_SELECT = "period_key,period_date,invested,source_updated_at"'), "TWII trend should read the same invested field as daily profit");

@@ -2024,8 +2024,23 @@ function renderFundBoxChartSection(section, entry, state) {
 function setupFundBoxChart(section, entry) {
   const rows = entry.analysis.rows || [];
   const state = { months: 2, endIndex: Math.max(0, rows.length - 1) };
-  let pointerStart = null;
-  const render = () => renderFundBoxChartSection(section, entry, state);
+  let pointerDrag = null;
+  let renderFrame = 0;
+  const render = () => {
+    renderFundBoxChartSection(section, entry, state);
+    if (pointerDrag) {
+      section.querySelector(".fund-box-chart-wrap")?.classList.add("dragging");
+    }
+  };
+  const scheduleRender = () => {
+    if (renderFrame) {
+      return;
+    }
+    renderFrame = requestAnimationFrame(() => {
+      renderFrame = 0;
+      render();
+    });
+  };
   const shiftWindow = (direction, amount = null) => {
     const windowData = fundBoxVisibleWindow(rows, state.months, state.endIndex);
     const pageSize = amount || Math.max(5, windowData.rows.length - 5);
@@ -2051,30 +2066,50 @@ function setupFundBoxChart(section, entry) {
     if (!wrap || event.button > 0) {
       return;
     }
-    pointerStart = { x: event.clientX, width: wrap.clientWidth, endIndex: state.endIndex };
+    pointerDrag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      width: Math.max(1, wrap.clientWidth),
+      visibleCount: Math.max(2, Number(wrap.dataset.visibleCount) || 20),
+      endIndex: state.endIndex
+    };
+    section.setPointerCapture(event.pointerId);
     wrap.classList.add("dragging");
   });
 
-  const finishPointer = (event) => {
-    if (!pointerStart) {
+  section.addEventListener("pointermove", (event) => {
+    if (!pointerDrag || event.pointerId !== pointerDrag.pointerId) {
       return;
     }
-    const wrap = section.querySelector(".fund-box-chart-wrap");
-    const delta = event.clientX - pointerStart.x;
-    const visibleCount = Number(wrap?.dataset.visibleCount) || 20;
-    if (Math.abs(delta) >= 24) {
-      state.endIndex = pointerStart.endIndex;
-      const amount = Math.max(3, Math.round((Math.abs(delta) / Math.max(1, pointerStart.width)) * visibleCount));
-      shiftWindow(delta < 0 ? 1 : -1, amount);
+    const dayWidth = pointerDrag.width / Math.max(1, pointerDrag.visibleCount - 1);
+    const dayDelta = Math.round((event.clientX - pointerDrag.startX) / dayWidth);
+    const nextEndIndex = Math.min(rows.length - 1, Math.max(0, pointerDrag.endIndex - dayDelta));
+    if (nextEndIndex !== state.endIndex) {
+      event.preventDefault();
+      state.endIndex = nextEndIndex;
+      scheduleRender();
     }
-    wrap?.classList.remove("dragging");
-    pointerStart = null;
+  });
+
+  const endPointer = (event) => {
+    if (!pointerDrag || event.pointerId !== pointerDrag.pointerId) {
+      return;
+    }
+    if (section.hasPointerCapture(event.pointerId)) {
+      section.releasePointerCapture(event.pointerId);
+    }
+    if (renderFrame) {
+      cancelAnimationFrame(renderFrame);
+      renderFrame = 0;
+    }
+    pointerDrag = null;
+    render();
   };
-  section.addEventListener("pointerup", finishPointer);
-  section.addEventListener("pointercancel", finishPointer);
+  section.addEventListener("pointerup", endPointer);
+  section.addEventListener("pointercancel", endPointer);
 
   if (typeof ResizeObserver === "function") {
-    const resizeObserver = new ResizeObserver(() => render());
+    const resizeObserver = new ResizeObserver(() => scheduleRender());
     resizeObserver.observe(section);
     section._fundBoxResizeObserver = resizeObserver;
   }
