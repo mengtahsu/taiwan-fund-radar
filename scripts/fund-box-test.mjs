@@ -18,99 +18,66 @@ function rows(values, start = "2026-01-01") {
 }
 
 const testOptions = {
-  minimumPoints: 1,
   staleDays: 9999,
   now: "2026-03-01T00:00:00Z"
 };
 
-const narrow = analyzeFundBox(
-  rows([100, 105, 110, 109, 108, 109, 106, 103, 104, 105, 104, 106.81]),
-  testOptions
-);
-assert(narrow.status === "inside", `narrow box should be active, got ${narrow.status}`);
-assert(Math.abs(narrow.top - 110) < 0.0001, "narrow box top should be 110");
-assert(Math.abs(narrow.bottom - 99) < 0.0001, "narrow box should expand to the 10% floor");
-assert(Math.abs(narrow.position - 0.71) < 0.002, "narrow box position should be about 71%");
-assert(narrow.segments[0].startIndex === 5, "provisional box must start on top confirmation day");
-assert(narrow.segments[1].startIndex === 10, "confirmed box must start on bottom confirmation day without repainting history");
+const rising = analyzeFundBox(rows([100, 110, 120]), testOptions);
+assert(rising.status === "inside", `rising fund should remain inside its box, got ${rising.status}`);
+assert(Math.abs(rising.top - 120) < 0.0001, "box top should follow the highest NAV");
+assert(Math.abs(rising.bottom - 96) < 0.0001, "box bottom should remain exactly 20% below the top");
+assert(rising.segments.length === 3, "each new high should raise the visible trailing box");
 
-const natural = analyzeFundBox(
-  rows([100, 105, 110, 109, 108, 109, 102, 95, 96, 97, 98, 100]),
-  testOptions
-);
-assert(natural.status === "inside", `natural box should be active, got ${natural.status}`);
-assert(Math.abs(natural.bottom - 95) < 0.0001, "13.6% natural bottom should be retained");
+const pullback = analyzeFundBox(rows([100, 120, 115, 108, 105]), testOptions);
+assert(Math.abs(pullback.top - 120) < 0.0001, "a pullback must not lower the box top");
+assert(Math.abs(pullback.bottom - 96) < 0.0001, "a pullback must not lower the box bottom");
+assert(holdingDecision(pullback).label === "尚未跌破箱底", "a value above the trailing floor should remain a hold");
 
-const provisional = analyzeFundBox(
-  rows([100, 105, 110, 109, 108, 109, 106, 104]),
-  testOptions
-);
-assert(provisional.status === "provisional_inside", "unconfirmed natural bottom should use a provisional box");
-assert(Math.abs(provisional.provisionalBottom - 99) < 0.0001, "provisional bottom should be 10% below top");
+const raisedAgain = analyzeFundBox(rows([100, 120, 110, 130, 125]), testOptions);
+assert(Math.abs(raisedAgain.top - 130) < 0.0001, "a later all-time high should raise the box again");
+assert(Math.abs(raisedAgain.bottom - 104) < 0.0001, "the raised box should keep a 20% width");
 
-const provisionalBreakdown = analyzeFundBox(
-  rows([100, 105, 110, 109, 108, 109, 98]),
-  testOptions
-);
-assert(provisionalBreakdown.status === "provisional_breakdown", "provisional floor breach should be visible");
-assert(provisionalBreakdown.difference < 0, "provisional breach difference should be negative");
+const breakdown = analyzeFundBox(rows([100, 120, 110, 95]), testOptions);
+assert(breakdown.status === "trailing_breakdown", "the first NAV at or below the floor should be visible immediately");
+assert(holdingDecision(breakdown).label === "跌破箱底", "a trailing-floor breach should display a clear warning");
+assert(holdingDecision(breakdown).detail.includes("由你判斷"), "the site must leave the redemption decision to the user");
 
-const wide = analyzeFundBox(
-  rows([100, 105, 110, 109, 108, 109, 90, 80, 82, 83, 84, 85]),
-  testOptions
-);
-assert(wide.status === "wide_rebuilding", `box wider than 20% should rebuild, got ${wide.status}`);
+const restoredPeak = analyzeFundBox(rows([130, 125, 128], "2026-02-01"), {
+  ...testOptions,
+  trackingStartDate: "2025-06-01",
+  peakSeeds: [{ date: "2025-10-10", nav: 150 }]
+});
+assert(Math.abs(restoredPeak.top - 150) < 0.0001, "a saved historical peak must survive a shortened chart history");
+assert(Math.abs(restoredPeak.bottom - 120) < 0.0001, "a restored peak should restore the same trailing floor");
 
-const breakout = analyzeFundBox(
-  rows([100, 105, 110, 109, 108, 109, 102, 95, 96, 97, 98, 111, 113]),
-  testOptions
-);
-assert(breakout.status === "breakout_building", `upward breach should build a new box, got ${breakout.status}`);
+const purchaseSeed = analyzeFundBox(rows([96, 98, 97], "2026-02-01"), {
+  ...testOptions,
+  trackingStartDate: "2026-01-15",
+  peakSeeds: [{ date: "2026-01-15", nav: 100 }]
+});
+assert(Math.abs(purchaseSeed.top - 100) < 0.0001, "the purchase NAV should seed a box before chart history begins");
+assert(Math.abs(purchaseSeed.bottom - 80) < 0.0001, "the purchase-seeded box should use a 20% floor");
 
-const falseBreakout = analyzeFundBox(
-  rows([100, 105, 110, 109, 108, 109, 102, 95, 96, 97, 98, 111, 109]),
-  testOptions
-);
-assert(falseBreakout.status === "false_breakout", `return below old top should be a false breakout, got ${falseBreakout.status}`);
-
-const distributionBlocked = analyzeFundBox(rows([100, 101, 102]), {
+const distributionBlocked = analyzeFundBox(rows([100, 101, 80]), {
   ...testOptions,
   distributing: true,
   adjusted: false
 });
-assert(distributionBlocked.status === "distribution_unadjusted", "raw distribution NAV must not produce box signals");
+assert(distributionBlocked.status === "distribution_unadjusted", "raw distributions must not create false box breaches");
 
-const stale = analyzeFundBox(rows(Array.from({ length: 20 }, (_, index) => 100 + index), "2025-01-01"), {
+const stale = analyzeFundBox(rows([100, 120, 115], "2025-01-01"), {
   now: "2026-03-01T00:00:00Z"
 });
-assert(stale.status === "stale", "stale NAV history must not produce current signals");
+assert(stale.status === "stale", "stale NAV history must not produce a current sell warning");
+assert(Math.abs(stale.bottom - 96) < 0.0001, "a stale box should remain visible even though its signal is paused");
 
 const stableLowRows = rows([110, 108, 104, 100, 95, 90, 91, 92, 93]);
-const stableLowAnalysis = { ...narrow, rows: stableLowRows, latest: stableLowRows.at(-1), status: "inside" };
+const stableLow = analyzeFundBox(stableLowRows, testOptions);
 const freshLowRows = rows([110, 108, 104, 100, 95, 90]);
-const freshLowAnalysis = { ...narrow, rows: freshLowRows, latest: freshLowRows.at(-1), status: "inside" };
-assert(buyDecision(stableLowAnalysis).label === "低點區可分批", "a stabilized multi-month low should allow installments");
-assert(buyDecision(freshLowAnalysis).label === "低點尚未止穩", "a fresh low should wait for three stable trading days");
-assert(buyDecision(breakout).label === "先等低點區", "a breakout far above the multi-month low should wait");
-assert(buyDecision(distributionBlocked).label === "低點無法判斷", "blocked distribution data must not produce a low-zone judgment");
+const freshLow = analyzeFundBox(freshLowRows, testOptions);
+assert(buyDecision(stableLow).label === "低點區可分批", "a stabilized multi-month low should allow installments");
+assert(buyDecision(freshLow).label === "低點尚未止穩", "a fresh low should wait for three stable trading days");
+assert(buyDecision(breakdown).label === "暫緩加碼", "a broken trailing floor should warn against adding");
+assert(buyDecision(distributionBlocked).label === "低點無法判斷", "blocked distribution data must not produce an entry signal");
 
-const threeDayBreakdown = {
-  ...narrow,
-  status: "breakdown_rebuilding",
-  reference: { bottom: 99, kind: "confirmed" },
-  rows: rows([102, 100, 98, 97, 96]),
-  latest: { date: "2026-01-05", nav: 96 }
-};
-const oneDayBreakdown = {
-  ...threeDayBreakdown,
-  rows: rows([102, 100, 98]),
-  latest: { date: "2026-01-03", nav: 98 }
-};
-assert(holdingDecision(narrow).label === "續抱，不停利", "a healthy box should remain a hold without profit-taking");
-assert(Math.abs(holdingDecision(narrow).bottom - 99) < 0.0001, "a healthy box should expose its active stop-loss bottom");
-assert(holdingDecision(falseBreakout).label === "續抱，不停利", "a failed breakout above the confirmed bottom should not trigger profit-taking");
-assert(holdingDecision(provisionalBreakdown).label === "停損警戒", "a provisional bottom breach should expose a stop-loss warning");
-assert(holdingDecision(oneDayBreakdown).label === "停損警戒", "the first close below a confirmed bottom should only warn");
-assert(holdingDecision(threeDayBreakdown).label === "停損訊號", "three closes below a confirmed bottom should trigger a stop-loss signal");
-
-console.log("Fund box tests passed: 9 scenarios, 4 entry decisions, and 5 holding decisions");
+console.log("Fund box tests passed: 8 trailing-box scenarios and 4 entry decisions");

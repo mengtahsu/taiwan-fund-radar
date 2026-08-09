@@ -198,6 +198,8 @@ let portfolioSnapshotsSaving = false;
 let periodDetailStore = new Map();
 let periodHistoryStore = new Map();
 let fundBoxStore = new Map();
+let fundTrailingBoxes = new Map();
+let fundTrailingBoxesSupported = true;
 let fundDisplayLimit = DISPLAY_LIMIT;
 let portfolioPeriodsLoading = false;
 
@@ -870,18 +872,8 @@ function fundBoxStatusText(analysis) {
   switch (analysis.status) {
     case "inside":
       return `箱內${position}｜寬${fundBoxWidthText(analysis.top, analysis.bottom)}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
-    case "provisional_inside":
-      return `暫定箱內${position}｜寬${fundBoxWidthText(analysis.top, analysis.provisionalBottom)}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.provisionalBottom)}`;
-    case "provisional_breakdown":
-      return `跌破暫定底｜低於暫定底${fundBoxPercent(analysis.difference)}`;
-    case "breakout_building":
-      return `突破築箱中｜高於舊頂${fundBoxPercent(analysis.difference)}`;
-    case "false_breakout":
-      return `突破失敗｜跌回舊頂${fundBoxPercent(analysis.difference)}`;
-    case "breakdown_rebuilding":
-      return `跌破正式底｜低於正式底${fundBoxPercent(analysis.difference)}`;
-    case "wide_rebuilding":
-      return "跌破重築｜自然箱寬超過20%";
+    case "trailing_breakdown":
+      return `跌破箱底${fundBoxPercent(analysis.difference)}｜寬20.0%｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
     case "distribution_unadjusted":
       return "配息未還原｜暫不判斷";
     case "stale":
@@ -900,47 +892,174 @@ function fundBoxToneClass(analysis) {
   if (analysis.tone === "positive") {
     return "positive";
   }
-  if (["distribution_unadjusted", "stale", "insufficient", "forming"].includes(analysis.status)) {
+  if (["distribution_unadjusted", "stale", "insufficient"].includes(analysis.status)) {
     return "muted";
   }
   return "normal";
 }
 
+async function loadFundTrailingBoxes() {
+  if (!db || !currentUser || !fundTrailingBoxesSupported) {
+    fundTrailingBoxes = new Map();
+    return;
+  }
+  const { data, error } = await db
+    .from("fund_trailing_boxes")
+    .select("fund_id,tracking_start_date,peak_nav,peak_date,updated_at")
+    .eq("user_id", currentUser.id);
+  if (error) {
+    fundTrailingBoxesSupported = false;
+    fundTrailingBoxes = new Map();
+    return;
+  }
+  fundTrailingBoxes = new Map((data || []).map((row) => [String(row.fund_id), row]));
+}
+
+function persistFundTrailingBox(entry) {
+  if (!currentUser || !entry?.key || !Number.isFinite(Number(entry.analysis?.top))) {
+    return;
+  }
+  const existing = fundTrailingBoxes.get(entry.key);
+  const trackingStartDate = existing?.tracking_start_date && existing.tracking_start_date < entry.trackingStartDate
+    ? existing.tracking_start_date
+    : entry.trackingStartDate;
+  const peakNav = Number(entry.analysis.top);
+  const peakDate = String(entry.analysis.peakDate || entry.analysis.latest?.date || trackingStartDate);
+  const unchanged =
+    existing &&
+    Number(existing.peak_nav) === peakNav &&
+    String(existing.peak_date) === peakDate &&
+    String(existing.tracking_start_date) === trackingStartDate;
+  if (unchanged) {
+    return;
+  }
+  const row = {
+    user_id: currentUser.id,
+    fund_id: entry.key,
+    tracking_start_date: trackingStartDate,
+    peak_nav: peakNav,
+    peak_date: peakDate,
+    updated_at: new Date().toISOString()
+  };
+  fundTrailingBoxes.set(entry.key, row);
+  if (!db || !fundTrailingBoxesSupported) {
+    return;
+  }
+  void db
+    .from("fund_trailing_boxes")
+    .upsert(row, { onConflict: "user_id,fund_id" })
+    .then(({ error }) => {
+      if (error) {
+        fundTrailingBoxesSupported = false;
+      }
+    });
+}
+
+function cleanupInactiveFundTrailingBoxes(activePurchases) {
+  const activeIds = new Set(activePurchases.map(fundBoxKeyForPurchase));
+  [...fundTrailingBoxes.keys()].forEach((fundId) => {
+    if (activeIds.has(fundId)) {
+      return;
+    }
+    fundTrailingBoxes.delete(fundId);
+    if (db && currentUser && fundTrailingBoxesSupported) {
+      void db
+        .from("fund_trailing_boxes")
+        .delete()
+        .eq("user_id", currentUser.id)
+        .eq("fund_id", fundId);
+    }
+  });
+}
+
+function isoDateFromShortNavDate(value) {
+  const date = parseShortNavDate(value);
+  if (!date) {
+    return "";
+  }
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function buildFundBoxStore(activePurchases) {
-  const nextStore = new Map();
+  const grouped = new Map();
   activePurchases.forEach((item) => {
     const key = fundBoxKeyForPurchase(item);
-    let entry = nextStore.get(key);
-    if (!entry) {
-      const fund = currentFundForPurchase(item);
-      const navItem = exactMonthlyNavForPurchase(item);
-      const distributing = isDistributingFund(fund, item);
-      const adjusted = navItem?.adjusted === true || navItem?.navType === "adjusted";
-      const analysis = window.FundBox
-        ? window.FundBox.analyzeFundBox(navItem?.days || [], { distributing, adjusted })
-        : {
-            version: "-",
-            rows: [],
-            segments: [],
-            events: [],
-            status: "insufficient",
-            tone: "muted",
-            latest: null
-          };
-      entry = {
-        key,
-        fund,
-        fundId: moneyDjFundId(item.fund_id),
-        name: item.fund_name || fund?.name || key,
-        navItem,
-        distributing,
-        adjusted,
-        analysis,
-        purchases: []
-      };
-      nextStore.set(key, entry);
+    if (!grouped.has(key)) {
+      grouped.set(key, []);
     }
-    entry.purchases.push(item);
+    grouped.get(key).push(item);
+  });
+
+  const nextStore = new Map();
+  grouped.forEach((groupPurchases, key) => {
+    const sample = groupPurchases[0];
+    const fund = currentFundForPurchase(sample);
+    const navItem = exactMonthlyNavForPurchase(sample);
+    const distributing = isDistributingFund(fund, sample);
+    const adjusted = navItem?.adjusted === true || navItem?.navType === "adjusted";
+    const earliestBuyDate = groupPurchases.reduce(
+      (earliest, item) => (!earliest || item.buy_date < earliest ? item.buy_date : earliest),
+      ""
+    );
+    const persisted = fundTrailingBoxes.get(key);
+    const trackingStartDate = persisted?.tracking_start_date && persisted.tracking_start_date < earliestBuyDate
+      ? persisted.tracking_start_date
+      : earliestBuyDate;
+    // Daily rows are exact for the trailing high. Older weekly/monthly rows give
+    // existing holdings a conservative bootstrap until future highs are saved.
+    const navRows = [
+      ...(navItem?.months || []),
+      ...(navItem?.weeks || []),
+      ...(navItem?.days || [])
+    ];
+    const exactHistoryStartDate = [...(navItem?.days || [])]
+      .filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(String(row?.date || "")) && Number(row?.nav) > 0)
+      .sort((a, b) => String(a.date).localeCompare(String(b.date)))[0]?.date || "";
+    const latestFundDate = isoDateFromShortNavDate(fund?.navDate);
+    if (latestFundDate && Number.isFinite(Number(fund?.nav)) && Number(fund.nav) > 0) {
+      navRows.push({ date: latestFundDate, nav: Number(fund.nav) });
+    }
+    const peakSeeds = groupPurchases.map((item) => ({ date: item.buy_date, nav: item.nav }));
+    if (persisted?.peak_nav && persisted?.peak_date) {
+      peakSeeds.push({ date: persisted.peak_date, nav: persisted.peak_nav });
+    }
+    const analysis = window.FundBox
+      ? window.FundBox.analyzeFundBox(navRows, {
+          distributing,
+          adjusted,
+          trackingStartDate,
+          peakSeeds
+        })
+      : {
+          version: "-",
+          rows: [],
+          segments: [],
+          events: [],
+          status: "insufficient",
+          tone: "muted",
+          latest: null
+        };
+    const entry = {
+      key,
+      fund,
+      fundId: moneyDjFundId(sample.fund_id),
+      name: sample.fund_name || fund?.name || key,
+      navItem,
+      distributing,
+      adjusted,
+      trackingStartDate,
+      exactHistoryStartDate,
+      bootstrapLimited: Boolean(
+        trackingStartDate && exactHistoryStartDate && trackingStartDate < exactHistoryStartDate
+      ),
+      analysis,
+      purchases: groupPurchases
+    };
+    nextStore.set(key, entry);
+    persistFundTrailingBox(entry);
   });
   fundBoxStore = nextStore;
 }
@@ -1868,11 +1987,7 @@ function hidePeriodDetailModal() {
 
 function fundBoxEventLabel(type) {
   const labels = {
-    breakout: "突破",
-    breakdown: "跌破",
-    false_breakout: "突破失敗",
-    provisional_breakdown: "跌暫底",
-    wide_breakdown: "寬箱失效"
+    trailing_breakdown: "跌破"
   };
   return labels[type] || "";
 }
@@ -1901,7 +2016,7 @@ function fundBoxChart(entry, options = {}) {
   const { analysis } = entry;
   const holdingDecision = window.FundBox?.holdingDecision?.(analysis);
   const rows = analysis.rows || [];
-  if (rows.length < 2) {
+  if (!rows.length) {
     return '<div class="fund-box-chart-empty">每日淨值資料不足，暫時無法繪圖。</div>';
   }
   const months = Number(options.months) === 4 ? 4 : 2;
@@ -1932,18 +2047,39 @@ function fundBoxChart(entry, options = {}) {
   const navPath = visibleRows
     .map((row, index) => `${index ? "L" : "M"}${x(windowData.startIndex + index).toFixed(1)} ${y(row.nav).toFixed(1)}`)
     .join(" ");
+  const trailingPoints = visibleRows.map((_row, localIndex) => {
+    const rowIndex = windowData.startIndex + localIndex;
+    const segment = [...(analysis.segments || [])]
+      .reverse()
+      .find((item) => item.startIndex <= rowIndex && item.endIndex >= rowIndex);
+    return segment
+      ? { x: x(rowIndex), top: y(segment.top), bottom: y(segment.bottom) }
+      : null;
+  }).filter(Boolean);
+  const trailingTopPath = trailingPoints
+    .map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(1)} ${point.top.toFixed(1)}`)
+    .join(" ");
+  const trailingBottomPath = trailingPoints
+    .map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(1)} ${point.bottom.toFixed(1)}`)
+    .join(" ");
+  const trailingBandPath = trailingPoints.length
+    ? `${trailingTopPath} ${[...trailingPoints]
+        .reverse()
+        .map((point) => `L${point.x.toFixed(1)} ${point.bottom.toFixed(1)}`)
+        .join(" ")} Z`
+    : "";
   const segments = intersectingSegments
     .map((segment) => {
       const visibleStart = Math.max(segment.startIndex, windowData.startIndex);
       const visibleEnd = Math.min(Math.max(segment.startIndex, segment.endIndex), windowData.endIndex);
       const left = x(visibleStart);
-      const right = x(visibleEnd);
+      const right = visibleRows.length === 1 ? width - padding.right : x(visibleEnd);
       const top = y(segment.top);
       const bottom = y(segment.bottom);
       const segmentKey = `${segment.startIndex}-${segment.kind}`;
       const selected = options.selectedSegmentKey === segmentKey;
       const className = `fund-box-rect ${segment.kind}${segment.current ? " current" : " historical"}${selected ? " selected" : ""}`;
-      const kindLabel = `${segment.current ? "" : "舊"}${segment.kind === "confirmed" ? "正式箱" : "暫定箱"}`;
+      const kindLabel = `${segment.current ? "目前" : "先前"}20%移動箱`;
       const detailLabel = `${kindLabel}，箱頂 ${moneyNumber(segment.top)}，箱底 ${moneyNumber(segment.bottom)}，箱寬 ${fundBoxWidthText(segment.top, segment.bottom)}`;
       return `
         <rect class="${className}" data-fund-box-segment="${escapeHtml(segmentKey)}" tabindex="0" role="button" aria-label="${escapeHtml(detailLabel)}" x="${left.toFixed(1)}" y="${top.toFixed(1)}" width="${Math.max(3, right - left).toFixed(1)}" height="${Math.max(2, bottom - top).toFixed(1)}"></rect>
@@ -1957,14 +2093,14 @@ function fundBoxChart(entry, options = {}) {
     ? `
       <div class="fund-box-segment-popover" role="status">
         <button type="button" data-fund-box-segment-close aria-label="關閉箱子資料" title="關閉">×</button>
-        <strong>${selectedSegment.current ? "" : "舊"}${selectedSegment.kind === "confirmed" ? "正式箱" : "暫定箱"}</strong>
+        <strong>${selectedSegment.current ? "目前" : "先前"}20%移動箱</strong>
         <span>箱頂 ${escapeHtml(moneyNumber(selectedSegment.top))}</span>
         <span>箱底 ${escapeHtml(moneyNumber(selectedSegment.bottom))}</span>
         <span>箱寬 ${escapeHtml(fundBoxWidthText(selectedSegment.top, selectedSegment.bottom))}</span>
       </div>
     `
     : "";
-  const visibleEventTypes = new Set(["breakout", "breakdown", "false_breakout", "provisional_breakdown", "wide_breakdown"]);
+  const visibleEventTypes = new Set(["trailing_breakdown"]);
   const events = (analysis.events || [])
     .filter(
       (event) => visibleEventTypes.has(event.type) && event.index >= windowData.startIndex && event.index <= windowData.endIndex
@@ -1993,10 +2129,14 @@ function fundBoxChart(entry, options = {}) {
     })
     .join("");
   const stopBottom = atEnd ? Number(holdingDecision?.bottom) : 0;
+  const currentTrailingSegment = (analysis.segments || []).find((segment) => segment.current);
+  const stopStartIndex = currentTrailingSegment
+    ? Math.max(windowData.startIndex, currentTrailingSegment.startIndex)
+    : windowData.startIndex;
   const stopLine = stopBottom > 0
     ? `
-      <line class="fund-box-stop-line" x1="${padding.left}" y1="${y(stopBottom).toFixed(1)}" x2="${width - padding.right}" y2="${y(stopBottom).toFixed(1)}"></line>
-      <text class="fund-box-stop-label" x="${width - padding.right}" y="${Math.max(14, y(stopBottom) - 6).toFixed(1)}" text-anchor="end">停損箱底 ${escapeHtml(moneyNumber(stopBottom))}</text>
+      <line class="fund-box-stop-line" x1="${x(stopStartIndex).toFixed(1)}" y1="${y(stopBottom).toFixed(1)}" x2="${width - padding.right}" y2="${y(stopBottom).toFixed(1)}"></line>
+      <text class="fund-box-stop-label" x="${width - padding.right}" y="${Math.max(14, y(stopBottom) - 6).toFixed(1)}" text-anchor="end">20%箱底 ${escapeHtml(moneyNumber(stopBottom))}</text>
     `
     : "";
   const dateLabel = (value) => String(value || "").slice(5).replace("-", "/");
@@ -2015,6 +2155,9 @@ function fundBoxChart(entry, options = {}) {
       <svg class="fund-box-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(entry.name)} ${escapeHtml(visibleRows[0].date)} 至 ${escapeHtml(visibleRows.at(-1).date)}淨值與箱型">
         <line class="fund-box-grid" x1="${padding.left}" y1="${y(maximumValue).toFixed(1)}" x2="${width - padding.right}" y2="${y(maximumValue).toFixed(1)}"></line>
         <line class="fund-box-grid" x1="${padding.left}" y1="${y(minimumValue).toFixed(1)}" x2="${width - padding.right}" y2="${y(minimumValue).toFixed(1)}"></line>
+        ${trailingBandPath ? `<path class="fund-box-trailing-band" d="${trailingBandPath}"></path>` : ""}
+        ${trailingTopPath ? `<path class="fund-box-trailing-bound" d="${trailingTopPath}"></path>` : ""}
+        ${trailingBottomPath ? `<path class="fund-box-trailing-bound bottom" d="${trailingBottomPath}"></path>` : ""}
         ${segments}
         ${stopLine}
         ${purchaseMarkers}
@@ -2029,10 +2172,8 @@ function fundBoxChart(entry, options = {}) {
     </div>
     <div class="fund-box-legend" aria-label="箱型圖例">
       <span><i class="nav"></i>淨值</span>
-      <span><i class="confirmed"></i>正式箱</span>
-      <span><i class="provisional"></i>暫定箱</span>
-      <span><i class="historical"></i>舊箱</span>
-      ${stopBottom > 0 ? '<span><i class="stop"></i>停損箱底</span>' : ""}
+      <span><i class="trailing"></i>20%移動箱</span>
+      ${stopBottom > 0 ? '<span><i class="stop"></i>目前箱底</span>' : ""}
     </div>
   `;
 }
@@ -2174,34 +2315,19 @@ function setupFundBoxChart(section, entry) {
 function fundBoxCurrentCalculation(entry) {
   const { analysis } = entry;
   const lines = [];
-  if (analysis.topDetail) {
-    lines.push(`候選箱頂 ${moneyNumber(analysis.topDetail.value)} 出現在 ${analysis.topDetail.date}，後續 3 個交易日未超過，於 ${analysis.topDetail.confirmedDate} 確認。`);
-    lines.push(`10% 暫定箱底：${moneyNumber(analysis.topDetail.value)} × 90% = ${moneyNumber(analysis.provisionalBottom)}。`);
-  } else if (analysis.candidateTop) {
-    lines.push(`目前候選箱頂為 ${moneyNumber(analysis.candidateTop.value)}（${analysis.candidateTop.date}），已累積 ${analysis.candidateTop.stableDays} 個未創高交易日。`);
-  }
-  if (analysis.naturalBottomDetail) {
-    const naturalWidth = (analysis.topDetail.value - analysis.naturalBottomDetail.value) / analysis.topDetail.value;
-    lines.push(`自然箱底 ${moneyNumber(analysis.naturalBottomDetail.value)} 出現在 ${analysis.naturalBottomDetail.date}，於 ${analysis.naturalBottomDetail.confirmedDate} 完成確認；自然箱寬 ${(naturalWidth * 100).toFixed(1)}%。`);
-  } else if (analysis.candidateBottom) {
-    lines.push(`自然箱底仍在確認，目前候選低點為 ${moneyNumber(analysis.candidateBottom.value)}（${analysis.candidateBottom.date}）。`);
-  }
-  if (analysis.status === "inside") {
-    lines.push(`箱內位置：(${moneyNumber(analysis.latest.nav)} - ${moneyNumber(analysis.bottom)}) ÷ (${moneyNumber(analysis.top)} - ${moneyNumber(analysis.bottom)}) = ${Math.round(analysis.position * 100)}%。`);
-  } else if (analysis.status === "provisional_inside") {
-    lines.push(`暫定箱內位置：(${moneyNumber(analysis.latest.nav)} - ${moneyNumber(analysis.provisionalBottom)}) ÷ (${moneyNumber(analysis.top)} - ${moneyNumber(analysis.provisionalBottom)}) = ${Math.round(analysis.position * 100)}%。`);
-  } else if (analysis.status === "provisional_breakdown") {
-    lines.push(`跌破暫定底：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.provisionalBottom)} - 1 = ${fundBoxPercent(analysis.difference)}。`);
-  } else if (analysis.status === "breakout_building") {
-    lines.push(`高於舊箱頂：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.reference.top)} - 1 = ${fundBoxPercent(analysis.difference)}。`);
-  } else if (analysis.status === "false_breakout") {
-    lines.push(`突破後跌回舊箱頂：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.reference.top)} - 1 = ${fundBoxPercent(analysis.difference)}。`);
-  } else if (analysis.status === "breakdown_rebuilding") {
-    lines.push(`低於正式箱底：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.reference.bottom)} - 1 = ${fundBoxPercent(analysis.difference)}。`);
+  if (analysis.top && analysis.bottom) {
+    lines.push(`追蹤起點：${analysis.trackingStartDate || entry.trackingStartDate || "-"}；同一基金的持有中紀錄共用一個箱子。`);
+    lines.push(`箱頂採持有期間最高淨值 ${moneyNumber(analysis.top)}（${analysis.peakDate || "-"}）。`);
+    lines.push(`20%箱底：${moneyNumber(analysis.top)} × 80% = ${moneyNumber(analysis.bottom)}。`);
+    if (analysis.liveStatus === "trailing_breakdown") {
+      lines.push(`最新淨值相對箱底：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.bottom)} - 1 = ${fundBoxPercent(analysis.difference)}；網站只提醒，由你判斷是否贖回。`);
+    } else {
+      lines.push(`最新淨值仍高於箱底 ${fundBoxPercent(analysis.difference)}；箱子不因下跌而往下移。`);
+    }
   }
   return lines.length
     ? `<ol class="fund-box-calculation">${lines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ol>`
-    : '<p class="fund-box-muted">箱頂尚未完成三日確認，目前沒有可套用的箱體公式。</p>';
+    : '<p class="fund-box-muted">目前沒有可用的持有淨值，暫時無法建立20%移動箱。</p>';
 }
 
 function renderFundBoxDetail(entry) {
@@ -2220,14 +2346,20 @@ function renderFundBoxDetail(entry) {
   const latestNav = analysis.latest ? moneyNumber(analysis.latest.nav) : "-";
   const statusText = fundBoxStatusText(analysis);
   const dividendStatus = entry.distributing ? (entry.adjusted ? "已使用還原淨值" : "配息未還原") : "不配息／累積型";
+  const persistenceStatus = currentUser && fundTrailingBoxesSupported
+    ? "最高淨值會保存至你的帳號"
+    : "最高淨值目前未寫入帳號；請勿把本頁當成持久紀錄";
   const blockedNotice =
     analysis.status === "distribution_unadjusted"
       ? '<p class="fund-box-notice danger">這是配息型基金，目前歷史資料沒有可靠的配息還原值。圖表只顯示原始淨值，不提供箱型判斷，以免把除息誤判成跌破。</p>'
       : analysis.status === "stale"
         ? `<p class="fund-box-notice danger">最新歷史淨值停在 ${escapeHtml(latestDate)}，已超過 7 天，因此暫停產生新訊號。</p>`
         : analysis.status === "insufficient"
-          ? `<p class="fund-box-notice">目前只有 ${analysis.rows.length} 筆有效每日淨值，至少需要 20 筆。</p>`
+          ? `<p class="fund-box-notice">目前沒有足夠的有效淨值，暫時無法建立20%移動箱。</p>`
           : "";
+  const bootstrapNotice = entry.bootstrapLimited
+    ? `<p class="fund-box-notice">完整每日淨值從 ${escapeHtml(entry.exactHistoryStartDate)} 起可取得；更早區間以買入淨值、週底與月底淨值補足，可能漏掉週中高點。從現在起抓到的新高會保存在你的帳號。</p>`
+    : "";
   return `
     <div class="fund-box-current">
       <div class="fund-box-action ${escapeHtml(entryDecision.tone)}">
@@ -2244,6 +2376,7 @@ function renderFundBoxDetail(entry) {
       <small>最新淨值 ${escapeHtml(latestNav)}｜${escapeHtml(latestDate)}</small>
     </div>
     ${blockedNotice}
+    ${bootstrapNotice}
     <section class="fund-box-chart-section" aria-label="箱型圖"></section>
     <section class="fund-box-method">
       <h4>這檔基金怎麼算</h4>
@@ -2252,22 +2385,19 @@ function renderFundBoxDetail(entry) {
     <section class="fund-box-method">
       <h4>完整邏輯與算法</h4>
       <ol>
-        <li>進場採「幾個月低點」策略：保留最近約半年、最多 126 個交易日的淨值，找這段期間的最低淨值。</li>
+        <li>進場仍採「幾個月低點」參考：使用現有每日淨值尋找區間最低點。</li>
         <li>目前淨值回到期間低點上方 5% 內，而且低點後連續 3 個交易日不再破底，才顯示「低點區可分批」。</li>
-        <li>持有採「不停利，只停損」策略：上漲、突破箱頂或跌回舊箱頂都不叫你停利，只要尚未跌破目前採用的箱底就續抱。</li>
-        <li>停損箱底優先使用正式箱底；突破築新箱時沿用舊箱底；尚無正式箱底時使用箱頂下方 10% 的暫定箱底。</li>
-        <li>停損箱底被連續 3 個交易日跌破，才顯示「停損訊號」；只跌破 1 至 2 個交易日先顯示「停損警戒」，避免單日雜訊直接叫你退出。</li>
-        <li>至少需要 20 筆每日淨值；資料超過 7 天未更新時停止產生新訊號。資料尚未更新到半年時，畫面會如實標示目前實際涵蓋的區間。</li>
-        <li>淨值創出候選新高後，接下來 3 個交易日都沒有超過它，才確認箱頂；期間再創新高就重新計算 3 天。</li>
-        <li>箱頂確認後立即設定暫定箱底：箱頂 × 90%，並計算暫定箱內位置。</li>
-        <li>箱頂後的候選低點若連續 3 個交易日未被跌破，確認為自然箱底；期間出現更低淨值就重新計算 3 天。</li>
-        <li>自然箱寬小於 10%時，正式箱底維持在箱頂下方 10%；自然箱寬介於 10%至 20%時，使用自然箱底。</li>
-        <li>自然箱寬超過 20%時，不把大跌視為正常整理，舊箱失效並從較低位置重新築箱。</li>
-        <li>突破箱頂後保留舊箱供參考並向上築新箱；新箱成立前跌回舊頂以下，標示為突破失敗。</li>
-        <li>跌破暫定底是風險警示，但仍等待自然底確認；跌破正式底則讓舊箱失效並重新築箱。</li>
-        <li>正式箱底只從自然底確認日開始生效，系統不使用未來資料回頭改寫當時的歷史訊號。</li>
-        <li>圖表可選 2 個月或 4 個月，並依目前畫面內的淨值與箱體重新計算垂直比例；切換或左右移動圖表只影響顯示，不會改變箱型、買點或停損算法。</li>
-        <li>配息型基金必須使用可靠的還原淨值；無法還原時不判斷箱型。所有狀態只供觀察，不構成買賣建議。</li>
+        <li>持有中的同一基金只使用一套20%移動箱；多筆買入不會建立互相衝突的箱子。</li>
+        <li>箱頂是這次持有週期開始後曾出現的最高淨值；淨值創新高時，箱頂立即上移，不等待三日確認。</li>
+        <li>箱底永遠等於箱頂 × 80%，因此箱寬固定20%；箱頂與箱底只能上升，回檔時不會下降。</li>
+        <li>基金上漲時不顯示停利，也不自動賣出再買回，讓資金持續留在原基金。</li>
+        <li>最新淨值第一次等於或低於箱底就顯示「跌破箱底」；這只是醒目提醒，不會自動贖回或新增賣出紀錄。</li>
+        <li>最高淨值與日期保存在你的帳號資料庫；重新整理或圖表只載入近期資料時，既有箱頂不會因此消失。</li>
+        <li>只有同一基金的持有紀錄全部賣出後才清除箱子；日後重新買入會建立新的持有週期。</li>
+        <li>資料超過7天未更新時暫停新的跌破判斷，但保留最後箱頂與箱底供查看。</li>
+        <li>圖表可選2個月或4個月並左右移動；這些操作只改變畫面，不會重設最高淨值。</li>
+        <li>配息型基金必須使用可靠的還原淨值，否則配息造成的淨值下降可能被誤判，因此暫停箱型訊號。</li>
+        <li>所有箱型與跌破狀態只供你判斷，不構成買賣建議，也不會代替你操作交易。</li>
       </ol>
     </section>
     <section class="fund-box-data">
@@ -2275,6 +2405,8 @@ function renderFundBoxDetail(entry) {
       <p>算法：基金箱型 v${escapeHtml(analysis.version || window.FundBox?.VERSION || "-")}</p>
       <p>資料：${escapeHtml(monthlyNavMeta.source || "MoneyDJ 每日淨值")}</p>
       <p>區間：${escapeHtml(analysis.rows[0]?.date || "-")} 至 ${escapeHtml(latestDate)}｜${analysis.rows.length} 筆</p>
+      <p>每日淨值精確涵蓋：${escapeHtml(entry.exactHistoryStartDate || "尚未取得")}起；更早資料僅作補足</p>
+      <p>追蹤起點：${escapeHtml(analysis.trackingStartDate || entry.trackingStartDate || "-")}｜${escapeHtml(persistenceStatus)}</p>
       <p>配息處理：${escapeHtml(dividendStatus)}</p>
     </section>
   `;
@@ -2797,6 +2929,7 @@ function renderPurchases(options = {}) {
 async function loadPurchases(options = {}) {
   if (!db || !currentUser) {
     purchases = [];
+    fundTrailingBoxes = new Map();
     resetPortfolioSnapshots();
     renderTwiiTrendChart();
     if (options.render !== false) {
@@ -2804,6 +2937,7 @@ async function loadPurchases(options = {}) {
     }
     return;
   }
+  const trailingBoxesPromise = loadFundTrailingBoxes();
   let { data, error } = await db
     .from("fund_purchases")
     .select("id,fund_id,fund_name,buy_date,amount,nav,sell_date,sell_nav,sell_amount,note,created_at")
@@ -2817,6 +2951,7 @@ async function loadPurchases(options = {}) {
       .order("created_at", { ascending: false }));
   }
   if (error) {
+    await trailingBoxesPromise;
     purchases = [];
     renderTwiiTrendChart();
     if (options.render !== false) {
@@ -2825,7 +2960,9 @@ async function loadPurchases(options = {}) {
     setMessage(els.purchaseMessage, `讀取失敗：${error.message}`, true);
     return;
   }
+  await trailingBoxesPromise;
   purchases = data || [];
+  cleanupInactiveFundTrailingBoxes(purchases.filter((item) => !item.sell_date));
   renderTwiiTrendChart();
   portfolioPeriodsLoading = true;
   if (options.requestNavHistory !== false) {
@@ -3235,10 +3372,13 @@ async function initAuth() {
   }
   const { data } = await db.auth.getSession();
   currentUser = data.session?.user || null;
+  fundTrailingBoxesSupported = true;
   renderAuthState();
   await loadPurchases();
   db.auth.onAuthStateChange(async (_event, session) => {
     currentUser = session?.user || null;
+    fundTrailingBoxesSupported = true;
+    fundTrailingBoxes = new Map();
     renderAuthState();
     renderFunds();
     await loadPurchases();

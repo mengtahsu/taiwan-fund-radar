@@ -1632,6 +1632,34 @@ textarea {
   stroke-dasharray: 8 5;
 }
 
+.fund-box-rect.trailing {
+  fill: transparent;
+  stroke: transparent;
+}
+
+.fund-box-rect.trailing.selected,
+.fund-box-rect.trailing:focus-visible {
+  stroke: var(--accent);
+}
+
+.fund-box-trailing-band {
+  fill: rgba(15, 118, 110, 0.09);
+  stroke: none;
+}
+
+.fund-box-trailing-bound {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.fund-box-trailing-bound.bottom {
+  opacity: 0.72;
+  stroke-width: 1.5;
+}
+
 .fund-box-rect.historical {
   opacity: 0.4;
 }
@@ -1713,7 +1741,8 @@ textarea {
 .fund-box-event.breakdown,
 .fund-box-event.false_breakout,
 .fund-box-event.provisional_breakdown,
-.fund-box-event.wide_breakdown {
+.fund-box-event.wide_breakdown,
+.fund-box-event.trailing_breakdown {
   fill: var(--danger);
 }
 
@@ -1761,6 +1790,10 @@ textarea {
 }
 
 .fund-box-legend i.confirmed {
+  background: var(--accent);
+}
+
+.fund-box-legend i.trailing {
   background: var(--accent);
 }
 

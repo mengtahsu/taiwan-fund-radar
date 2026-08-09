@@ -1,13 +1,11 @@
 (function attachFundBox(globalScope) {
   "use strict";
 
-  const VERSION = "1.1";
+  const VERSION = "2.0";
   const DEFAULTS = Object.freeze({
-    confirmationDays: 3,
-    historyPoints: 126,
-    minimumPoints: 20,
-    minimumWidth: 0.1,
-    maximumWidth: 0.2,
+    historyPoints: 400,
+    minimumPoints: 1,
+    width: 0.2,
     staleDays: 7
   });
 
@@ -28,6 +26,21 @@
     return [...byDate.values()]
       .sort((a, b) => a.date.localeCompare(b.date))
       .slice(-Math.max(1, historyPoints));
+  }
+
+  function normalizePeakSeeds(rawSeeds, trackingStartDate) {
+    return (Array.isArray(rawSeeds) ? rawSeeds : [])
+      .map((seed) => ({
+        date: String(seed?.date || "").slice(0, 10),
+        nav: finitePositive(seed?.nav)
+      }))
+      .filter(
+        (seed) =>
+          seed.nav !== null &&
+          /^\d{4}-\d{2}-\d{2}$/.test(seed.date) &&
+          (!trackingStartDate || seed.date >= trackingStartDate)
+      )
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 
   function dateAgeDays(date, nowValue) {
@@ -62,7 +75,12 @@
         lowIndex = index;
       }
     });
-    const spanDays = Math.max(0, Math.round((Date.parse(`${rows.at(-1).date}T00:00:00Z`) - Date.parse(`${rows[0].date}T00:00:00Z`)) / 86400000));
+    const spanDays = Math.max(
+      0,
+      Math.round(
+        (Date.parse(`${rows.at(-1).date}T00:00:00Z`) - Date.parse(`${rows[0].date}T00:00:00Z`)) / 86400000
+      )
+    );
     const periodLabel = spanDays >= 150 ? "近半年" : spanDays >= 75 ? "近3個月" : "目前區間";
     return {
       minimum,
@@ -84,11 +102,11 @@
         tone: "muted"
       };
     }
-    if (["provisional_breakdown", "false_breakout", "breakdown_rebuilding", "wide_rebuilding"].includes(status)) {
+    if (status === "trailing_breakdown") {
       return {
         code: "avoid",
         label: "暫緩加碼",
-        detail: "目前有跌破、突破失敗或箱體失效訊號，先等風險穩定。",
+        detail: "目前已跌破20%移動箱底，先由你判斷是否退出或等待。",
         tone: "danger"
       };
     }
@@ -131,321 +149,162 @@
   function holdingDecision(analysis) {
     const status = String(analysis?.status || "");
     if (["distribution_unadjusted", "stale", "insufficient"].includes(status)) {
-      return { label: "持有無法判斷", detail: "資料不足、過舊，或配息尚未還原。", tone: "muted" };
-    }
-    const activeBottom = Number(analysis?.bottom);
-    const provisionalBottom = Number(analysis?.provisionalBottom);
-    const referenceBottom = Number(analysis?.reference?.bottom);
-    let bottom = 0;
-    let bottomKind = "";
-    if (activeBottom > 0) {
-      bottom = activeBottom;
-      bottomKind = "正式箱底";
-    } else if (referenceBottom > 0) {
-      bottom = referenceBottom;
-      bottomKind = analysis.reference.kind === "confirmed" ? "舊正式箱底" : "舊暫定箱底";
-    } else if (provisionalBottom > 0) {
-      bottom = provisionalBottom;
-      bottomKind = "暫定箱底";
-    }
-    if (bottom > 0 && Number(analysis?.latest?.nav) < bottom) {
-      let consecutiveDays = 0;
-      for (let index = analysis.rows.length - 1; index >= 0 && analysis.rows[index].nav < bottom; index -= 1) {
-        consecutiveDays += 1;
-      }
-      if (consecutiveDays >= 3) {
-        return {
-          label: "停損訊號",
-          detail: `已連續 ${consecutiveDays} 個交易日低於${bottomKind} ${bottom.toFixed(2)}。`,
-          tone: "danger",
-          bottom,
-          bottomKind
-        };
-      }
       return {
-        label: "停損警戒",
-        detail: `跌破${bottomKind} ${bottom.toFixed(2)}，但尚未連續 3 個交易日。`,
+        label: "持有無法判斷",
+        detail: "資料不足、過舊，或配息尚未還原。",
+        tone: "muted",
+        bottom: finitePositive(analysis?.bottom)
+      };
+    }
+    const top = finitePositive(analysis?.top);
+    const bottom = finitePositive(analysis?.bottom);
+    const latest = finitePositive(analysis?.latest?.nav);
+    if (!top || !bottom || !latest) {
+      return { label: "持有無法判斷", detail: "目前沒有可用的最高淨值或箱底。", tone: "muted" };
+    }
+    if (latest <= bottom) {
+      return {
+        label: "跌破箱底",
+        detail: `最新淨值 ${latest.toFixed(2)} 已低於20%移動箱底 ${bottom.toFixed(2)}，低於箱底 ${Math.abs(relativeChange(latest, bottom) * 100).toFixed(1)}%；是否贖回由你判斷。`,
         tone: "danger",
         bottom,
-        bottomKind
+        bottomKind: "20%移動箱底"
       };
     }
     return {
-      label: "續抱，不停利",
-      detail: bottom > 0
-        ? `目前停損線採用${bottomKind} ${bottom.toFixed(2)}；尚未跌破，不因上漲或突破箱頂停利。`
-        : "目前還沒有可用箱底；先續抱觀察，不因上漲停利。",
+      label: "尚未跌破箱底",
+      detail: `持有期間最高淨值 ${top.toFixed(2)}，20%移動箱底 ${bottom.toFixed(2)}；目前仍高於箱底 ${(relativeChange(latest, bottom) * 100).toFixed(1)}%。`,
       tone: "positive",
-      bottom: bottom || null,
-      bottomKind: bottomKind || null
+      bottom,
+      bottomKind: "20%移動箱底"
     };
   }
 
   function analyzeFundBox(rawRows, options = {}) {
     const settings = { ...DEFAULTS, ...options };
-    const rows = normalizeRows(rawRows, settings.historyPoints);
+    const trackingStartDate = /^\d{4}-\d{2}-\d{2}$/.test(String(options.trackingStartDate || ""))
+      ? String(options.trackingStartDate)
+      : "";
+    const normalizedRows = normalizeRows(rawRows, settings.historyPoints);
+    const rows = trackingStartDate
+      ? normalizedRows.filter((row) => row.date >= trackingStartDate)
+      : normalizedRows;
     const latest = rows.at(-1) || null;
     const base = {
       version: VERSION,
       settings,
+      trackingStartDate: trackingStartDate || rows[0]?.date || null,
       rows,
       latest,
       segments: [],
       events: [],
-      status: "forming",
+      status: "insufficient",
       tone: "muted",
-      phase: "seeking_top",
       top: null,
       bottom: null,
-      provisionalBottom: null,
-      naturalBottom: null,
       position: null,
       difference: null,
-      reference: null,
-      candidateTop: null,
-      candidateBottom: null
+      peakDate: null,
+      topDetail: null
     };
 
     if (options.distributing && !options.adjusted) {
-      return { ...base, status: "distribution_unadjusted", phase: "blocked" };
+      return { ...base, status: "distribution_unadjusted" };
     }
-    if (rows.length < settings.minimumPoints) {
-      return { ...base, status: "insufficient", phase: "blocked" };
-    }
-    const ageDays = latest ? dateAgeDays(latest.date, options.now) : null;
-    if (ageDays !== null && ageDays > settings.staleDays) {
-      return { ...base, status: "stale", phase: "blocked", ageDays };
+    if (rows.length < settings.minimumPoints || !latest) {
+      return base;
     }
 
+    const seeds = normalizePeakSeeds(options.peakSeeds, trackingStartDate);
+    let seedIndex = 0;
+    let peak = null;
+    let peakDate = null;
+    let currentSegment = null;
     const segments = [];
     const events = [];
-    let phase = "seeking_top";
-    let candidateTop = null;
-    let candidateBottom = null;
-    let top = null;
-    let provisionalBottom = null;
-    let naturalBottom = null;
-    let bottom = null;
-    let currentSegment = null;
-    let transition = { type: "initial", reference: null };
 
-    const closeSegment = (index) => {
-      if (currentSegment && currentSegment.endIndex === null) {
-        currentSegment.endIndex = index;
-        currentSegment.endDate = rows[index]?.date || currentSegment.startDate;
-      }
-      currentSegment = null;
-    };
-
-    const beginSeekingTop = (row, index, type, reference) => {
-      phase = "seeking_top";
-      candidateTop = { value: row.nav, date: row.date, index, stableDays: 0 };
-      candidateBottom = null;
-      top = null;
-      provisionalBottom = null;
-      naturalBottom = null;
-      bottom = null;
-      transition = { type, reference: reference || null };
+    const beginSegment = (index, date, value) => {
+      peak = value;
+      peakDate = date;
+      currentSegment = {
+        kind: "trailing",
+        startIndex: index,
+        startDate: date,
+        endIndex: null,
+        endDate: null,
+        top: value,
+        bottom: value * (1 - settings.width),
+        width: settings.width,
+        topDate: date
+      };
+      segments.push(currentSegment);
     };
 
     rows.forEach((row, index) => {
-      if (phase === "seeking_top") {
-        if (!candidateTop || row.nav > candidateTop.value) {
-          candidateTop = { value: row.nav, date: row.date, index, stableDays: 0 };
-        } else if (index !== candidateTop.index) {
-          candidateTop.stableDays += 1;
+      let candidateValue = row.nav;
+      let candidateDate = row.date;
+      while (seedIndex < seeds.length && seeds[seedIndex].date <= row.date) {
+        if (seeds[seedIndex].nav > candidateValue) {
+          candidateValue = seeds[seedIndex].nav;
+          candidateDate = seeds[seedIndex].date;
         }
-
-        if (
-          transition.type === "breakout" &&
-          transition.reference?.top &&
-          row.nav < transition.reference.top
-        ) {
-          transition = { ...transition, type: "false_breakout" };
-          events.push({ index, date: row.date, nav: row.nav, type: "false_breakout" });
-        }
-
-        if (candidateTop.stableDays >= settings.confirmationDays) {
-          top = {
-            value: candidateTop.value,
-            date: candidateTop.date,
-            confirmedDate: row.date,
-            confirmedIndex: index
-          };
-          provisionalBottom = top.value * (1 - settings.minimumWidth);
-          currentSegment = {
-            kind: "provisional",
-            startIndex: index,
-            startDate: row.date,
-            endIndex: null,
-            endDate: null,
-            top: top.value,
-            bottom: provisionalBottom,
-            topDate: top.date,
-            topConfirmedDate: top.confirmedDate,
-            bottomConfirmedDate: null
-          };
-          segments.push(currentSegment);
-          events.push({ index, date: row.date, nav: top.value, type: "top_confirmed" });
-          candidateBottom = null;
-          phase = "seeking_bottom";
-        }
+        seedIndex += 1;
+      }
+      if (peak === null) {
+        beginSegment(index, candidateDate, candidateValue);
         return;
       }
-
-      if (phase === "seeking_bottom") {
-        if (row.nav > top.value) {
-          closeSegment(index);
-          events.push({ index, date: row.date, nav: row.nav, type: "breakout" });
-          beginSeekingTop(row, index, "breakout", {
-            top: top.value,
-            bottom: provisionalBottom,
-            kind: "provisional"
-          });
-          return;
-        }
-
-        if (!candidateBottom || row.nav < candidateBottom.value) {
-          candidateBottom = { value: row.nav, date: row.date, index, stableDays: 0 };
-        } else if (index !== candidateBottom.index) {
-          candidateBottom.stableDays += 1;
-        }
-
-        if (row.nav < provisionalBottom && !currentSegment.provisionalBreachDate) {
-          currentSegment.provisionalBreachDate = row.date;
-          events.push({ index, date: row.date, nav: row.nav, type: "provisional_breakdown" });
-        }
-
-        if (candidateBottom.stableDays >= settings.confirmationDays) {
-          naturalBottom = {
-            value: candidateBottom.value,
-            date: candidateBottom.date,
-            confirmedDate: row.date,
-            confirmedIndex: index
-          };
-          const naturalWidth = (top.value - naturalBottom.value) / top.value;
-          closeSegment(index);
-          events.push({ index, date: row.date, nav: naturalBottom.value, type: "bottom_confirmed" });
-
-          if (naturalWidth > settings.maximumWidth) {
-            events.push({ index, date: row.date, nav: row.nav, type: "wide_breakdown" });
-            beginSeekingTop(row, index, "wide_breakdown", {
-              top: top.value,
-              bottom: provisionalBottom,
-              naturalBottom: naturalBottom.value,
-              kind: "provisional"
-            });
-            return;
-          }
-
-          bottom = Math.min(naturalBottom.value, provisionalBottom);
-          currentSegment = {
-            kind: "confirmed",
-            startIndex: index,
-            startDate: row.date,
-            endIndex: null,
-            endDate: null,
-            top: top.value,
-            bottom,
-            naturalBottom: naturalBottom.value,
-            width: (top.value - bottom) / top.value,
-            topDate: top.date,
-            topConfirmedDate: top.confirmedDate,
-            bottomDate: naturalBottom.date,
-            bottomConfirmedDate: naturalBottom.confirmedDate
-          };
-          segments.push(currentSegment);
-          transition = { type: "active", reference: null };
-          phase = "active";
-        }
-        return;
-      }
-
-      if (phase === "active") {
-        if (row.nav > top.value) {
-          closeSegment(index);
-          events.push({ index, date: row.date, nav: row.nav, type: "breakout" });
-          beginSeekingTop(row, index, "breakout", {
-            top: top.value,
-            bottom,
-            kind: "confirmed"
-          });
-          return;
-        }
-        if (row.nav < bottom) {
-          closeSegment(index);
-          events.push({ index, date: row.date, nav: row.nav, type: "breakdown" });
-          beginSeekingTop(row, index, "breakdown", {
-            top: top.value,
-            bottom,
-            kind: "confirmed"
-          });
-        }
+      if (candidateValue > peak) {
+        currentSegment.endIndex = index;
+        currentSegment.endDate = row.date;
+        events.push({ index, date: candidateDate, nav: candidateValue, type: "box_raised" });
+        beginSegment(index, candidateDate, candidateValue);
       }
     });
 
-    if (currentSegment && currentSegment.endIndex === null) {
-      currentSegment.endIndex = rows.length - 1;
-      currentSegment.endDate = latest.date;
-      currentSegment.current = true;
+    while (seedIndex < seeds.length && seeds[seedIndex].date <= latest.date) {
+      const seed = seeds[seedIndex];
+      if (seed.nav > peak) {
+        currentSegment.endIndex = rows.length - 1;
+        currentSegment.endDate = latest.date;
+        events.push({ index: rows.length - 1, date: seed.date, nav: seed.nav, type: "box_raised" });
+        beginSegment(rows.length - 1, seed.date, seed.nav);
+      }
+      seedIndex += 1;
     }
 
-    let status = "forming";
-    let tone = "muted";
-    let position = null;
-    let difference = null;
-    let reference = transition.reference;
+    currentSegment.endIndex = rows.length - 1;
+    currentSegment.endDate = latest.date;
+    currentSegment.current = true;
 
-    if (phase === "active") {
-      status = "inside";
-      tone = "normal";
-      position = boxPosition(latest.nav, bottom, top.value);
-    } else if (phase === "seeking_bottom") {
-      if (latest.nav < provisionalBottom) {
-        status = "provisional_breakdown";
-        tone = "danger";
-        difference = relativeChange(latest.nav, provisionalBottom);
-      } else {
-        status = "provisional_inside";
-        tone = "normal";
-        position = boxPosition(latest.nav, provisionalBottom, top.value);
-      }
-    } else if (transition.type === "false_breakout") {
-      status = "false_breakout";
-      tone = "danger";
-      difference = relativeChange(latest.nav, reference.top);
-    } else if (transition.type === "breakout") {
-      status = "breakout_building";
-      tone = "positive";
-      difference = relativeChange(latest.nav, reference.top);
-    } else if (transition.type === "breakdown") {
-      status = "breakdown_rebuilding";
-      tone = "danger";
-      difference = relativeChange(latest.nav, reference.bottom);
-    } else if (transition.type === "wide_breakdown") {
-      status = "wide_rebuilding";
-      tone = "danger";
-      difference = relativeChange(latest.nav, reference.bottom);
+    const bottom = peak * (1 - settings.width);
+    const breached = latest.nav <= bottom;
+    const liveStatus = breached ? "trailing_breakdown" : "inside";
+    const ageDays = dateAgeDays(latest.date, options.now);
+    const stale = ageDays !== null && ageDays > settings.staleDays;
+
+    if (breached) {
+      events.push({
+        index: rows.length - 1,
+        date: latest.date,
+        nav: latest.nav,
+        type: "trailing_breakdown"
+      });
     }
 
     return {
       ...base,
       segments,
       events,
-      status,
-      tone,
-      phase,
-      top: top?.value || null,
+      status: stale ? "stale" : liveStatus,
+      liveStatus,
+      tone: stale ? "muted" : breached ? "danger" : "normal",
+      top: peak,
       bottom,
-      provisionalBottom,
-      naturalBottom: naturalBottom?.value || candidateBottom?.value || null,
-      position,
-      difference,
-      reference,
-      candidateTop,
-      candidateBottom,
-      topDetail: top,
-      naturalBottomDetail: naturalBottom,
+      position: boxPosition(latest.nav, bottom, peak),
+      difference: relativeChange(latest.nav, bottom),
+      peakDate,
+      topDetail: { value: peak, date: peakDate },
       ageDays
     };
   }
