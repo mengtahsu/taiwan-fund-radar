@@ -58,6 +58,22 @@ const purchaseSeed = analyzeFundBox(rows([96, 98, 97], "2026-02-01"), {
 assert(Math.abs(purchaseSeed.top - 100) < 0.0001, "the purchase NAV should seed a box before chart history begins");
 assert(Math.abs(purchaseSeed.bottom - 80) < 0.0001, "the purchase-seeded box should use a 20% floor");
 
+const sameFundRows = rows([100, 150, 120], "2026-01-01");
+const earlierPurchase = analyzeFundBox(sameFundRows, {
+  ...testOptions,
+  trackingStartDate: "2026-01-01",
+  peakSeeds: [{ date: "2026-01-01", nav: 100 }]
+});
+const laterPurchase = analyzeFundBox(sameFundRows, {
+  ...testOptions,
+  trackingStartDate: "2026-01-03",
+  peakSeeds: [{ date: "2026-01-03", nav: 120 }]
+});
+assert(Math.abs(earlierPurchase.top - 150) < 0.0001, "the earlier purchase should retain the pre-second-purchase high");
+assert(Math.abs(earlierPurchase.bottom - 120) < 0.0001, "the earlier purchase should trail its own high");
+assert(Math.abs(laterPurchase.top - 120) < 0.0001, "the later purchase must not inherit a high from before its buy date");
+assert(Math.abs(laterPurchase.bottom - 96) < 0.0001, "the later purchase should calculate its own 20% floor");
+
 const distributionBlocked = analyzeFundBox(rows([100, 101, 80]), {
   ...testOptions,
   distributing: true,
@@ -80,4 +96,4 @@ assert(buyDecision(freshLow).label === "低點尚未止穩", "a fresh low should
 assert(buyDecision(breakdown).label === "暫緩加碼", "a broken trailing floor should warn against adding");
 assert(buyDecision(distributionBlocked).label === "低點無法判斷", "blocked distribution data must not produce an entry signal");
 
-console.log("Fund box tests passed: 8 trailing-box scenarios and 4 entry decisions");
+console.log("Fund box tests passed: 10 trailing-box scenarios and 4 entry decisions");

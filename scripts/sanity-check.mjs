@@ -411,7 +411,11 @@ assert(fundBoxSource.includes("是否贖回由你判斷"), "the site must leave 
 assert(updateFundsSource.includes("DAILY_NAV_DAYS = 190"), "fund box history should retain about six calendar months");
 assert(appSource.includes("exactMonthlyNavForPurchase"), "owned-fund boxes should match exact MoneyDJ fund IDs");
 assert(appSource.includes('/(不配息|累積型|累積)/.test(name)'), "fund box distribution detection should prioritize accumulating class names");
-assert(appSource.includes("buildFundBoxStore(activePurchases)"), "same-fund purchases should share one box calculation");
+assert(appSource.includes("buildFundBoxStore(activePurchases)"), "active purchases should build trailing boxes");
+assert(appSource.includes("return `purchase:${purchaseId}`"), "each purchase record should have an independent trailing box key");
+assert(appSource.includes("savedBox?.tracking_start_date === trackingStartDate"), "editing a buy date should invalidate the old saved peak");
+assert(appSource.includes("這筆買入紀錄使用自己的箱子"), "the box detail should identify its per-purchase scope");
+assert(appSource.includes("某筆紀錄賣出後只清除該筆箱子"), "selling one purchase should not reset another purchase of the same fund");
 assert(appSource.includes('from("fund_trailing_boxes")'), "saved trailing peaks should load from the authenticated database");
 assert(appSource.includes("bootstrapLimited"), "incomplete pre-launch daily history should be disclosed");
 assert(appSource.includes("navItem?.months") && appSource.includes("navItem?.weeks"), "older month/week NAV rows should bootstrap existing holdings");

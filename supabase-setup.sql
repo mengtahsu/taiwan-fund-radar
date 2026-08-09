@@ -145,6 +145,9 @@ create table if not exists public.fund_trailing_boxes (
   primary key (user_id, fund_id)
 );
 
+comment on column public.fund_trailing_boxes.fund_id is
+  'Stable box key. Current app stores purchase:<fund_purchases.id> so every buy record has an independent box.';
+
 alter table public.fund_trailing_boxes enable row level security;
 
 drop policy if exists "Users can read own trailing boxes" on public.fund_trailing_boxes;

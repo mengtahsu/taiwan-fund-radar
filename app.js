@@ -822,7 +822,11 @@ function monthlyNavForPurchase(item) {
 }
 
 function fundBoxKeyForPurchase(item) {
-  return moneyDjFundId(item.fund_id) || String(item.fund_id || `purchase:${item.id}`);
+  const purchaseId = String(item?.id || "").trim();
+  if (purchaseId) {
+    return `purchase:${purchaseId}`;
+  }
+  return `purchase:${moneyDjFundId(item?.fund_id) || String(item?.fund_id || "manual")}:${item?.buy_date || "undated"}:${item?.created_at || ""}`;
 }
 
 function exactMonthlyNavForPurchase(item) {
@@ -920,9 +924,7 @@ function persistFundTrailingBox(entry) {
     return;
   }
   const existing = fundTrailingBoxes.get(entry.key);
-  const trackingStartDate = existing?.tracking_start_date && existing.tracking_start_date < entry.trackingStartDate
-    ? existing.tracking_start_date
-    : entry.trackingStartDate;
+  const trackingStartDate = entry.trackingStartDate;
   const peakNav = Number(entry.analysis.top);
   const peakDate = String(entry.analysis.peakDate || entry.analysis.latest?.date || trackingStartDate);
   const unchanged =
@@ -984,30 +986,16 @@ function isoDateFromShortNavDate(value) {
 }
 
 function buildFundBoxStore(activePurchases) {
-  const grouped = new Map();
+  const nextStore = new Map();
   activePurchases.forEach((item) => {
     const key = fundBoxKeyForPurchase(item);
-    if (!grouped.has(key)) {
-      grouped.set(key, []);
-    }
-    grouped.get(key).push(item);
-  });
-
-  const nextStore = new Map();
-  grouped.forEach((groupPurchases, key) => {
-    const sample = groupPurchases[0];
-    const fund = currentFundForPurchase(sample);
-    const navItem = exactMonthlyNavForPurchase(sample);
-    const distributing = isDistributingFund(fund, sample);
+    const fund = currentFundForPurchase(item);
+    const navItem = exactMonthlyNavForPurchase(item);
+    const distributing = isDistributingFund(fund, item);
     const adjusted = navItem?.adjusted === true || navItem?.navType === "adjusted";
-    const earliestBuyDate = groupPurchases.reduce(
-      (earliest, item) => (!earliest || item.buy_date < earliest ? item.buy_date : earliest),
-      ""
-    );
-    const persisted = fundTrailingBoxes.get(key);
-    const trackingStartDate = persisted?.tracking_start_date && persisted.tracking_start_date < earliestBuyDate
-      ? persisted.tracking_start_date
-      : earliestBuyDate;
+    const trackingStartDate = String(item.buy_date || "");
+    const savedBox = fundTrailingBoxes.get(key);
+    const persisted = savedBox?.tracking_start_date === trackingStartDate ? savedBox : null;
     // Daily rows are exact for the trailing high. Older weekly/monthly rows give
     // existing holdings a conservative bootstrap until future highs are saved.
     const navRows = [
@@ -1022,7 +1010,7 @@ function buildFundBoxStore(activePurchases) {
     if (latestFundDate && Number.isFinite(Number(fund?.nav)) && Number(fund.nav) > 0) {
       navRows.push({ date: latestFundDate, nav: Number(fund.nav) });
     }
-    const peakSeeds = groupPurchases.map((item) => ({ date: item.buy_date, nav: item.nav }));
+    const peakSeeds = [{ date: item.buy_date, nav: item.nav }];
     if (persisted?.peak_nav && persisted?.peak_date) {
       peakSeeds.push({ date: persisted.peak_date, nav: persisted.peak_nav });
     }
@@ -1045,8 +1033,8 @@ function buildFundBoxStore(activePurchases) {
     const entry = {
       key,
       fund,
-      fundId: moneyDjFundId(sample.fund_id),
-      name: sample.fund_name || fund?.name || key,
+      fundId: moneyDjFundId(item.fund_id),
+      name: item.fund_name || fund?.name || key,
       navItem,
       distributing,
       adjusted,
@@ -1056,7 +1044,7 @@ function buildFundBoxStore(activePurchases) {
         trackingStartDate && exactHistoryStartDate && trackingStartDate < exactHistoryStartDate
       ),
       analysis,
-      purchases: groupPurchases
+      purchases: [item]
     };
     nextStore.set(key, entry);
     persistFundTrailingBox(entry);
@@ -2316,7 +2304,7 @@ function fundBoxCurrentCalculation(entry) {
   const { analysis } = entry;
   const lines = [];
   if (analysis.top && analysis.bottom) {
-    lines.push(`追蹤起點：${analysis.trackingStartDate || entry.trackingStartDate || "-"}；同一基金的持有中紀錄共用一個箱子。`);
+    lines.push(`追蹤起點：${analysis.trackingStartDate || entry.trackingStartDate || "-"}；這筆買入紀錄使用自己的箱子。`);
     lines.push(`箱頂採持有期間最高淨值 ${moneyNumber(analysis.top)}（${analysis.peakDate || "-"}）。`);
     lines.push(`20%箱底：${moneyNumber(analysis.top)} × 80% = ${moneyNumber(analysis.bottom)}。`);
     if (analysis.liveStatus === "trailing_breakdown") {
@@ -2387,13 +2375,13 @@ function renderFundBoxDetail(entry) {
       <ol>
         <li>進場仍採「幾個月低點」參考：使用現有每日淨值尋找區間最低點。</li>
         <li>目前淨值回到期間低點上方 5% 內，而且低點後連續 3 個交易日不再破底，才顯示「低點區可分批」。</li>
-        <li>持有中的同一基金只使用一套20%移動箱；多筆買入不會建立互相衝突的箱子。</li>
+        <li>每筆買入紀錄各自使用一套20%移動箱；即使基金相同，也從各自的買入日期與買入淨值開始計算。</li>
         <li>箱頂是這次持有週期開始後曾出現的最高淨值；淨值創新高時，箱頂立即上移，不等待三日確認。</li>
         <li>箱底永遠等於箱頂 × 80%，因此箱寬固定20%；箱頂與箱底只能上升，回檔時不會下降。</li>
         <li>基金上漲時不顯示停利，也不自動賣出再買回，讓資金持續留在原基金。</li>
         <li>最新淨值第一次等於或低於箱底就顯示「跌破箱底」；這只是醒目提醒，不會自動贖回或新增賣出紀錄。</li>
         <li>最高淨值與日期保存在你的帳號資料庫；重新整理或圖表只載入近期資料時，既有箱頂不會因此消失。</li>
-        <li>只有同一基金的持有紀錄全部賣出後才清除箱子；日後重新買入會建立新的持有週期。</li>
+        <li>某筆紀錄賣出後只清除該筆箱子，不影響同基金的其他持有紀錄；日後新增買入會建立新箱子。</li>
         <li>資料超過7天未更新時暫停新的跌破判斷，但保留最後箱頂與箱底供查看。</li>
         <li>圖表可選2個月或4個月並左右移動；這些操作只改變畫面，不會重設最高淨值。</li>
         <li>配息型基金必須使用可靠的還原淨值，否則配息造成的淨值下降可能被誤判，因此暫停箱型訊號。</li>
