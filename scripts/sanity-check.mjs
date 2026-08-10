@@ -457,6 +457,7 @@ assert(!indexSource.includes('href="./#compare"'), "top navigation should not sh
 assert(!indexSource.includes('id="compare"'), "compare section should be removed");
 
 const workflowSource = fs.readFileSync(".github/workflows/pages.yml", "utf8");
+const scheduleGateSource = fs.readFileSync("scripts/scheduled-update-gate.py", "utf8");
 const pagesDeploySource = fs.readFileSync("scripts/deploy-pages-without-cancel.mjs", "utf8");
 assert(workflowSource.includes('cron: "55 3,11,19 * * *"'), "scheduled updates should avoid GitHub's top-of-hour congestion");
 assert(workflowSource.includes('cron: "55 2,10,18 * * *"'), "scheduled updates should include an early fallback attempt");
@@ -465,6 +466,11 @@ assert(workflowSource.includes('cron: "25 1,9,17 * * *"'), "scheduled updates sh
 assert((workflowSource.match(/timezone: Asia\/Taipei/g) || []).length === 6, "scheduled updates should provide six guarded attempts per target");
 assert(workflowSource.includes("timezone: Asia/Taipei"), "scheduled updates should declare the Taiwan timezone");
 assert(workflowSource.includes("scripts/scheduled-update-gate.py"), "scheduled retries should use the freshness gate");
+assert(scheduleGateSource.includes("EARLY_WINDOW_MINUTES = 180"), "early attempts should cover GitHub scheduler delays up to three hours");
+assert(scheduleGateSource.includes("wait_seconds"), "the schedule gate should calculate time remaining before the Taiwan target");
+assert(workflowSource.includes('run: sleep "$WAIT_SECONDS"'), "early attempts should wait online for the Taiwan target time");
+assert(workflowSource.includes("id: update_gate"), "scheduled updates should recheck freshness after waiting");
+assert((workflowSource.match(/steps\.update_gate\.outputs\.should_update/g) || []).length >= 10, "data and deploy steps should use the post-wait update gate");
 assert(workflowSource.includes("cancel-in-progress: false"), "fallback attempts must not cancel an update already in progress");
 assert(workflowSource.includes("scripts/deploy-pages-without-cancel.mjs"), "Pages deployment should preserve slow queued deployments");
 assert(workflowSource.includes("timeout-minutes: 35"), "Pages deployment job should remain active through long queues");
