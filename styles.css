@@ -839,47 +839,39 @@ legend {
   min-width: 0;
 }
 
-.metric-strip {
+.period-performance-row {
   display: grid;
-  gap: 1px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   min-width: 0;
 }
 
-.metric-line {
+.period-performance-row > span {
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 3px;
   min-width: 0;
   white-space: nowrap;
 }
 
-.metric-line span,
-.metric-line small {
+.period-performance-row small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
 }
 
-.metric-line strong {
-  font-size: 13px;
-  white-space: nowrap;
+.period-performance-row strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
 }
 
-.metric-line .beat {
+.period-performance-row strong.up {
   color: var(--accent-dark);
 }
 
-.metric-line .lag {
+.period-performance-row strong.down {
   color: var(--danger);
-}
-
-.metric-line .pending {
-  color: var(--muted);
-}
-
-.metric-line small {
-  margin-left: auto;
-  white-space: nowrap;
 }
 
 .card-actions {

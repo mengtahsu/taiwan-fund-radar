@@ -342,7 +342,7 @@ assert(!appSource.includes('document.querySelector("#compareTable")'), "compare 
 assert(!appSource.includes('data-fund="${escapeHtml(fund.name)}"'), "fund cards should not render compare checkboxes");
 assert(appSource.includes("displayFundName(fund.name)"), "fund cards should use compact display names");
 assert(appSource.includes("fund-list-row"), "fund cards should use list-row layout");
-assert(appSource.includes("metric-strip"), "fund cards should use a single compact metric strip");
+assert(appSource.includes("period-performance-row"), "fund cards should use a compact absolute-performance row");
 assert(appSource.includes("fundDisplayLimit"), "fund list should support increasing the visible result limit");
 assert(appSource.includes("data-load-more-funds"), "fund list should render a load-more button");
 assert(appSource.includes("fundDisplayLimit += DISPLAY_LIMIT"), "load-more button should show the next batch");
@@ -382,12 +382,14 @@ assert(updateFundsSource.includes("def moving_average"), "TWII moving averages s
 assert(updateFundsSource.includes('"monthly": 20, "quarterly": 60'), "TWII updater should use 20-day and 60-day averages");
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
 assert(appSource.includes("fund-info-block"), "fund nav/performance/metrics should be grouped on the left side");
-assert(appSource.includes("metric-line"), "fund metrics should be arranged in two readable lines");
-assert(appSource.includes("3年年化"), "fund metric labels should use full three-year annualized wording");
-assert(appSource.includes("波動度"), "fund metric labels should use full volatility wording");
+assert(appSource.includes("period-performance-row"), "fund cards should show a compact 1/3/6-month performance row");
 assert(!appSource.includes("compact-stats"), "fund cards should not render nested metric cards");
-assert(appSource.includes('performanceTag("3月", fund.return3m)'), "fund cards should keep only 3-month performance in tags");
 assert(appSource.includes('performanceTag("1年", fund.return1y)'), "fund cards should keep only 1-year performance in tags");
+assert(appSource.includes('performanceTag("3年年化", fund.return3y)'), "fund cards should place 3-year annualized performance after NAV and 1-year performance");
+assert(appSource.includes('performanceMetric("1月", fund.return1m)'), "fund cards should show absolute 1-month performance");
+assert(appSource.includes('performanceMetric("3月", fund.return3m)'), "fund cards should show absolute 3-month performance");
+assert(appSource.includes('performanceMetric("6月", fund.return6m)'), "fund cards should show absolute 6-month performance");
+assert(!appSource.includes("compactBenchmarkStatus"), "fund cards should not show 1-month or 2-week benchmark comparisons");
 assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</span>'), "fund cards should not render dividend tags");
 assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not render extra type/currency tags");
 assert(appSource.includes("function scoreBreakdown(fund)"), "score clicks should use the same calculation as fund ranking");

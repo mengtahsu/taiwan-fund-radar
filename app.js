@@ -695,62 +695,6 @@ function fundReturnDate(fund, period) {
   return formatShortDate(fund[`return${period}EndDate`]);
 }
 
-function benchmarkStatus(fund, period) {
-  const benchmark = benchmarkForFund(fund);
-  const returnKey = `return${period}`;
-  const periodLabel = period === "1m" ? "近 1 月" : "近 2 週";
-  if (typeof fund[returnKey] !== "number") {
-    return `
-      <div class="benchmark pending">
-        <span>${periodLabel}台股</span>
-        <strong>更新中</strong>
-      </div>
-    `;
-  }
-  if (!benchmark || typeof benchmark[returnKey] !== "number") {
-    return `
-      <div class="benchmark pending">
-        <span>${periodLabel}台股</span>
-        <strong>等大盤</strong>
-      </div>
-    `;
-  }
-  const excess = fund[returnKey] - benchmark[returnKey];
-  const statusClass = excess >= 0 ? "beat" : "lag";
-  const label = excess >= 0 ? `${periodLabel}贏台股` : `${periodLabel}輸台股`;
-  const dataDate = fundReturnDate(fund, period);
-  return `
-    <div class="benchmark ${statusClass}">
-      <span>${label}</span>
-      <strong>${formatPercent(excess)}</strong>
-      ${dataDate ? `<small>資料 ${escapeHtml(dataDate)}</small>` : ""}
-    </div>
-  `;
-}
-
-function compactBenchmarkStatus(fund, period) {
-  const benchmark = benchmarkForFund(fund);
-  const returnKey = `return${period}`;
-  const shortLabel = period === "1m" ? "1月" : "2週";
-  if (typeof fund[returnKey] !== "number" || !benchmark || typeof benchmark[returnKey] !== "number") {
-    return {
-      className: "pending",
-      label: `${shortLabel}台股`,
-      value: "更新中",
-      valueNumber: null,
-      date: fundReturnDate(fund, period)
-    };
-  }
-  const excess = fund[returnKey] - benchmark[returnKey];
-  return {
-    className: excess >= 0 ? "beat" : "lag",
-    label: `${shortLabel}${excess >= 0 ? "贏" : "輸"}`,
-    value: formatPercent(excess),
-    valueNumber: excess,
-    date: fundReturnDate(fund, period)
-  };
-}
-
 function formatPrice(fund) {
   if (typeof fund.nav === "number" && fund.nav > 0) {
     return `${fund.nav.toLocaleString("zh-TW", { maximumFractionDigits: 4 })}`;
@@ -3525,6 +3469,12 @@ function performanceTag(label, value) {
   return `<span class="pill">${escapeHtml(label)} ${value.toLocaleString("zh-TW", { maximumFractionDigits: 1 })}%</span>`;
 }
 
+function performanceMetric(label, value) {
+  const hasValue = typeof value === "number" && Number.isFinite(value);
+  const valueClass = !hasValue ? "" : value >= 0 ? "up" : "down";
+  return `<span><small>${escapeHtml(label)}</small><strong class="${valueClass}">${hasValue ? formatCompactPercent(value) : "—"}</strong></span>`;
+}
+
 function renderCompactBuyLink(fund) {
   if (fund.fubonBuyUrl) {
     const navHint = typeof fund.nav === "number" && Number.isFinite(fund.nav) ? `，先核對淨值 ${moneyNumber(fund.nav)}${fund.navDate ? ` / ${fund.navDate}` : ""}` : "";
@@ -3979,9 +3929,6 @@ function renderFunds() {
 
   const cardsHtml = visibleList
     .map((fund) => {
-      const twoWeek = compactBenchmarkStatus(fund, "2w");
-      const oneMonth = compactBenchmarkStatus(fund, "1m");
-      const benchmarkDate = twoWeek.date || oneMonth.date;
       return `
         <article class="fund-card fund-list-row">
           <div class="fund-head">
@@ -3992,19 +3939,13 @@ function renderFunds() {
             <div class="fund-info-block">
               <div class="pill-row">
                 ${navTag(fund)}
-                ${performanceTag("3月", fund.return3m)}
                 ${performanceTag("1年", fund.return1y)}
+                ${performanceTag("3年年化", fund.return3y)}
               </div>
-              <div class="metric-strip">
-                <div class="metric-line">
-                  <span>3年年化</span><strong>${fund.return3y.toFixed(1)}%</strong>
-                  <span>波動度</span><strong>${fund.volatility.toFixed(1)}%</strong>
-                </div>
-                <div class="metric-line">
-                  <span class="${twoWeek.className}">${twoWeek.label}</span><strong class="${twoWeek.className}">${typeof twoWeek.valueNumber === "number" ? formatCompactPercent(twoWeek.valueNumber) : twoWeek.value}</strong>
-                  <span class="${oneMonth.className}">${oneMonth.label}</span><strong class="${oneMonth.className}">${typeof oneMonth.valueNumber === "number" ? formatCompactPercent(oneMonth.valueNumber) : oneMonth.value}</strong>
-                  ${benchmarkDate ? `<small>${escapeHtml(benchmarkDate)}</small>` : ""}
-                </div>
+              <div class="period-performance-row">
+                ${performanceMetric("1月", fund.return1m)}
+                ${performanceMetric("3月", fund.return3m)}
+                ${performanceMetric("6月", fund.return6m)}
               </div>
             </div>
             <div class="card-actions">
