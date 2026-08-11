@@ -428,26 +428,13 @@ function applyLocalNavOverridesToFunds() {
   return applied;
 }
 
-function recentMomentumBreakdown(fund) {
-  const items = [
-    { label: "近 3 月績效", value: fund.return3m, score: Number(fund.return3m) || 0, weight: 0.5 },
-    { label: "近 1 月績效", value: fund.return1m, score: Number(fund.return1m) || 0, weight: 0.5 }
+function performanceScoreParts(fund) {
+  return [
+    { label: "近 1 月績效", detail: scorePercentValue(fund.return1m), score: Number(fund.return1m) || 0, factor: 2, factorLabel: "2" },
+    { label: "近 3 月績效", detail: scorePercentValue(fund.return3m), score: Number(fund.return3m) || 0, factor: 2, factorLabel: "2" },
+    { label: "近 6 月績效", detail: scorePercentValue(fund.return6m), score: Number(fund.return6m) || 0, factor: 0.5, factorLabel: "0.5" },
+    { label: "近 1 年績效", detail: scorePercentValue(fund.return1y), score: Number(fund.return1y) || 0, factor: 0.2, factorLabel: "0.2" }
   ];
-  return {
-    score: items.reduce((total, item) => total + item.score * item.weight, 0),
-    items
-  };
-}
-
-function longTermMomentumBreakdown(fund) {
-  const items = [
-    { label: "近 6 月績效", value: fund.return6m, score: Number(fund.return6m) || 0, weight: 0.7 },
-    { label: "近 1 年績效", value: fund.return1y, score: Number(fund.return1y) || 0, weight: 0.3 }
-  ];
-  return {
-    score: items.reduce((total, item) => total + item.score * item.weight, 0),
-    items
-  };
 }
 
 function scoreBreakdown(fund) {
@@ -456,36 +443,32 @@ function scoreBreakdown(fund) {
   const stabilityScore = (1 - clamp(fund.volatility / 28, 0, 1)) * 100;
   const incomeScore = fund.dividend.includes("配") ? 100 : 35;
   const sharpeScore = clamp(fund.sharpe / 2, 0, 1) * 100;
-  const recentMomentum = recentMomentumBreakdown(fund);
-  const longTermMomentum = longTermMomentumBreakdown(fund);
+  const performanceParts = performanceScoreParts(fund);
 
   const scoreParts = {
     growth: [
-      { label: "長期動能", detail: "6 月、1 年", score: longTermMomentum.score, weight: 0.25 },
-      { label: "近期動能", detail: "3 月、1 月", score: recentMomentum.score, weight: 0.45 },
-      { label: "Sharpe", detail: Number(fund.sharpe).toFixed(2), score: sharpeScore, weight: 0.2 },
-      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, weight: 0.1 }
+      ...performanceParts,
+      { label: "Sharpe", detail: Number(fund.sharpe).toFixed(2), score: sharpeScore, factor: 0.2, factorLabel: "20%" },
+      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, factor: 0.1, factorLabel: "10%" }
     ],
     income: [
-      { label: "配息型態", detail: fund.dividend, score: incomeScore, weight: 0.35 },
-      { label: "低波動", detail: `波動度 ${fund.volatility.toFixed(1)}%`, score: stabilityScore, weight: 0.3 },
-      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, weight: 0.2 },
-      { label: "近期動能", detail: "3 月、1 月", score: recentMomentum.score, weight: 0.15 }
+      ...performanceParts,
+      { label: "配息型態", detail: fund.dividend, score: incomeScore, factor: 0.35, factorLabel: "35%" },
+      { label: "低波動", detail: `波動度 ${fund.volatility.toFixed(1)}%`, score: stabilityScore, factor: 0.3, factorLabel: "30%" },
+      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, factor: 0.2, factorLabel: "20%" }
     ],
     stability: [
-      { label: "低波動", detail: `波動度 ${fund.volatility.toFixed(1)}%`, score: stabilityScore, weight: 0.35 },
-      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, weight: 0.3 },
-      { label: "Sharpe", detail: Number(fund.sharpe).toFixed(2), score: sharpeScore, weight: 0.2 },
-      { label: "近期動能", detail: "3 月、1 月", score: recentMomentum.score, weight: 0.15 }
+      ...performanceParts,
+      { label: "低波動", detail: `波動度 ${fund.volatility.toFixed(1)}%`, score: stabilityScore, factor: 0.35, factorLabel: "35%" },
+      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, factor: 0.3, factorLabel: "30%" },
+      { label: "Sharpe", detail: Number(fund.sharpe).toFixed(2), score: sharpeScore, factor: 0.2, factorLabel: "20%" }
     ]
   }[currentGoal];
 
-  const total = scoreParts.reduce((sum, part) => sum + part.score * part.weight, 0);
+  const total = scoreParts.reduce((sum, part) => sum + part.score * part.factor, 0);
   return {
     goal: currentGoal,
     goalLabel: { growth: "成長目標", income: "配息目標", stability: "穩健目標" }[currentGoal],
-    recentMomentum,
-    longTermMomentum,
     parts: scoreParts,
     total,
     score: Math.round(total)
@@ -498,9 +481,9 @@ function scoreFund(fund) {
 
 function scoreTitle() {
   return {
-    growth: "自訂綜合分數：長期動能 25%、近期動能 45%、Sharpe 20%、風險符合度 10%。長期動能含近 6 月 70% 與近 1 年 30%；近期動能含近 3 月與近 1 月，各占 50%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
-    income: "自訂綜合分數：配息型態 35%、低波動 30%、風險符合度 20%、近期動能 15%。近期動能含近 3 月與近 1 月，各占 50%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
-    stability: "自訂綜合分數：低波動 35%、風險符合度 30%、Sharpe 20%、近期動能 15%。近期動能含近 3 月與近 1 月，各占 50%。各期績效直接作為分數，沒有上限，缺資料為 0 分"
+    growth: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.5、近 1 年績效 × 0.2，再加 Sharpe 20% 與風險符合度 10%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
+    income: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.5、近 1 年績效 × 0.2，再加配息型態 35%、低波動 30% 與風險符合度 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
+    stability: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.5、近 1 年績效 × 0.2，再加低波動 35%、風險符合度 30% 與 Sharpe 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分"
   }[goal()];
 }
 
@@ -524,45 +507,26 @@ function renderScoreDetail(fund) {
   const breakdown = scoreBreakdown(fund);
   const partRows = breakdown.parts
     .map((part) => {
-      const points = part.score * part.weight;
+      const points = part.score * part.factor;
       return `
         <div class="score-detail-row">
           <div><strong>${escapeHtml(part.label)}</strong><small>${escapeHtml(part.detail)}</small></div>
-          <span>${part.score.toFixed(1)} × ${Math.round(part.weight * 100)}%</span>
+          <span>${part.score.toFixed(1)} × ${part.factorLabel}</span>
           <strong>${points.toFixed(1)}</strong>
         </div>
       `;
     })
     .join("");
-  const renderMomentumRows = (items) => items
-    .map((item) => `
-      <div class="score-momentum-row">
-        <span>${escapeHtml(item.label)}<small>${scorePercentValue(item.value)}</small></span>
-        <span>${item.score.toFixed(1)} × ${Math.round(item.weight * 100)}%</span>
-        <strong>${(item.score * item.weight).toFixed(1)}</strong>
-      </div>
-    `)
-    .join("");
-  const renderMomentumSection = (title, momentum) => `
-    <section class="score-momentum-detail">
-      <h4>${title}</h4>
-      <div class="score-detail-head"><span>資料</span><span>項目分數 × 占比</span><span>得分</span></div>
-      ${renderMomentumRows(momentum.items)}
-      <p>${title}分數 ${momentum.score.toFixed(1)}</p>
-    </section>
-  `;
-  const sumText = breakdown.parts.map((part) => (part.score * part.weight).toFixed(1)).join(" + ");
+  const sumText = breakdown.parts.map((part) => (part.score * part.factor).toFixed(1)).join(" + ");
   return `
     <div class="score-modal-summary">
       <div><span>綜合分數</span><strong>${breakdown.score}</strong></div>
       <small>${breakdown.goalLabel}</small>
     </div>
-    <div class="score-detail-head"><span>項目</span><span>項目分數 × 權重</span><span>得分</span></div>
+    <div class="score-detail-head"><span>項目</span><span>分數 × 倍率</span><span>得分</span></div>
     <div class="score-detail-list">${partRows}</div>
-    ${breakdown.goal === "growth" ? renderMomentumSection("長期動能", breakdown.longTermMomentum) : ""}
-    ${renderMomentumSection("近期動能", breakdown.recentMomentum)}
     <p class="score-total">${sumText} = ${breakdown.total.toFixed(1)} → ${breakdown.score}</p>
-    <p class="score-modal-note">動能直接以期間績效作為分數：漲幾 % 就是幾分，跌幾 % 就是負幾分，缺資料為 0 分，不另作換算或限制。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。</p>
+    <p class="score-modal-note">近 1 月與近 3 月績效各乘 2；近 6 月乘 0.5；近 1 年乘 0.2。漲幾 % 就是幾分，跌幾 % 就是負幾分，缺資料為 0 分，不另作換算或限制。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。</p>
   `;
 }
 
@@ -3469,10 +3433,17 @@ function performanceTag(label, value) {
   return `<span class="pill">${escapeHtml(label)} ${value.toLocaleString("zh-TW", { maximumFractionDigits: 1 })}%</span>`;
 }
 
-function performanceMetric(label, value) {
+function performanceMetric(label, value, options = {}) {
   const hasValue = typeof value === "number" && Number.isFinite(value);
-  const valueClass = !hasValue ? "" : value >= 0 ? "up" : "down";
-  return `<span><small>${escapeHtml(label)}</small><strong class="${valueClass}">${hasValue ? formatCompactPercent(value) : "—"}</strong></span>`;
+  const colorize = options.colorize !== false;
+  const signed = options.signed !== false;
+  const valueClass = !hasValue || !colorize ? "" : value >= 0 ? "up" : "down";
+  const valueText = !hasValue
+    ? "—"
+    : signed
+      ? formatCompactPercent(value)
+      : `${value.toLocaleString("zh-TW", { maximumFractionDigits: 1 })}%`;
+  return `<span><small>${escapeHtml(label)}</small><strong class="${valueClass}">${valueText}</strong></span>`;
 }
 
 function renderCompactBuyLink(fund) {
@@ -3946,6 +3917,7 @@ function renderFunds() {
                 ${performanceMetric("1月", fund.return1m)}
                 ${performanceMetric("3月", fund.return3m)}
                 ${performanceMetric("6月", fund.return6m)}
+                ${performanceMetric("波動度", fund.volatility, { colorize: false, signed: false })}
               </div>
             </div>
             <div class="card-actions">

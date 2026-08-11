@@ -841,8 +841,8 @@ legend {
 
 .period-performance-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(70px, auto);
+  gap: 4px;
   min-width: 0;
 }
 

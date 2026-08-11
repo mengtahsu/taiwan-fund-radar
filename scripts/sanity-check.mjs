@@ -132,11 +132,15 @@ function navAgeDays(fund, sourceValue) {
 }
 
 function growthScoreForFund(fund) {
-  const recentMomentumScore = numeric(fund.return3m) * 0.5 + numeric(fund.return1m) * 0.5;
-  const longTermMomentumScore = numeric(fund.return6m) * 0.7 + numeric(fund.return1y) * 0.3;
+  const performanceScore = (
+    numeric(fund.return1m) * 2
+    + numeric(fund.return3m) * 2
+    + numeric(fund.return6m) * 0.5
+    + numeric(fund.return1y) * 0.2
+  );
   const sharpeScore = clamp(numeric(fund.sharpe) / 2, 0, 1) * 100;
   const riskFit = (1 - Math.max(0, numeric(fund.risk) - 5) / 4) * 100;
-  return Math.round(longTermMomentumScore * 0.25 + recentMomentumScore * 0.45 + sharpeScore * 0.2 + riskFit * 0.1);
+  return Math.round(performanceScore + sharpeScore * 0.2 + riskFit * 0.1);
 }
 
 const funds = Array.isArray(fundPayload?.funds) ? fundPayload.funds : [];
@@ -303,10 +307,10 @@ assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_fu
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");
 assert(updateFundsSource.includes("period_return_from_series(series, RECENT_RETURN_DAYS)"), "recent returns should still use BCD historical NAV series");
-assert(updateFundsSource.includes('number(fund.get("return3m") or 0, "return3m") * 0.5'), "backend ranking should use raw 3-month performance at 50% of recent momentum");
-assert(updateFundsSource.includes('number(fund.get("return1m") or 0, "return1m") * 0.5'), "backend ranking should use raw 1-month performance at 50% of recent momentum");
-assert(updateFundsSource.includes('number(fund.get("return6m") or 0, "return6m") * 0.7'), "backend ranking should use raw 6-month performance at 70% of long-term momentum");
-assert(updateFundsSource.includes('number(fund.get("return1y") or 0, "return1y") * 0.3'), "backend ranking should use raw 1-year performance at 30% of long-term momentum");
+assert(updateFundsSource.includes('number(fund.get("return1m") or 0, "return1m") * 2'), "backend ranking should multiply raw 1-month performance by 2");
+assert(updateFundsSource.includes('number(fund.get("return3m") or 0, "return3m") * 2'), "backend ranking should multiply raw 3-month performance by 2");
+assert(updateFundsSource.includes('number(fund.get("return6m") or 0, "return6m") * 0.5'), "backend ranking should multiply raw 6-month performance by 0.5");
+assert(updateFundsSource.includes('number(fund.get("return1y") or 0, "return1y") * 0.2'), "backend ranking should multiply raw 1-year performance by 0.2");
 assert(!updateFundsSource.includes("load_taiwan_benchmark_returns"), "backend score ranking should not use Taiwan benchmark returns");
 assert(updateFundsSource.includes("math.floor(score + 0.5)"), "backend score rounding should match JavaScript Math.round");
 assert(updateFundsSource.includes('if any(keyword in name for keyword in ["不配息", "累積"])'), "fund normalization should not misclassify accumulating classes as distributing");
@@ -389,17 +393,20 @@ assert(appSource.includes('performanceTag("3年年化", fund.return3y)'), "fund 
 assert(appSource.includes('performanceMetric("1月", fund.return1m)'), "fund cards should show absolute 1-month performance");
 assert(appSource.includes('performanceMetric("3月", fund.return3m)'), "fund cards should show absolute 3-month performance");
 assert(appSource.includes('performanceMetric("6月", fund.return6m)'), "fund cards should show absolute 6-month performance");
+assert(appSource.includes('performanceMetric("波動度", fund.volatility, { colorize: false, signed: false })'), "fund cards should retain volatility beside period performance");
 assert(!appSource.includes("compactBenchmarkStatus"), "fund cards should not show 1-month or 2-week benchmark comparisons");
 assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</span>'), "fund cards should not render dividend tags");
 assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not render extra type/currency tags");
 assert(appSource.includes("function scoreBreakdown(fund)"), "score clicks should use the same calculation as fund ranking");
 assert(appSource.includes('data-score-fund="${escapeHtml(fundLookupKey(fund))}"'), "fund score circles should open their calculation details");
-assert(appSource.includes("項目分數 × 權重"), "score details should show each component score and weight");
+assert(appSource.includes("分數 × 倍率"), "score details should show each component score and multiplier");
 assert(appSource.includes("漲幾 % 就是幾分，跌幾 % 就是負幾分"), "score details should disclose direct positive and negative performance scoring");
-assert(appSource.includes('{ label: "近 3 月績效", value: fund.return3m, score: Number(fund.return3m) || 0, weight: 0.5 }'), "recent momentum should give 3-month performance half the weight");
-assert(appSource.includes('{ label: "近 1 月績效", value: fund.return1m, score: Number(fund.return1m) || 0, weight: 0.5 }'), "recent momentum should give 1-month performance half the weight");
-assert(appSource.includes('{ label: "近 6 月績效", value: fund.return6m, score: Number(fund.return6m) || 0, weight: 0.7 }'), "long-term momentum should give 6-month performance 70% weight");
-assert(appSource.includes('{ label: "近 1 年績效", value: fund.return1y, score: Number(fund.return1y) || 0, weight: 0.3 }'), "long-term momentum should give 1-year performance 30% weight");
+assert(appSource.includes('{ label: "近 1 月績效", detail: scorePercentValue(fund.return1m), score: Number(fund.return1m) || 0, factor: 2'), "score should multiply raw 1-month performance by 2");
+assert(appSource.includes('{ label: "近 3 月績效", detail: scorePercentValue(fund.return3m), score: Number(fund.return3m) || 0, factor: 2'), "score should multiply raw 3-month performance by 2");
+assert(appSource.includes('{ label: "近 6 月績效", detail: scorePercentValue(fund.return6m), score: Number(fund.return6m) || 0, factor: 0.5'), "score should multiply raw 6-month performance by 0.5");
+assert(appSource.includes('{ label: "近 1 年績效", detail: scorePercentValue(fund.return1y), score: Number(fund.return1y) || 0, factor: 0.2'), "score should multiply raw 1-year performance by 0.2");
+assert(!appSource.includes("recentMomentumBreakdown"), "score should not group recent momentum");
+assert(!appSource.includes("longTermMomentumBreakdown"), "score should not group long-term momentum");
 assert(appSource.includes("event.target === modal"), "score detail modal should close when its backdrop is tapped");
 assert(!appSource.includes('<button class="score compact-score"'), "score circles should keep their existing non-button appearance");
 assert(!styleSource.includes(".score[data-score-fund]::after"), "clickable scores should not add a line below the number");

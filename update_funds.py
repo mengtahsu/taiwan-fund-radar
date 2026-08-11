@@ -1541,17 +1541,15 @@ def clamp(value: float, minimum: float, maximum: float) -> float:
 
 
 def growth_score_for_nav_refresh(fund: dict[str, Any]) -> int:
-    recent_momentum = (
-        number(fund.get("return3m") or 0, "return3m") * 0.5
-        + number(fund.get("return1m") or 0, "return1m") * 0.5
-    )
-    long_term_momentum = (
-        number(fund.get("return6m") or 0, "return6m") * 0.7
-        + number(fund.get("return1y") or 0, "return1y") * 0.3
+    performance_score = (
+        number(fund.get("return1m") or 0, "return1m") * 2
+        + number(fund.get("return3m") or 0, "return3m") * 2
+        + number(fund.get("return6m") or 0, "return6m") * 0.5
+        + number(fund.get("return1y") or 0, "return1y") * 0.2
     )
     sharpe_score = clamp(number(fund.get("sharpe") or 0, "sharpe") / 2, 0, 1) * 100
     risk_fit = (1 - max(0, int(number(fund.get("risk") or 5, "risk")) - 5) / 4) * 100
-    score = long_term_momentum * 0.25 + recent_momentum * 0.45 + sharpe_score * 0.2 + risk_fit * 0.1
+    score = performance_score + sharpe_score * 0.2 + risk_fit * 0.1
     return math.floor(score + 0.5)
 
 
