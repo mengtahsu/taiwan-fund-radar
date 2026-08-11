@@ -841,8 +841,9 @@ legend {
 
 .period-performance-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(70px, auto);
-  gap: 4px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 1px;
   min-width: 0;
 }
 
@@ -861,9 +862,7 @@ legend {
 }
 
 .period-performance-row strong {
-  overflow: hidden;
   font-size: 12px;
-  text-overflow: ellipsis;
 }
 
 .period-performance-row strong.up {
