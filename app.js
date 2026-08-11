@@ -432,8 +432,8 @@ function performanceScoreParts(fund) {
   return [
     { label: "近 1 月績效", detail: scorePercentValue(fund.return1m), score: Number(fund.return1m) || 0, factor: 2, factorLabel: "2" },
     { label: "近 3 月績效", detail: scorePercentValue(fund.return3m), score: Number(fund.return3m) || 0, factor: 2, factorLabel: "2" },
-    { label: "近 6 月績效", detail: scorePercentValue(fund.return6m), score: Number(fund.return6m) || 0, factor: 0.5, factorLabel: "0.5" },
-    { label: "近 1 年績效", detail: scorePercentValue(fund.return1y), score: Number(fund.return1y) || 0, factor: 0.2, factorLabel: "0.2" }
+    { label: "近 6 月績效", detail: scorePercentValue(fund.return6m), score: Number(fund.return6m) || 0, factor: 0.4, factorLabel: "0.4" },
+    { label: "近 1 年績效", detail: scorePercentValue(fund.return1y), score: Number(fund.return1y) || 0, factor: 0.1, factorLabel: "0.1" }
   ];
 }
 
@@ -481,9 +481,9 @@ function scoreFund(fund) {
 
 function scoreTitle() {
   return {
-    growth: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.5、近 1 年績效 × 0.2，再加 Sharpe 20% 與風險符合度 10%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
-    income: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.5、近 1 年績效 × 0.2，再加配息型態 35%、低波動 30% 與風險符合度 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
-    stability: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.5、近 1 年績效 × 0.2，再加低波動 35%、風險符合度 30% 與 Sharpe 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分"
+    growth: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加 Sharpe 20% 與風險符合度 10%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
+    income: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加配息型態 35%、低波動 30% 與風險符合度 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
+    stability: "自訂綜合分數：近 1 月績效 × 2、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加低波動 35%、風險符合度 30% 與 Sharpe 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分"
   }[goal()];
 }
 
@@ -526,7 +526,7 @@ function renderScoreDetail(fund) {
     <div class="score-detail-head"><span>項目</span><span>分數 × 倍率</span><span>得分</span></div>
     <div class="score-detail-list">${partRows}</div>
     <p class="score-total">${sumText} = ${breakdown.total.toFixed(1)} → ${breakdown.score}</p>
-    <p class="score-modal-note">近 1 月與近 3 月績效各乘 2；近 6 月乘 0.5；近 1 年乘 0.2。漲幾 % 就是幾分，跌幾 % 就是負幾分，缺資料為 0 分，不另作換算或限制。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。</p>
+    <p class="score-modal-note">近 1 月與近 3 月績效各乘 2；近 6 月乘 0.4；近 1 年乘 0.1。漲幾 % 就是幾分，跌幾 % 就是負幾分，缺資料為 0 分，不另作換算或限制。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。</p>
   `;
 }
 

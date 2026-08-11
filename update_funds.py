@@ -1544,8 +1544,8 @@ def growth_score_for_nav_refresh(fund: dict[str, Any]) -> int:
     performance_score = (
         number(fund.get("return1m") or 0, "return1m") * 2
         + number(fund.get("return3m") or 0, "return3m") * 2
-        + number(fund.get("return6m") or 0, "return6m") * 0.5
-        + number(fund.get("return1y") or 0, "return1y") * 0.2
+        + number(fund.get("return6m") or 0, "return6m") * 0.4
+        + number(fund.get("return1y") or 0, "return1y") * 0.1
     )
     sharpe_score = clamp(number(fund.get("sharpe") or 0, "sharpe") / 2, 0, 1) * 100
     risk_fit = (1 - max(0, int(number(fund.get("risk") or 5, "risk")) - 5) / 4) * 100
