@@ -387,8 +387,8 @@ assert(updateFundsSource.includes('"monthly": 20, "quarterly": 60'), "TWII updat
 assert(appSource.includes("fund-action-row"), "fund metrics and action buttons should share one row");
 assert(appSource.includes("fund-info-block"), "fund nav/performance/metrics should be grouped on the left side");
 assert(appSource.includes("period-performance-row"), "fund cards should show a compact 1/3/6-month performance row");
-assert(styleSource.includes("grid-template-columns: auto auto minmax(0, 1fr);"), "1-month and 3-month performance should stay close while 6-month performance sits farther right");
-assert(styleSource.includes(".period-performance-row > span:nth-child(3)"), "6-month performance should be anchored at the right of the first row");
+assert(styleSource.includes("grid-template-columns: repeat(3, minmax(0, 1fr));"), "1-month, 3-month, and 6-month performance should use three equal columns");
+assert(styleSource.includes(".period-performance-row > span:nth-child(-n + 3)"), "the three period metrics should be centered in equal columns");
 assert(styleSource.includes("grid-column: 1 / 3;"), "volatility should occupy a separate second row");
 assert(!appSource.includes("compact-stats"), "fund cards should not render nested metric cards");
 assert(appSource.includes('performanceTag("1年", fund.return1y)'), "fund cards should keep only 1-year performance in tags");
