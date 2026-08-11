@@ -19,6 +19,7 @@ import argparse
 import concurrent.futures
 import html
 import json
+import math
 import os
 import re
 import statistics
@@ -1539,39 +1540,19 @@ def clamp(value: float, minimum: float, maximum: float) -> float:
     return min(max(value, minimum), maximum)
 
 
-def load_taiwan_benchmark_returns(root: Path) -> dict[str, float]:
-    markets_path = root / "data/markets.json"
-    if not markets_path.exists():
-        return {}
-    try:
-        payload = json.loads(markets_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
-    for market in payload.get("markets", []):
-        if market.get("id") == "twii":
-            return {
-                "return2w": number(market.get("return2w", 0), "twii.return2w"),
-                "return1m": number(market.get("return1m", 0), "twii.return1m"),
-            }
-    return {}
-
-
-def growth_score_for_nav_refresh(fund: dict[str, Any], benchmark: dict[str, float]) -> int:
-    return_3m_score = clamp(number(fund.get("return3m", 0), "return3m") / 60, 0, 1)
-    if fund.get("return2w") is None or benchmark.get("return2w") is None:
-        excess_2w_score = 0
-    else:
-        excess_2w_score = clamp((number(fund["return2w"], "return2w") - benchmark["return2w"] + 10) / 25, 0, 1)
-    if fund.get("return1m") is None or benchmark.get("return1m") is None:
-        excess_1m_score = 0
-    else:
-        excess_1m_score = clamp((number(fund["return1m"], "return1m") - benchmark["return1m"] + 12) / 30, 0, 1)
-    momentum_score = return_3m_score * 0.45 + excess_2w_score * 0.3 + excess_1m_score * 0.25
-    return_score = clamp(number(fund.get("return3y", 0), "return3y") / 80, 0, 1)
-    sharpe_score = clamp(number(fund.get("sharpe", 0), "sharpe") / 2, 0, 1)
-    risk_fit = 1 - max(0, int(number(fund.get("risk", 5), "risk")) - 5) / 4
-    score = return_score * 0.25 + momentum_score * 0.45 + sharpe_score * 0.2 + risk_fit * 0.1
-    return round(score * 100)
+def growth_score_for_nav_refresh(fund: dict[str, Any]) -> int:
+    recent_momentum = (
+        number(fund.get("return3m") or 0, "return3m") * 0.5
+        + number(fund.get("return1m") or 0, "return1m") * 0.5
+    )
+    long_term_momentum = (
+        number(fund.get("return6m") or 0, "return6m") * 0.7
+        + number(fund.get("return1y") or 0, "return1y") * 0.3
+    )
+    sharpe_score = clamp(number(fund.get("sharpe") or 0, "sharpe") / 2, 0, 1) * 100
+    risk_fit = (1 - max(0, int(number(fund.get("risk") or 5, "risk")) - 5) / 4) * 100
+    score = long_term_momentum * 0.25 + recent_momentum * 0.45 + sharpe_score * 0.2 + risk_fit * 0.1
+    return math.floor(score + 0.5)
 
 
 def is_buyable_default_fund(fund: dict[str, Any]) -> bool:
@@ -1595,16 +1576,14 @@ def has_recent_nav_date(fund: dict[str, Any], max_age_days: int = 14) -> bool:
 
 
 def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
-    root = Path(__file__).resolve().parent
-    benchmark = load_taiwan_benchmark_returns(root)
     top_limit = int(os.environ.get("RECENT_NAV_TOP_LIMIT", RECENT_NAV_TOP_LIMIT))
     always_refresh_top = int(os.environ.get("RECENT_NAV_ALWAYS_REFRESH_TOP", RECENT_NAV_ALWAYS_REFRESH_TOP))
     default_funds = [fund for fund in funds if is_buyable_default_fund(fund) and has_recent_nav_date(fund)]
     score_ranked_funds = sorted(
         default_funds,
         key=lambda fund: (
-            growth_score_for_nav_refresh(fund, benchmark),
-            number(fund.get("return3y", 0), "return3y"),
+            growth_score_for_nav_refresh(fund),
+            number(fund.get("return6m", 0), "return6m"),
             number(fund.get("return3m", 0), "return3m"),
         ),
         reverse=True,
@@ -1637,14 +1616,12 @@ def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
 def monthly_nav_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
     if limit <= 0:
         return []
-    root = Path(__file__).resolve().parent
-    benchmark = load_taiwan_benchmark_returns(root)
     default_funds = [fund for fund in funds if is_buyable_default_fund(fund) and str(fund.get("fundId") or "")]
     ranked_funds = sorted(
         default_funds,
         key=lambda fund: (
-            growth_score_for_nav_refresh(fund, benchmark),
-            number(fund.get("return3y", 0), "return3y"),
+            growth_score_for_nav_refresh(fund),
+            number(fund.get("return6m", 0), "return6m"),
             str(fund.get("fundId") or ""),
         ),
         reverse=True,

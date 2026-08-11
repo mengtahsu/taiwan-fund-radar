@@ -131,21 +131,12 @@ function navAgeDays(fund, sourceValue) {
   return Math.floor((sourceDate - navDate) / 86400000);
 }
 
-function growthScoreForFund(fund, benchmark) {
-  const return3mScore = clamp(numeric(fund.return3m) / 60, 0, 1);
-  const excess2wScore =
-    fund.return2w === undefined || benchmark.return2w === undefined
-      ? 0
-      : clamp((numeric(fund.return2w) - numeric(benchmark.return2w) + 10) / 25, 0, 1);
-  const excess1mScore =
-    fund.return1m === undefined || benchmark.return1m === undefined
-      ? 0
-      : clamp((numeric(fund.return1m) - numeric(benchmark.return1m) + 12) / 30, 0, 1);
-  const momentumScore = return3mScore * 0.45 + excess2wScore * 0.3 + excess1mScore * 0.25;
-  const returnScore = clamp(numeric(fund.return3y) / 80, 0, 1);
-  const sharpeScore = clamp(numeric(fund.sharpe) / 2, 0, 1);
-  const riskFit = 1 - Math.max(0, numeric(fund.risk) - 5) / 4;
-  return Math.round((returnScore * 0.25 + momentumScore * 0.45 + sharpeScore * 0.2 + riskFit * 0.1) * 100);
+function growthScoreForFund(fund) {
+  const recentMomentumScore = numeric(fund.return3m) * 0.5 + numeric(fund.return1m) * 0.5;
+  const longTermMomentumScore = numeric(fund.return6m) * 0.7 + numeric(fund.return1y) * 0.3;
+  const sharpeScore = clamp(numeric(fund.sharpe) / 2, 0, 1) * 100;
+  const riskFit = (1 - Math.max(0, numeric(fund.risk) - 5) / 4) * 100;
+  return Math.round(longTermMomentumScore * 0.25 + recentMomentumScore * 0.45 + sharpeScore * 0.2 + riskFit * 0.1);
 }
 
 const funds = Array.isArray(fundPayload?.funds) ? fundPayload.funds : [];
@@ -159,17 +150,16 @@ assert(invalidNavFunds.length === 0, `funds with invalid NAV: ${invalidNavFunds.
 const missingNavDateFunds = funds.filter((fund) => Number(fund.nav) > 0 && !fund.navDate);
 assert(missingNavDateFunds.length === 0, `funds with NAV but no navDate: ${missingNavDateFunds.slice(0, 5).map((fund) => fund.fundId || fund.name).join(", ")}`);
 
-const twiiBenchmark = (Array.isArray(marketPayload?.markets) ? marketPayload.markets : []).find((market) => market.id === "twii") || {};
 const topScreenedFunds = funds
   .map((fund) => ({
     ...fund,
-    computedScore: growthScoreForFund(fund, twiiBenchmark),
+    computedScore: growthScoreForFund(fund),
     navAge: navAgeDays(fund, fundPayload?.updatedAt)
   }))
   .filter((fund) => String(fund.type || "") !== "ETF" && numeric(fund.risk) <= 5 && numeric(fund.return3y) >= 20 && fund.navAge <= 14)
   .sort((a, b) => b.computedScore - a.computedScore)
   .slice(0, 50);
-const missingRecentTopFunds = topScreenedFunds.filter((fund) => fund.return2w === undefined || fund.return1m === undefined);
+const missingRecentTopFunds = topScreenedFunds.filter((fund) => fund.return1m === undefined);
 assert(
   missingRecentTopFunds.length <= 10,
   `too many top screened funds missing recent returns: ${missingRecentTopFunds.length}/50`
@@ -313,6 +303,12 @@ assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_fu
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");
 assert(updateFundsSource.includes("period_return_from_series(series, RECENT_RETURN_DAYS)"), "recent returns should still use BCD historical NAV series");
+assert(updateFundsSource.includes('number(fund.get("return3m") or 0, "return3m") * 0.5'), "backend ranking should use raw 3-month performance at 50% of recent momentum");
+assert(updateFundsSource.includes('number(fund.get("return1m") or 0, "return1m") * 0.5'), "backend ranking should use raw 1-month performance at 50% of recent momentum");
+assert(updateFundsSource.includes('number(fund.get("return6m") or 0, "return6m") * 0.7'), "backend ranking should use raw 6-month performance at 70% of long-term momentum");
+assert(updateFundsSource.includes('number(fund.get("return1y") or 0, "return1y") * 0.3'), "backend ranking should use raw 1-year performance at 30% of long-term momentum");
+assert(!updateFundsSource.includes("load_taiwan_benchmark_returns"), "backend score ranking should not use Taiwan benchmark returns");
+assert(updateFundsSource.includes("math.floor(score + 0.5)"), "backend score rounding should match JavaScript Math.round");
 assert(updateFundsSource.includes('if any(keyword in name for keyword in ["不配息", "累積"])'), "fund normalization should not misclassify accumulating classes as distributing");
 assert(refreshNavFunctionSource.includes("https://m.moneydj.com/a1.aspx"), "refresh-nav function should fetch MoneyDJ mobile fund pages");
 assert(refreshNavFunctionSource.includes("parseMoneyDjMobileLatestNav"), "refresh-nav function should parse MoneyDJ mobile latest NAV");
@@ -397,7 +393,11 @@ assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not
 assert(appSource.includes("function scoreBreakdown(fund)"), "score clicks should use the same calculation as fund ranking");
 assert(appSource.includes('data-score-fund="${escapeHtml(fundLookupKey(fund))}"'), "fund score circles should open their calculation details");
 assert(appSource.includes("項目分數 × 權重"), "score details should show each component score and weight");
-assert(appSource.includes("缺少近期資料時該項為 0 分"), "score details should disclose how missing recent data is handled");
+assert(appSource.includes("漲幾 % 就是幾分，跌幾 % 就是負幾分"), "score details should disclose direct positive and negative performance scoring");
+assert(appSource.includes('{ label: "近 3 月績效", value: fund.return3m, score: Number(fund.return3m) || 0, weight: 0.5 }'), "recent momentum should give 3-month performance half the weight");
+assert(appSource.includes('{ label: "近 1 月績效", value: fund.return1m, score: Number(fund.return1m) || 0, weight: 0.5 }'), "recent momentum should give 1-month performance half the weight");
+assert(appSource.includes('{ label: "近 6 月績效", value: fund.return6m, score: Number(fund.return6m) || 0, weight: 0.7 }'), "long-term momentum should give 6-month performance 70% weight");
+assert(appSource.includes('{ label: "近 1 年績效", value: fund.return1y, score: Number(fund.return1y) || 0, weight: 0.3 }'), "long-term momentum should give 1-year performance 30% weight");
 assert(appSource.includes("event.target === modal"), "score detail modal should close when its backdrop is tapped");
 assert(!appSource.includes('<button class="score compact-score"'), "score circles should keep their existing non-button appearance");
 assert(!styleSource.includes(".score[data-score-fund]::after"), "clickable scores should not add a line below the number");
