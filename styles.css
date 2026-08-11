@@ -828,7 +828,7 @@ legend {
 
 .fund-action-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 68px;
   align-items: center;
   gap: 12px;
 }
@@ -837,6 +837,7 @@ legend {
   display: grid;
   gap: 2px;
   min-width: 0;
+  position: relative;
 }
 
 .period-performance-row {
@@ -865,11 +866,19 @@ legend {
   font-size: 12px;
 }
 
-.period-performance-row em {
+.period-performance-row > span:last-child {
+  padding-right: 34px;
+}
+
+.fund-data-date {
+  bottom: 1px;
   color: var(--muted);
   font-size: 9px;
-  font-style: normal;
   font-weight: 700;
+  line-height: 1;
+  position: absolute;
+  right: 0;
+  white-space: nowrap;
 }
 
 .period-performance-row strong.up {
@@ -887,6 +896,7 @@ legend {
   justify-items: stretch;
   padding-left: 10px;
   border-left: 1px solid var(--line);
+  width: 68px;
 }
 
 .buy-link {
