@@ -394,7 +394,8 @@ assert(appSource.includes('performanceTag("3年年化", fund.return3y)'), "fund 
 assert(appSource.includes('performanceMetric("1月", fund.return1m)'), "fund cards should show absolute 1-month performance");
 assert(appSource.includes('performanceMetric("3月", fund.return3m)'), "fund cards should show absolute 3-month performance");
 assert(appSource.includes('performanceMetric("6月", fund.return6m)'), "fund cards should show absolute 6-month performance");
-assert(appSource.includes('performanceMetric("波動度", fund.volatility, { colorize: false, signed: false })'), "fund cards should retain volatility beside period performance");
+assert(appSource.includes('performanceMetric("波動度", fund.volatility, { colorize: false, signed: false, note: fund.navDate })'), "fund cards should show volatility with the fund NAV date");
+assert(!appSource.includes('note: `更新 ${fund.navDate}`'), "fund NAV date should not include a redundant update label");
 assert(!appSource.includes("compactBenchmarkStatus"), "fund cards should not show 1-month or 2-week benchmark comparisons");
 assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</span>'), "fund cards should not render dividend tags");
 assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not render extra type/currency tags");

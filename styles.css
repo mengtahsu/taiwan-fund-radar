@@ -865,6 +865,13 @@ legend {
   font-size: 12px;
 }
 
+.period-performance-row em {
+  color: var(--muted);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+}
+
 .period-performance-row strong.up {
   color: var(--accent-dark);
 }

@@ -3443,7 +3443,8 @@ function performanceMetric(label, value, options = {}) {
     : signed
       ? formatCompactPercent(value)
       : `${value.toLocaleString("zh-TW", { maximumFractionDigits: 1 })}%`;
-  return `<span><small>${escapeHtml(label)}</small><strong class="${valueClass}">${valueText}</strong></span>`;
+  const note = options.note ? `<em>${escapeHtml(options.note)}</em>` : "";
+  return `<span><small>${escapeHtml(label)}</small><strong class="${valueClass}">${valueText}</strong>${note}</span>`;
 }
 
 function renderCompactBuyLink(fund) {
@@ -3917,7 +3918,7 @@ function renderFunds() {
                 ${performanceMetric("1月", fund.return1m)}
                 ${performanceMetric("3月", fund.return3m)}
                 ${performanceMetric("6月", fund.return6m)}
-                ${performanceMetric("波動度", fund.volatility, { colorize: false, signed: false })}
+                ${performanceMetric("波動度", fund.volatility, { colorize: false, signed: false, note: fund.navDate })}
               </div>
             </div>
             <div class="card-actions">
