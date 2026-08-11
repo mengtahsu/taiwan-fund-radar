@@ -428,46 +428,66 @@ function applyLocalNavOverridesToFunds() {
   return applied;
 }
 
-function recentMomentumScore(fund) {
+function recentMomentumBreakdown(fund) {
   const return3mScore = clamp((fund.return3m ?? 0) / 60, 0, 1);
   const excess2w = excessReturn2w(fund);
   const excess1m = excessReturn1m(fund);
   const excess2wScore = excess2w === null ? 0 : clamp((excess2w + 10) / 25, 0, 1);
   const excess1mScore = excess1m === null ? 0 : clamp((excess1m + 12) / 30, 0, 1);
-  return return3mScore * 0.45 + excess2wScore * 0.3 + excess1mScore * 0.25;
+  const items = [
+    { label: "近 3 月報酬", value: fund.return3m, score: return3mScore, weight: 0.45 },
+    { label: "近 2 週相對台股", value: excess2w, score: excess2wScore, weight: 0.3 },
+    { label: "近 1 月相對台股", value: excess1m, score: excess1mScore, weight: 0.25 }
+  ];
+  return {
+    score: items.reduce((total, item) => total + item.score * item.weight, 0),
+    items
+  };
 }
 
-function scoreFund(fund) {
+function scoreBreakdown(fund) {
   const currentGoal = goal();
   const riskFit = 1 - Math.max(0, fund.risk - Number(els.risk.value)) / 4;
   const returnScore = clamp(fund.return3y / 80, 0, 1);
   const stabilityScore = 1 - clamp(fund.volatility / 28, 0, 1);
   const incomeScore = fund.dividend.includes("配") ? 1 : 0.35;
   const sharpeScore = clamp(fund.sharpe / 2, 0, 1);
-  const momentumScore = recentMomentumScore(fund);
+  const momentum = recentMomentumBreakdown(fund);
 
   const scoreParts = {
     growth: [
-      [returnScore, 0.25],
-      [momentumScore, 0.45],
-      [sharpeScore, 0.2],
-      [riskFit, 0.1]
+      { label: "三年年化", detail: `${fund.return3y.toFixed(1)}%`, score: returnScore, weight: 0.25 },
+      { label: "近期動能", detail: "3 月、2 週、1 月", score: momentum.score, weight: 0.45 },
+      { label: "Sharpe", detail: Number(fund.sharpe).toFixed(2), score: sharpeScore, weight: 0.2 },
+      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, weight: 0.1 }
     ],
     income: [
-      [incomeScore, 0.35],
-      [stabilityScore, 0.3],
-      [riskFit, 0.2],
-      [momentumScore, 0.15]
+      { label: "配息型態", detail: fund.dividend, score: incomeScore, weight: 0.35 },
+      { label: "低波動", detail: `波動度 ${fund.volatility.toFixed(1)}%`, score: stabilityScore, weight: 0.3 },
+      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, weight: 0.2 },
+      { label: "近期動能", detail: "3 月、2 週、1 月", score: momentum.score, weight: 0.15 }
     ],
     stability: [
-      [stabilityScore, 0.35],
-      [riskFit, 0.3],
-      [sharpeScore, 0.2],
-      [momentumScore, 0.15]
+      { label: "低波動", detail: `波動度 ${fund.volatility.toFixed(1)}%`, score: stabilityScore, weight: 0.35 },
+      { label: "風險符合度", detail: `RR ${fund.risk} / 上限 RR ${els.risk.value}`, score: riskFit, weight: 0.3 },
+      { label: "Sharpe", detail: Number(fund.sharpe).toFixed(2), score: sharpeScore, weight: 0.2 },
+      { label: "近期動能", detail: "3 月、2 週、1 月", score: momentum.score, weight: 0.15 }
     ]
   }[currentGoal];
 
-  return Math.round(scoreParts.reduce((total, [score, weight]) => total + score * weight, 0) * 100);
+  const total = scoreParts.reduce((sum, part) => sum + part.score * part.weight * 100, 0);
+  return {
+    goal: currentGoal,
+    goalLabel: { growth: "成長目標", income: "配息目標", stability: "穩健目標" }[currentGoal],
+    momentum,
+    parts: scoreParts,
+    total,
+    score: Math.round(total)
+  };
+}
+
+function scoreFund(fund) {
+  return scoreBreakdown(fund).score;
 }
 
 function scoreTitle() {
@@ -488,6 +508,96 @@ function renderScoreExplain() {
     stability: "穩健目標"
   }[goal()];
   els.scoreExplain.textContent = `${label}的綜合分數算法：${scoreTitle().replace("自訂綜合分數：", "")}。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。`;
+}
+
+function scorePercentValue(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value)) ? `${Number(value).toFixed(1)}%` : "無資料";
+}
+
+function renderScoreDetail(fund) {
+  const breakdown = scoreBreakdown(fund);
+  const partRows = breakdown.parts
+    .map((part) => {
+      const points = part.score * part.weight * 100;
+      return `
+        <div class="score-detail-row">
+          <div><strong>${escapeHtml(part.label)}</strong><small>${escapeHtml(part.detail)}</small></div>
+          <span>${(part.score * 100).toFixed(1)} × ${Math.round(part.weight * 100)}%</span>
+          <strong>${points.toFixed(1)}</strong>
+        </div>
+      `;
+    })
+    .join("");
+  const momentumRows = breakdown.momentum.items
+    .map((item) => `
+      <div class="score-momentum-row">
+        <span>${escapeHtml(item.label)}<small>${scorePercentValue(item.value)}</small></span>
+        <span>${(item.score * 100).toFixed(1)} × ${Math.round(item.weight * 100)}%</span>
+        <strong>${(item.score * item.weight * 100).toFixed(1)}</strong>
+      </div>
+    `)
+    .join("");
+  const sumText = breakdown.parts.map((part) => (part.score * part.weight * 100).toFixed(1)).join(" + ");
+  return `
+    <div class="score-modal-summary">
+      <div><span>綜合分數</span><strong>${breakdown.score}</strong></div>
+      <small>${breakdown.goalLabel}</small>
+    </div>
+    <div class="score-detail-head"><span>項目</span><span>項目分數 × 權重</span><span>得分</span></div>
+    <div class="score-detail-list">${partRows}</div>
+    <section class="score-momentum-detail">
+      <h4>近期動能</h4>
+      <div class="score-detail-head"><span>資料</span><span>項目分數 × 占比</span><span>得分</span></div>
+      ${momentumRows}
+      <p>動能分數 ${(breakdown.momentum.score * 100).toFixed(1)}</p>
+    </section>
+    <p class="score-total">${sumText} = ${breakdown.total.toFixed(1)} → ${breakdown.score}</p>
+    <p class="score-modal-note">各項分數限制在 0–100；缺少近期資料時該項為 0 分。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。</p>
+  `;
+}
+
+function ensureScoreModal() {
+  let modal = document.querySelector("#scoreDetailModal");
+  if (modal) {
+    return modal;
+  }
+  modal = document.createElement("div");
+  modal.id = "scoreDetailModal";
+  modal.className = "period-modal score-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div class="period-modal-panel score-modal-panel" role="dialog" aria-modal="true" aria-labelledby="scoreDetailTitle">
+      <button class="period-modal-close" type="button" aria-label="關閉">×</button>
+      <h3 id="scoreDetailTitle"></h3>
+      <div class="period-modal-body score-modal-body"></div>
+    </div>
+  `;
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.closest(".period-modal-close")) {
+      modal.hidden = true;
+    }
+  });
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function showScoreModal(fundKey) {
+  const fund = funds.find((item) => fundLookupKey(item) === fundKey);
+  if (!fund) {
+    return;
+  }
+  const modal = ensureScoreModal();
+  modal.querySelector("#scoreDetailTitle").textContent = displayFundName(fund.name);
+  modal.querySelector(".score-modal-body").innerHTML = renderScoreDetail(fund);
+  modal.hidden = false;
+  modal.querySelector(".period-modal-close").focus();
+}
+
+function hideScoreModal() {
+  const modal = document.querySelector("#scoreDetailModal");
+  if (modal) {
+    modal.hidden = true;
+  }
 }
 
 function filteredFunds() {
@@ -692,7 +802,7 @@ function renderPurchaseScore(matchedFund) {
   if (!matchedFund) {
     return "";
   }
-  return `<span class="purchase-score" title="${scoreTitle()}">${scoreFund(matchedFund)}</span>`;
+  return `<span class="purchase-score" role="button" tabindex="0" data-score-fund="${escapeHtml(fundLookupKey(matchedFund))}" title="查看綜合分數算法">${scoreFund(matchedFund)}</span>`;
 }
 
 function renderBuyLink(fund) {
@@ -3866,7 +3976,7 @@ function renderFunds() {
         <article class="fund-card fund-list-row">
           <div class="fund-head">
             <h3>${renderFundName(fund)}</h3>
-            <div class="score compact-score" title="${scoreTitle()}">${fund.score}</div>
+            <div class="score compact-score" role="button" tabindex="0" data-score-fund="${escapeHtml(fundLookupKey(fund))}" title="查看綜合分數算法">${fund.score}</div>
           </div>
           <div class="fund-action-row">
             <div class="fund-info-block">
@@ -3986,6 +4096,20 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     hidePeriodDetailModal();
     hideSellModal();
+    hideScoreModal();
+    return;
+  }
+  const scoreTrigger = event.target.closest?.("[data-score-fund]");
+  if (scoreTrigger && (event.key === "Enter" || event.key === " ")) {
+    event.preventDefault();
+    showScoreModal(scoreTrigger.dataset.scoreFund);
+  }
+});
+
+document.addEventListener("click", (event) => {
+  const scoreTrigger = event.target.closest?.("[data-score-fund]");
+  if (scoreTrigger) {
+    showScoreModal(scoreTrigger.dataset.scoreFund);
   }
 });
 

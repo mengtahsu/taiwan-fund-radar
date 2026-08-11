@@ -394,6 +394,13 @@ assert(appSource.includes('performanceTag("3月", fund.return3m)'), "fund cards 
 assert(appSource.includes('performanceTag("1年", fund.return1y)'), "fund cards should keep only 1-year performance in tags");
 assert(!appSource.includes('<span class="pill">${escapeHtml(fund.dividend)}</span>'), "fund cards should not render dividend tags");
 assert(!appSource.includes("visibleTags(fund.tags).map"), "fund cards should not render extra type/currency tags");
+assert(appSource.includes("function scoreBreakdown(fund)"), "score clicks should use the same calculation as fund ranking");
+assert(appSource.includes('data-score-fund="${escapeHtml(fundLookupKey(fund))}"'), "fund score circles should open their calculation details");
+assert(appSource.includes("項目分數 × 權重"), "score details should show each component score and weight");
+assert(appSource.includes("缺少近期資料時該項為 0 分"), "score details should disclose how missing recent data is handled");
+assert(appSource.includes("event.target === modal"), "score detail modal should close when its backdrop is tapped");
+assert(!appSource.includes('<button class="score compact-score"'), "score circles should keep their existing non-button appearance");
+assert(!styleSource.includes(".score[data-score-fund]::after"), "clickable scores should not add a line below the number");
 assert(fundBoxSource.includes('const VERSION = "2.0"'), "trailing fund box algorithm should declare a new version");
 assert(fundBoxSource.includes("width: 0.2"), "trailing fund boxes should remain exactly 20% wide");
 assert(fundBoxSource.includes("historyPoints: 400"), "trailing fund boxes should retain sparse bootstrap history");
