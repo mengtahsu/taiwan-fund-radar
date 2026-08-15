@@ -890,22 +890,13 @@ function fundBoxPercent(value, digits = 1) {
   return `${percent > 0 ? "+" : ""}${percent.toFixed(digits)}%`;
 }
 
-function fundBoxWidthText(topValue, bottomValue) {
-  const top = Number(topValue);
-  const bottom = Number(bottomValue);
-  if (!Number.isFinite(top) || !Number.isFinite(bottom) || top <= 0 || bottom >= top) {
-    return "-";
-  }
-  return `${(((top - bottom) / top) * 100).toFixed(1)}%`;
-}
-
 function fundBoxStatusText(analysis) {
   const position = Number.isFinite(analysis.position) ? `${Math.round(analysis.position * 100)}%` : "-";
   switch (analysis.status) {
     case "inside":
-      return `箱內${position}｜寬${fundBoxWidthText(analysis.top, analysis.bottom)}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
+      return `箱內${position}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
     case "trailing_breakdown":
-      return `跌破箱底${fundBoxPercent(analysis.difference)}｜寬20.0%｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
+      return `跌破箱底${fundBoxPercent(analysis.difference)}｜頂${moneyNumber(analysis.top)}｜底${moneyNumber(analysis.bottom)}`;
     case "distribution_unadjusted":
       return "配息未還原｜暫不判斷";
     case "stale":
@@ -2096,7 +2087,7 @@ function fundBoxChart(entry, options = {}) {
       const selected = options.selectedSegmentKey === segmentKey;
       const className = `fund-box-rect ${segment.kind}${segment.current ? " current" : " historical"}${selected ? " selected" : ""}`;
       const kindLabel = `${segment.current ? "目前" : "先前"}20%移動箱`;
-      const detailLabel = `${kindLabel}，箱頂 ${moneyNumber(segment.top)}，箱底 ${moneyNumber(segment.bottom)}，箱寬 ${fundBoxWidthText(segment.top, segment.bottom)}`;
+      const detailLabel = `${kindLabel}，箱頂 ${moneyNumber(segment.top)}，箱底 ${moneyNumber(segment.bottom)}`;
       return `
         <rect class="${className}" data-fund-box-segment="${escapeHtml(segmentKey)}" tabindex="0" role="button" aria-label="${escapeHtml(detailLabel)}" x="${left.toFixed(1)}" y="${top.toFixed(1)}" width="${Math.max(3, right - left).toFixed(1)}" height="${Math.max(2, bottom - top).toFixed(1)}"></rect>
       `;
@@ -2112,7 +2103,6 @@ function fundBoxChart(entry, options = {}) {
         <strong>${selectedSegment.current ? "目前" : "先前"}20%移動箱</strong>
         <span>箱頂 ${escapeHtml(moneyNumber(selectedSegment.top))}</span>
         <span>箱底 ${escapeHtml(moneyNumber(selectedSegment.bottom))}</span>
-        <span>箱寬 ${escapeHtml(fundBoxWidthText(selectedSegment.top, selectedSegment.bottom))}</span>
       </div>
     `
     : "";
