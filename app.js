@@ -160,11 +160,12 @@ const DISPLAY_LIMIT = 50;
 const PERIOD_DISPLAY_LIMIT = 12;
 const DAILY_PERIOD_DISPLAY_LIMIT = 10;
 const MAX_FUND_NAV_AGE_DAYS = 14;
-const MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"];
+const MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "sox", "nasdaq", "nasdaqFuture", "nikkei", "kospi"];
 const MARKET_DISPLAY_LABELS = {
   twii: "台股",
   txf: "台指期",
   sp500: "S&P 500",
+  sox: "費半",
   nasdaq: "Nasdaq",
   nasdaqFuture: "Nasdaq 期貨",
   nikkei: "日股",
@@ -3860,6 +3861,7 @@ function marketUrl(market) {
     txf: "https://tw.stock.yahoo.com/quote/WTX%26",
     twii: "https://tw.stock.yahoo.com/quote/%5ETWII",
     sp500: "https://tw.stock.yahoo.com/quote/%5EGSPC",
+    sox: "https://tw.stock.yahoo.com/quote/%5ESOX",
     nasdaq: "https://tw.stock.yahoo.com/quote/%5EIXIC",
     nasdaqFuture: "https://tw.stock.yahoo.com/quote/NQ%3DF",
     nikkei: "https://tw.stock.yahoo.com/quote/%5EN225",

@@ -259,8 +259,8 @@ const ambiguousMatch = currentFundForPurchase(ambiguousFunds, {
 assert(ambiguousMatch === null, "ambiguous name fallback must not choose a fund");
 
 const markets = Array.isArray(marketPayload?.markets) ? marketPayload.markets : [];
-assert(markets.length >= 7, `market count too small: ${markets.length}`);
-for (const id of ["twii", "sp500", "nasdaq", "nikkei", "kospi"]) {
+assert(markets.length >= 8, `market count too small: ${markets.length}`);
+for (const id of ["twii", "sp500", "sox", "nasdaq", "nikkei", "kospi"]) {
   const market = markets.find((item) => item.id === id);
   assert(Boolean(market), `missing market ${id}`);
   if (market) {
@@ -332,13 +332,15 @@ assert(styleSource.includes(".weekly-breakdown,\n.daily-breakdown"), "daily prof
 assert(styleSource.includes(".weekly-breakdown p,\n.daily-breakdown p"), "daily profit rows should share weekly row layout");
 assert(appSource.includes("即時單檔更新尚未啟用"), "refresh flow should not silently pretend immediate NAV refresh is enabled");
 assert(appSource.includes("loadPurchases({ requestNavHistory: false, render: false })"), "refresh flow should load purchases without intermediate render");
-assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should include Taiwan, futures, US, Japan, and Korea indexes");
+assert(appSource.includes('MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "sox", "nasdaq", "nasdaqFuture", "nikkei", "kospi"]'), "market display should place SOX before Nasdaq");
 assert(appSource.includes("visibleMarkets = MARKET_DISPLAY_IDS.map"), "market UI should use the fixed market display order");
 assert(appSource.includes("MARKET_DISPLAY_LABELS[market.id] || market.label"), "market UI should use short display labels");
 assert(appSource.includes("市場非即時"), "market UI should mark market quotes as non-live in the data status line");
 assert(!appSource.includes("market-note"), "market UI should not add a second market timestamp/status line");
 assert(appSource.includes('"txf"'), "market display should include Taiwan futures");
 assert(appSource.includes('nasdaqFuture: "Nasdaq 期貨"'), "market display should include Nasdaq futures");
+assert(appSource.includes('sox: "費半"'), "market display should label the Philadelphia Semiconductor Index as 費半");
+assert(updateFundsSource.includes('"id": "sox", "label": "費城半導體", "symbol": "^SOX"'), "market updater should fetch the Philadelphia Semiconductor Index");
 assert(!appSource.includes("LIVE_MARKET_REFRESH_MS"), "market UI should not claim minute-level live refresh");
 assert(!appSource.includes("fetchLiveMarketQuote"), "market UI should not fetch fake live quotes from the browser");
 assert(!appSource.includes("setInterval(refreshLiveMarkets"), "market UI should not poll market quotes every minute");
