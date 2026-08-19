@@ -174,6 +174,7 @@ const MARKET_DISPLAY_LABELS = {
 const SUPABASE_URL = "https://yobdglsovihychcfszbi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_EeqYDx4CWa5l-DyPbz3I5g_PlSVCukK";
 const NAV_REFRESH_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/refresh-nav`;
+const MARKET_QUOTES_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/market-quotes`;
 const SITE_URL = "https://mengtahsu.github.io/taiwan-fund-radar/";
 const LOCAL_NAV_OVERRIDES_KEY = "taiwanFundRadar.latestNavOverrides.v1";
 const LOCAL_NAV_OVERRIDE_MAX_AGE_DAYS = 7;
@@ -3457,12 +3458,12 @@ function renderMetrics(list) {
 }
 
 function renderDataStatus() {
-  if (!sourceMeta.updatedAt) {
-    els.dataStatus.textContent = sourceMeta.source;
+  if (!marketMeta.updatedAt) {
+    els.dataStatus.textContent = marketMeta.source;
     return;
   }
 
-  els.dataStatus.textContent = `${formatTaiwanDateTime(sourceMeta.updatedAt)} 台灣時間，市場非即時`;
+  els.dataStatus.textContent = `${formatTaiwanDateTime(marketMeta.updatedAt)} 台灣時間，市場非即時`;
 }
 
 function renderMarkets() {
@@ -4083,9 +4084,54 @@ async function loadMarketData() {
       markets: [],
       benchmarks: {}
     };
-  } finally {
+  }
+  renderMarkets();
+  renderFunds();
+
+  try {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 8000);
+    let response;
+    try {
+      response = await fetch(MARKET_QUOTES_FUNCTION_URL, {
+        signal: controller.signal,
+        cache: "no-store",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
+        }
+      });
+    } finally {
+      window.clearTimeout(timeout);
+    }
+    if (!response.ok) {
+      throw new Error("即時市場資料暫時無法更新。");
+    }
+    const payload = await response.json();
+    const liveMarkets = Array.isArray(payload.markets)
+      ? payload.markets.filter((market) => Number.isFinite(Number(market?.price)) && Number(market.price) > 0)
+      : [];
+    if (!liveMarkets.length) {
+      throw new Error("即時市場資料沒有有效報價。");
+    }
+    const liveById = new Map(liveMarkets.map((market) => [market.id, market]));
+    const mergedMarkets = marketMeta.markets.map((market) => liveById.has(market.id) ? { ...market, ...liveById.get(market.id) } : market);
+    const existingIds = new Set(mergedMarkets.map((market) => market.id));
+    liveMarkets.forEach((market) => {
+      if (!existingIds.has(market.id)) {
+        mergedMarkets.push(market);
+      }
+    });
+    marketMeta = {
+      ...marketMeta,
+      source: payload.source || "Yahoo Taiwan market data, 1 minute cache",
+      updatedAt: payload.updatedAt || marketMeta.updatedAt,
+      markets: mergedMarkets
+    };
     renderMarkets();
     renderFunds();
+  } catch (_error) {
+    // The committed market payload remains visible when the edge quote service is unavailable.
   }
 }
 
