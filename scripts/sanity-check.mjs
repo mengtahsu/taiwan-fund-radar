@@ -340,6 +340,14 @@ assert(appSource.indexOf("await loadMonthlyNavData();") < appSource.indexOf("con
 assert(appSource.includes("DAILY_PERIOD_DISPLAY_LIMIT = 10"), "daily profit should show at most 10 days");
 assert(appSource.includes("每天賺賠"), "portfolio stats should render daily profit");
 assert(appSource.includes("sortSoldByDate"), "sold purchases should be sorted by sell date");
+assert(appSource.includes('purchaseSortMode = "profit"'), "active purchases should default to profit-percent sorting");
+assert(appSource.includes('purchaseSortMode === "date"'), "active purchases should support buy-date sorting");
+assert(appSource.includes('purchaseSortMode === "box"'), "active purchases should support box-position sorting");
+assert(appSource.includes("aPosition - bPosition"), "box-position sorting should put the lowest box position first");
+assert(appSource.includes("analysis.position !== null && analysis.position !== undefined"), "missing box positions must sort last instead of being coerced to zero");
+assert(appSource.indexOf("buildFundBoxStore(activePurchaseItems)") < appSource.indexOf("sortActivePurchases(activePurchaseItems)"), "fund boxes must be calculated before sorting by box position");
+assert(appSource.includes('renderPurchases({ includeStats: false })'), "changing purchase sort should not recalculate portfolio period statistics");
+assert(styleSource.includes(".purchase-sort button.active"), "purchase sort should have a clear selected state");
 assert(styleSource.includes(".weekly-breakdown,\n.daily-breakdown"), "daily profit should share weekly/monthly block styling");
 assert(styleSource.includes(".weekly-breakdown p,\n.daily-breakdown p"), "daily profit rows should share weekly row layout");
 assert(appSource.includes("即時單檔更新尚未啟用"), "refresh flow should not silently pretend immediate NAV refresh is enabled");

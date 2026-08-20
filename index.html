@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20260819-3">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20260819-4">
   </head>
   <body>
     <header class="topbar">
@@ -264,6 +264,12 @@
             <button id="refreshPurchasesBtn" type="button">更新淨值</button>
           </div>
           <div id="portfolioStats" class="portfolio-stats"></div>
+          <div id="purchaseSort" class="purchase-sort" role="group" aria-label="目前持有基金排列方式" hidden>
+            <span>排列</span>
+            <button type="button" data-purchase-sort="date" aria-pressed="false">買入時間</button>
+            <button class="active" type="button" data-purchase-sort="profit" aria-pressed="true">賺賠％</button>
+            <button type="button" data-purchase-sort="box" aria-pressed="false" title="由低到高，接近或跌破箱底優先">箱內％</button>
+          </div>
           <div id="purchaseList" class="purchase-list"></div>
         </section>
       </section>
@@ -277,7 +283,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="fund-box.js?v=tw-funds-20260819-3"></script>
-    <script src="app.js?v=tw-funds-20260819-3"></script>
+    <script src="fund-box.js?v=tw-funds-20260819-4"></script>
+    <script src="app.js?v=tw-funds-20260819-4"></script>
   </body>
 </html>

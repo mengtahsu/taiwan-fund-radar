@@ -1076,6 +1076,42 @@ textarea {
   margin-top: 12px;
 }
 
+.purchase-sort {
+  display: grid;
+  grid-template-columns: auto repeat(3, minmax(0, 1fr));
+  align-items: center;
+  width: min(100%, 420px);
+  gap: 5px;
+  margin-top: 12px;
+}
+
+.purchase-sort[hidden] {
+  display: none;
+}
+
+.purchase-sort > span {
+  padding-right: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.purchase-sort button {
+  min-width: 0;
+  min-height: 34px;
+  padding: 5px 8px;
+  border-color: var(--line);
+  background: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.purchase-sort button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
 .portfolio-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

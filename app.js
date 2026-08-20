@@ -187,6 +187,7 @@ if (isPortfolioView) {
 
 let currentUser = null;
 let purchases = [];
+let purchaseSortMode = "profit";
 let portfolioPeriodSnapshots = {
   loaded: false,
   supported: true,
@@ -258,6 +259,7 @@ const els = {
   purchaseNote: document.querySelector("#purchaseNote"),
   purchaseMessage: document.querySelector("#purchaseMessage"),
   portfolioStats: document.querySelector("#portfolioStats"),
+  purchaseSort: document.querySelector("#purchaseSort"),
   purchaseList: document.querySelector("#purchaseList"),
   purchaseRefreshStatus: document.querySelector("#purchaseRefreshStatus"),
   refreshPurchases: document.querySelector("#refreshPurchasesBtn")
@@ -1085,6 +1087,85 @@ function renderFundBoxTrigger(item) {
       ${escapeHtml(text)}
     </button>
   `;
+}
+
+function purchaseDateCompare(a, b) {
+  const buyDateCompare = String(b.buy_date || "").localeCompare(String(a.buy_date || ""));
+  if (buyDateCompare !== 0) {
+    return buyDateCompare;
+  }
+  return String(b.created_at || "").localeCompare(String(a.created_at || ""));
+}
+
+function purchaseProfitCompare(a, b) {
+  const aProfit = purchaseValuation(a).profitPercent;
+  const bProfit = purchaseValuation(b).profitPercent;
+  if (aProfit === null && bProfit === null) {
+    return purchaseDateCompare(a, b);
+  }
+  if (aProfit === null) {
+    return 1;
+  }
+  if (bProfit === null) {
+    return -1;
+  }
+  const profitCompare = bProfit - aProfit;
+  return profitCompare || purchaseDateCompare(a, b);
+}
+
+function purchaseBoxSortValue(item) {
+  const analysis = fundBoxStore.get(fundBoxKeyForPurchase(item))?.analysis;
+  if (!analysis) {
+    return null;
+  }
+  if (
+    analysis.status === "trailing_breakdown" &&
+    analysis.difference !== null &&
+    analysis.difference !== undefined &&
+    Number.isFinite(Number(analysis.difference))
+  ) {
+    return Number(analysis.difference);
+  }
+  return analysis.position !== null && analysis.position !== undefined && Number.isFinite(Number(analysis.position))
+    ? Number(analysis.position)
+    : null;
+}
+
+function purchaseBoxCompare(a, b) {
+  const aPosition = purchaseBoxSortValue(a);
+  const bPosition = purchaseBoxSortValue(b);
+  if (aPosition === null && bPosition === null) {
+    return purchaseDateCompare(a, b);
+  }
+  if (aPosition === null) {
+    return 1;
+  }
+  if (bPosition === null) {
+    return -1;
+  }
+  const positionCompare = aPosition - bPosition;
+  return positionCompare || purchaseDateCompare(a, b);
+}
+
+function sortActivePurchases(items) {
+  const compare = purchaseSortMode === "date"
+    ? purchaseDateCompare
+    : purchaseSortMode === "box"
+      ? purchaseBoxCompare
+      : purchaseProfitCompare;
+  return [...items].sort(compare);
+}
+
+function updatePurchaseSortControl(activeCount) {
+  if (!els.purchaseSort) {
+    return;
+  }
+  els.purchaseSort.hidden = activeCount === 0;
+  els.purchaseSort.querySelectorAll("[data-purchase-sort]").forEach((button) => {
+    const active = button.dataset.purchaseSort === purchaseSortMode;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
 }
 
 function upsertPeriodNav(rows, keyName, keyValue, date, nav) {
@@ -2827,6 +2908,7 @@ function renderPurchases(options = {}) {
     return;
   }
   if (!currentUser) {
+    updatePurchaseSortControl(0);
     if (els.portfolioStats) {
       els.portfolioStats.innerHTML = "";
     }
@@ -2834,6 +2916,7 @@ function renderPurchases(options = {}) {
     return;
   }
   if (!purchases.length) {
+    updatePurchaseSortControl(0);
     if (els.portfolioStats) {
       els.portfolioStats.innerHTML = "";
     }
@@ -2841,6 +2924,7 @@ function renderPurchases(options = {}) {
     return;
   }
   if (!fundDataLoaded) {
+    updatePurchaseSortControl(0);
     if (els.portfolioStats) {
       els.portfolioStats.innerHTML = "";
     }
@@ -2848,21 +2932,9 @@ function renderPurchases(options = {}) {
     return;
   }
   const includePeriods = options.includePeriods ?? portfolioPeriodsReady();
-  renderPortfolioStats({ includePeriods });
-  const sortByProfit = (items) => [...items].sort((a, b) => {
-    const aProfit = purchaseValuation(a).profitPercent;
-    const bProfit = purchaseValuation(b).profitPercent;
-    if (aProfit === null && bProfit === null) {
-      return String(b.buy_date).localeCompare(String(a.buy_date));
-    }
-    if (aProfit === null) {
-      return 1;
-    }
-    if (bProfit === null) {
-      return -1;
-    }
-    return bProfit - aProfit;
-  });
+  if (options.includeStats !== false) {
+    renderPortfolioStats({ includePeriods });
+  }
   const sortSoldByDate = (items) => [...items].sort((a, b) => {
     const dateCompare = String(b.sell_date || "").localeCompare(String(a.sell_date || ""));
     if (dateCompare !== 0) {
@@ -2901,9 +2973,11 @@ function renderPurchases(options = {}) {
       </article>
     `;
   };
-  const activePurchases = sortByProfit(purchases.filter((item) => !item.sell_date));
+  const activePurchaseItems = purchases.filter((item) => !item.sell_date);
+  buildFundBoxStore(activePurchaseItems);
+  const activePurchases = sortActivePurchases(activePurchaseItems);
   const soldPurchases = sortSoldByDate(purchases.filter((item) => item.sell_date));
-  buildFundBoxStore(activePurchases);
+  updatePurchaseSortControl(activePurchases.length);
   els.purchaseList.innerHTML = `
     ${activePurchases.length ? activePurchases.map(renderPurchaseItem).join("") : '<div class="empty">目前沒有持有中的基金。</div>'}
     ${
@@ -4043,6 +4117,15 @@ els.purchaseFundName?.addEventListener("input", () => {
   els.purchaseFundId.value = "";
 });
 els.refreshPurchases?.addEventListener("click", refreshPurchaseValues);
+els.purchaseSort?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-purchase-sort]");
+  const mode = button?.dataset.purchaseSort;
+  if (!button || !["date", "profit", "box"].includes(mode) || mode === purchaseSortMode) {
+    return;
+  }
+  purchaseSortMode = mode;
+  renderPurchases({ includeStats: false });
+});
 if (els.purchaseDate) {
   els.purchaseDate.value = todayInputValue();
 }
