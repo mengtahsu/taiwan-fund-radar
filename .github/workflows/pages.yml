@@ -6,38 +6,25 @@ on:
     branches:
       - main
   schedule:
-    # Early attempts wait online for 04:00, 12:00, or 20:00 Taiwan time.
-    - cron: "25 1,9,17 * * *"
-      timezone: Asia/Taipei
-    - cron: "55 1,9,17 * * *"
-      timezone: Asia/Taipei
-    - cron: "25 2,10,18 * * *"
-      timezone: Asia/Taipei
-    - cron: "55 2,10,18 * * *"
-      timezone: Asia/Taipei
-    - cron: "25 3,11,19 * * *"
-      timezone: Asia/Taipei
-    - cron: "55 3,11,19 * * *"
-      timezone: Asia/Taipei
+    # Start well ahead of each target because GitHub can deliver cron events hours late.
+    # The first available runner waits until the target; later attempts are deduplicated.
+    - cron: "15 0-3,22-23 * * *"
+      timezone: "Asia/Taipei"
+    - cron: "15 6-11 * * *"
+      timezone: "Asia/Taipei"
+    - cron: "15 14-19 * * *"
+      timezone: "Asia/Taipei"
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
-  update-and-deploy:
+  wait_for_scheduled_time:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    env:
-      FUND_SOURCE_URL: ${{ secrets.FUND_SOURCE_URL || vars.FUND_SOURCE_URL }}
-      FUND_SOURCE_NAME: ${{ vars.FUND_SOURCE_NAME || '基金資料來源' }}
+    outputs:
+      should_update: ${{ steps.schedule_gate.outputs.should_update }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,20 +33,38 @@ jobs:
         id: schedule_gate
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_SCHEDULE: ${{ github.event.schedule }}
         run: python3 scripts/scheduled-update-gate.py
 
       - name: Wait for the scheduled Taiwan update time
         if: steps.schedule_gate.outputs.should_update == 'true' && steps.schedule_gate.outputs.wait_seconds != '0'
-        timeout-minutes: 165
+        timeout-minutes: 350
         env:
           WAIT_SECONDS: ${{ steps.schedule_gate.outputs.wait_seconds }}
         run: sleep "$WAIT_SECONDS"
 
+  update-and-deploy:
+    needs: wait_for_scheduled_time
+    if: needs.wait_for_scheduled_time.outputs.should_update == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    env:
+      FUND_SOURCE_URL: ${{ secrets.FUND_SOURCE_URL || vars.FUND_SOURCE_URL }}
+      FUND_SOURCE_NAME: ${{ vars.FUND_SOURCE_NAME || '基金資料來源' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Confirm data still needs an update
         id: update_gate
-        if: steps.schedule_gate.outputs.should_update == 'true'
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_SCHEDULE: ${{ github.event.schedule }}
         run: python3 scripts/scheduled-update-gate.py
 
       - name: Configure Pages

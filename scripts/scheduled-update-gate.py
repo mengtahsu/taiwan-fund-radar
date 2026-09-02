@@ -12,27 +12,37 @@ from zoneinfo import ZoneInfo
 
 TAIPEI = ZoneInfo("Asia/Taipei")
 TARGET_HOURS = (4, 12, 20)
-EARLY_WINDOW_MINUTES = 180
-LATE_WINDOW_MINUTES = 120
-FRESH_MINUTES = 30
+SCHEDULE_TARGET_HOURS = {
+    "15 0-3,22-23 * * *": 4,
+    "15 6-11 * * *": 12,
+    "15 14-19 * * *": 20,
+}
+EARLY_WINDOW_MINUTES = 345
+LATE_WINDOW_MINUTES = 360
+COMPLETION_TOLERANCE_MINUTES = 0
 LIVE_FUNDS_URL = "https://mengtahsu.github.io/taiwan-fund-radar/data/funds.json"
 
 
-def nearest_target(now: datetime) -> datetime:
+def nearest_target(now: datetime, target_hours: tuple[int, ...] = TARGET_HOURS) -> datetime:
     candidates = []
     for day_offset in (-1, 0, 1):
         day = (now + timedelta(days=day_offset)).date()
-        for hour in TARGET_HOURS:
+        for hour in target_hours:
             candidates.append(datetime(day.year, day.month, day.day, hour, tzinfo=TAIPEI))
     return min(candidates, key=lambda value: abs((now - value).total_seconds()))
 
 
-def nearest_target_delta_minutes(now: datetime) -> float:
-    return (now - nearest_target(now)).total_seconds() / 60
+def target_for_attempt(now: datetime, schedule: str = "") -> datetime:
+    target_hour = SCHEDULE_TARGET_HOURS.get(schedule)
+    return nearest_target(now, (target_hour,)) if target_hour is not None else nearest_target(now)
 
 
-def is_target_window(now: datetime) -> bool:
-    delta = nearest_target_delta_minutes(now)
+def target_delta_minutes(now: datetime, target: datetime) -> float:
+    return (now - target).total_seconds() / 60
+
+
+def is_target_window(now: datetime, target: datetime) -> bool:
+    delta = target_delta_minutes(now, target)
     return -EARLY_WINDOW_MINUTES <= delta <= LATE_WINDOW_MINUTES
 
 
@@ -46,7 +56,7 @@ def parse_timestamp(value: str) -> datetime | None:
     return parsed
 
 
-def live_data_age_minutes(now: datetime) -> float | None:
+def live_data_updated_at(now: datetime) -> datetime | None:
     request = Request(
         f"{LIVE_FUNDS_URL}?gate={int(now.timestamp())}",
         headers={"User-Agent": "TaiwanFundRadar-ScheduleGate/1.0"},
@@ -54,13 +64,17 @@ def live_data_age_minutes(now: datetime) -> float | None:
     try:
         with urlopen(request, timeout=15) as response:
             payload = json.loads(response.read().decode("utf-8"))
-        updated_at = parse_timestamp(payload.get("updatedAt"))
+        return parse_timestamp(payload.get("updatedAt"))
     except Exception as error:
         print(f"Freshness check unavailable ({error}); allowing update")
         return None
-    if not updated_at:
-        return None
-    return (now.astimezone(timezone.utc) - updated_at.astimezone(timezone.utc)).total_seconds() / 60
+
+
+def target_is_complete(target: datetime, updated_at: datetime | None) -> bool:
+    if updated_at is None:
+        return False
+    threshold = target.astimezone(timezone.utc) - timedelta(minutes=COMPLETION_TOLERANCE_MINUTES)
+    return updated_at.astimezone(timezone.utc) >= threshold
 
 
 def write_output(should_update: bool, reason: str, wait_seconds: int = 0) -> None:
@@ -78,29 +92,35 @@ def write_output(should_update: bool, reason: str, wait_seconds: int = 0) -> Non
 
 def self_test() -> None:
     cases = {
-        "2026-08-05T00:59:00+08:00": (False, 0),
-        "2026-08-05T01:25:00+08:00": (True, 9300),
-        "2026-08-05T02:25:00+08:00": (True, 5700),
-        "2026-08-05T03:40:00+08:00": (True, 1200),
-        "2026-08-05T03:55:00+08:00": (True, 300),
-        "2026-08-05T04:57:00+08:00": (True, 0),
-        "2026-08-05T06:01:00+08:00": (False, 0),
-        "2026-08-05T11:55:00+08:00": (True, 300),
-        "2026-08-05T20:45:00+08:00": (True, 0),
+        ("2026-08-04T22:15:00+08:00", "15 0-3,22-23 * * *"): (True, 20700, 4),
+        ("2026-08-05T01:15:00+08:00", "15 0-3,22-23 * * *"): (True, 9900, 4),
+        ("2026-08-05T03:55:00+08:00", "15 0-3,22-23 * * *"): (True, 300, 4),
+        ("2026-08-05T05:30:00+08:00", "15 0-3,22-23 * * *"): (True, 0, 4),
+        ("2026-08-05T06:15:00+08:00", "15 6-11 * * *"): (True, 20700, 12),
+        ("2026-08-05T11:55:00+08:00", "15 6-11 * * *"): (True, 300, 12),
+        ("2026-08-05T13:54:00+08:00", "15 6-11 * * *"): (True, 0, 12),
+        ("2026-08-05T14:15:00+08:00", "15 14-19 * * *"): (True, 20700, 20),
+        ("2026-08-05T20:45:00+08:00", "15 14-19 * * *"): (True, 0, 20),
     }
-    for value, (expected_window, expected_wait) in cases.items():
+    for (value, schedule), (expected_window, expected_wait, expected_hour) in cases.items():
         now = datetime.fromisoformat(value)
-        actual_window = is_target_window(now)
+        target = target_for_attempt(now, schedule)
+        actual_window = is_target_window(now, target)
         actual_wait = (
-            max(0, math.ceil((nearest_target(now) - now).total_seconds()))
+            max(0, math.ceil((target - now).total_seconds()))
             if actual_window
             else 0
         )
-        if (actual_window, actual_wait) != (expected_window, expected_wait):
+        actual = (actual_window, actual_wait, target.hour)
+        expected = (expected_window, expected_wait, expected_hour)
+        if actual != expected:
             raise AssertionError(
-                f"{value}: expected {(expected_window, expected_wait)}, "
-                f"got {(actual_window, actual_wait)}"
+                f"{value} ({schedule}): expected {expected}, got {actual}"
             )
+    target = datetime.fromisoformat("2026-08-05T12:00:00+08:00")
+    assert not target_is_complete(target, datetime.fromisoformat("2026-08-05T11:59:59+08:00"))
+    assert target_is_complete(target, datetime.fromisoformat("2026-08-05T12:00:00+08:00"))
+    assert target_is_complete(target, datetime.fromisoformat("2026-08-05T12:01:00+08:00"))
     print(f"Schedule gate self-test passed: {len(cases)} cases")
 
 
@@ -114,18 +134,21 @@ def main() -> None:
         return
     now_value = os.environ.get("SCHEDULE_GATE_NOW")
     now = datetime.fromisoformat(now_value).astimezone(TAIPEI) if now_value else datetime.now(TAIPEI)
-    if not is_target_window(now):
+    schedule = os.environ.get("GITHUB_EVENT_SCHEDULE", "")
+    target = target_for_attempt(now, schedule)
+    if not is_target_window(now, target):
         write_output(False, "outside-target-window")
         return
-    wait_seconds = max(0, math.ceil((nearest_target(now) - now).total_seconds()))
+    wait_seconds = max(0, math.ceil((target - now).total_seconds()))
     if wait_seconds:
         write_output(True, "wait-for-taipei-target", wait_seconds)
         return
-    age_minutes = live_data_age_minutes(now)
-    if age_minutes is not None and -5 <= age_minutes <= FRESH_MINUTES:
-        write_output(False, f"live-data-fresh-{age_minutes:.1f}m")
+    updated_at = live_data_updated_at(now)
+    if target_is_complete(target, updated_at):
+        updated_label = updated_at.astimezone(TAIPEI).isoformat(timespec="minutes") if updated_at else "unknown"
+        write_output(False, f"target-already-complete-{updated_label}")
         return
-    write_output(True, "target-window-needs-update")
+    write_output(True, f"target-{target.isoformat(timespec='minutes')}-needs-update")
 
 
 if __name__ == "__main__":
