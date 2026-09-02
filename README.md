@@ -35,10 +35,15 @@ python3 -m http.server 8000
 
 ```yaml
 schedule:
-  - cron: "0 20,4,12 * * *"
+  - cron: "15 0-3,22-23 * * *"
+    timezone: "Asia/Taipei"
+  - cron: "15 6-11 * * *"
+    timezone: "Asia/Taipei"
+  - cron: "15 14-19 * * *"
+    timezone: "Asia/Taipei"
 ```
 
-GitHub Actions 的 cron 使用 UTC。台灣時間比 UTC 快 8 小時，所以台灣時間 04:00、12:00、20:00 對應 UTC 20:00、04:00、12:00。
+GitHub 排程事件可能延遲數小時，因此 workflow 會提早建立輕量等待工作，在目標整點才進行資料更新。每個目標時段只會實際抓取一次資料，後續備援工作會檢查該時段是否已完成，不會覆寫成較晚的更新時間。
 
 如果沒有設定 `FUND_SOURCE_URL`，workflow 會改抓 MoneyDJ 台灣基金資料，並補上富邦銀行或基富通可買連結。設定 `FUND_SOURCE_URL` 之後，才會改用你的自訂 JSON/API 來源。
 
