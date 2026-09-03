@@ -158,6 +158,7 @@ let monthlyNavMeta = {
 
 const DISPLAY_LIMIT = 50;
 const PERIOD_DISPLAY_LIMIT = 12;
+const ANNUAL_PERIOD_DISPLAY_LIMIT = 12;
 const DAILY_PERIOD_DISPLAY_LIMIT = 10;
 const MAX_FUND_NAV_AGE_DAYS = 14;
 const MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "sox", "nasdaq", "nasdaqFuture", "nikkei", "kospi"];
@@ -192,6 +193,7 @@ let portfolioPeriodSnapshots = {
   loaded: false,
   supported: true,
   sourceUpdatedAt: null,
+  years: new Map(),
   months: new Map(),
   weeks: new Map(),
   days: new Map()
@@ -1367,6 +1369,105 @@ function dailyProfitRowsForPurchase(item) {
   return periodProfitRowsForPurchase(item, "day");
 }
 
+function annualProfitMapFromMonths(months) {
+  const years = new Map();
+  const detailMaps = new Map();
+  [...months.values()]
+    .filter((month) => /^\d{4}-\d{2}$/.test(String(month.key || "")))
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .forEach((month) => {
+      const yearKey = month.key.slice(0, 4);
+      const monthDetails = Array.isArray(month.details) ? month.details : [];
+      const monthDate = month.date || monthDetails.reduce((latest, detail) => {
+        const date = String(detail.date || "");
+        return date > latest ? date : latest;
+      }, "") || null;
+      const year = years.get(yearKey) || {
+        key: yearKey,
+        date: null,
+        invested: 0,
+        value: 0,
+        profit: 0,
+        valued: 0,
+        missing: 0,
+        details: [],
+        latestPeriod: ""
+      };
+      year.profit += Number(month.profit) || 0;
+      year.missing += Number(month.missing) || 0;
+      if (!year.latestPeriod || month.key >= year.latestPeriod) {
+        year.latestPeriod = month.key;
+        year.date = monthDate;
+        year.invested = Number(month.invested) || 0;
+        year.value = Number(month.value) || 0;
+        year.valued = Number(month.valued) || 0;
+      }
+
+      const details = detailMaps.get(yearKey) || new Map();
+      monthDetails.forEach((detail) => {
+        const name = String(detail.name || "未命名基金");
+        const existing = details.get(name) || {
+          name,
+          invested: 0,
+          value: null,
+          profit: 0,
+          hasProfit: false,
+          startNav: null,
+          endNav: null,
+          date: null,
+          missing: false,
+          latestPeriod: ""
+        };
+        const detailProfit = Number(detail.profit);
+        if (detail.profit !== null && detail.profit !== undefined && Number.isFinite(detailProfit)) {
+          existing.profit += detailProfit;
+          existing.hasProfit = true;
+        }
+        if (existing.startNav === null && Number(detail.startNav) > 0) {
+          existing.startNav = Number(detail.startNav);
+        }
+        if (!existing.latestPeriod || month.key > existing.latestPeriod) {
+          existing.latestPeriod = month.key;
+          existing.invested = 0;
+          existing.value = null;
+          existing.endNav = null;
+          existing.date = null;
+        }
+        if (month.key === existing.latestPeriod) {
+          existing.invested += Number(detail.invested) || 0;
+          if (detail.value !== null && detail.value !== undefined && Number.isFinite(Number(detail.value))) {
+            existing.value = (existing.value || 0) + Number(detail.value);
+          }
+          if (Number(detail.endNav) > 0) {
+            existing.endNav = Number(detail.endNav);
+          }
+          if (detail.date && (!existing.date || detail.date > existing.date)) {
+            existing.date = detail.date;
+          }
+        }
+        existing.missing = existing.missing || Boolean(detail.missing);
+        details.set(name, existing);
+      });
+      detailMaps.set(yearKey, details);
+      years.set(yearKey, year);
+    });
+
+  years.forEach((year, yearKey) => {
+    year.details = [...(detailMaps.get(yearKey)?.values() || [])].map((detail) => ({
+      name: detail.name,
+      invested: detail.invested,
+      value: detail.value,
+      profit: detail.hasProfit ? detail.profit : null,
+      startNav: detail.startNav,
+      endNav: detail.endNav,
+      date: detail.date,
+      missing: detail.missing
+    }));
+    delete year.latestPeriod;
+  });
+  return years;
+}
+
 function purchaseValuation(item) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
@@ -1412,6 +1513,7 @@ function portfolioSummary(options = {}) {
     unrealizedProfit: 0,
     valuedCount: 0,
     holdings: new Map(),
+    years: new Map(),
     months: new Map(),
     weeks: new Map(),
     days: new Map()
@@ -1674,6 +1776,7 @@ function portfolioSummary(options = {}) {
       summary.days.set(row.period, day);
     });
   });
+  summary.years = annualProfitMapFromMonths(summary.months);
   return summary;
 }
 
@@ -1686,6 +1789,7 @@ function resetPortfolioSnapshots() {
     loaded: false,
     supported: true,
     sourceUpdatedAt: null,
+    years: new Map(),
     months: new Map(),
     weeks: new Map(),
     days: new Map()
@@ -1773,17 +1877,20 @@ async function loadPortfolioPeriodSnapshots() {
     return;
   }
   try {
-    const [monthRows, weekRows, dayRows, dailyCapitalRows] = await Promise.all([
+    const [yearRows, monthRows, weekRows, dayRows, dailyCapitalRows] = await Promise.all([
+      fetchPortfolioSnapshotRows("year", ANNUAL_PERIOD_DISPLAY_LIMIT),
       fetchPortfolioSnapshotRows("month", PERIOD_DISPLAY_LIMIT),
       fetchPortfolioSnapshotRows("week", PERIOD_DISPLAY_LIMIT),
       fetchPortfolioSnapshotRows("day", DAILY_PERIOD_DISPLAY_LIMIT),
       fetchPortfolioDailyCapitalRows()
     ]);
-    const rows = [...monthRows, ...weekRows, ...dayRows];
+    const rows = [...yearRows, ...monthRows, ...weekRows, ...dayRows];
+    const hasLegacySnapshots = yearRows.length === 0 && (monthRows.length > 0 || weekRows.length > 0 || dayRows.length > 0);
     portfolioPeriodSnapshots = {
-      loaded: true,
+      loaded: !hasLegacySnapshots,
       supported: true,
       sourceUpdatedAt: rows[0]?.source_updated_at || null,
+      years: periodMapFromSnapshotRows(yearRows, "year"),
       months: periodMapFromSnapshotRows(monthRows, "month"),
       weeks: periodMapFromSnapshotRows(weekRows, "week"),
       days: periodMapFromSnapshotRows(dayRows, "day")
@@ -1794,6 +1901,7 @@ async function loadPortfolioPeriodSnapshots() {
       loaded: false,
       supported: false,
       sourceUpdatedAt: null,
+      years: new Map(),
       months: new Map(),
       weeks: new Map(),
       days: new Map()
@@ -1826,6 +1934,7 @@ function snapshotRowsFromSummary(summary) {
       });
     });
   };
+  pushRows("year", summary.years);
   pushRows("month", summary.months);
   pushRows("week", summary.weeks);
   pushRows("day", summary.days);
@@ -1853,6 +1962,7 @@ async function savePortfolioPeriodSnapshots(summary) {
       loaded: true,
       supported: true,
       sourceUpdatedAt: portfolioSnapshotSource(),
+      years: recentPeriodMapFromSummaryMap(summary.years, ANNUAL_PERIOD_DISPLAY_LIMIT),
       months: recentPeriodMapFromSummaryMap(summary.months, PERIOD_DISPLAY_LIMIT),
       weeks: recentPeriodMapFromSummaryMap(summary.weeks, PERIOD_DISPLAY_LIMIT),
       days: recentPeriodMapFromSummaryMap(summary.days, DAILY_PERIOD_DISPLAY_LIMIT)
@@ -1904,6 +2014,9 @@ function periodDetailButton(key, label, className) {
 }
 
 function periodDisplayLabel(item, periodType) {
+  if (periodType === "year") {
+    return item.key;
+  }
   if (periodType === "week" || periodType === "day") {
     return item.date ? item.date.slice(5).replace("-", "/") : item.key;
   }
@@ -1911,6 +2024,9 @@ function periodDisplayLabel(item, periodType) {
 }
 
 function periodDetailTitleLabel(item, periodType) {
+  if (periodType === "year") {
+    return `${item.key} 年`;
+  }
   if (periodType === "week" || periodType === "day") {
     return item.date || item.key;
   }
@@ -1925,6 +2041,9 @@ function periodHistoryYear(item, periodType) {
 }
 
 function periodHistoryTitle(periodType) {
+  if (periodType === "year") {
+    return "每年歷史";
+  }
   if (periodType === "day") {
     return "每天歷史";
   }
@@ -1961,6 +2080,9 @@ function renderPeriodRow(item, periodType) {
 }
 
 function renderPeriodHistoryContent(rows, periodType) {
+  if (periodType === "year") {
+    return rows.map((item) => renderPeriodRow(item, periodType)).join("");
+  }
   const groups = new Map();
   rows.forEach((item) => {
     const year = periodHistoryYear(item, periodType);
@@ -2635,12 +2757,17 @@ async function submitSellModal(event) {
 }
 
 function renderPortfolioPeriodSections(summary, canUseSnapshots) {
+  const annualAllRows = [...summary.years.values()].sort((a, b) => b.key.localeCompare(a.key));
   const monthlyAllRows = [...summary.months.values()].sort((a, b) => b.key.localeCompare(a.key));
   const weeklyAllRows = [...summary.weeks.values()].sort((a, b) => b.key.localeCompare(a.key));
   const dailyAllRows = [...summary.days.values()].sort((a, b) => b.key.localeCompare(a.key));
+  const annualRows = annualAllRows.slice(0, ANNUAL_PERIOD_DISPLAY_LIMIT);
   const monthlyRows = monthlyAllRows.slice(0, PERIOD_DISPLAY_LIMIT);
   const weeklyRows = weeklyAllRows.slice(0, PERIOD_DISPLAY_LIMIT);
   const dailyRows = dailyAllRows.slice(0, DAILY_PERIOD_DISPLAY_LIMIT);
+  const annualHasHistory = canUseSnapshots
+    ? annualRows.length >= ANNUAL_PERIOD_DISPLAY_LIMIT
+    : annualAllRows.length > ANNUAL_PERIOD_DISPLAY_LIMIT;
   const monthlyHasHistory = canUseSnapshots
     ? monthlyRows.length >= PERIOD_DISPLAY_LIMIT
     : monthlyAllRows.length > PERIOD_DISPLAY_LIMIT;
@@ -2652,6 +2779,13 @@ function renderPortfolioPeriodSections(summary, canUseSnapshots) {
     : dailyAllRows.length > DAILY_PERIOD_DISPLAY_LIMIT;
   periodDetailStore = new Map();
   periodHistoryStore = new Map();
+  if (annualHasHistory) {
+    periodHistoryStore.set("year", {
+      loaded: !canUseSnapshots,
+      title: periodHistoryTitle("year"),
+      html: canUseSnapshots ? "" : renderPeriodHistoryContent(annualAllRows, "year")
+    });
+  }
   if (monthlyHasHistory) {
     periodHistoryStore.set("month", {
       loaded: !canUseSnapshots,
@@ -2674,6 +2808,11 @@ function renderPortfolioPeriodSections(summary, canUseSnapshots) {
     });
   }
   return `
+    <div class="yearly-breakdown">
+      <h4>每年賺賠</h4>
+      ${annualRows.length ? annualRows.map((item) => renderPeriodRow(item, "year")).join("") : "<p>尚無資料</p>"}
+      ${annualHasHistory ? `<button class="period-history-button" type="button" data-period-history="year">看全部每年歷史</button>` : ""}
+    </div>
     <div class="monthly-breakdown">
       <h4>每月賺賠</h4>
       ${
@@ -2717,6 +2856,10 @@ function bindPortfolioPeriodButtons() {
 
 function renderPortfolioPeriodPlaceholder() {
   return `
+    <div class="yearly-breakdown period-loading">
+      <h4>每年賺賠</h4>
+      <p>讀取中...</p>
+    </div>
     <div class="monthly-breakdown period-loading">
       <h4>每月賺賠</h4>
       <p>讀取中...</p>
@@ -2746,10 +2889,11 @@ function renderPortfolioStats(options = {}) {
     portfolioPeriodSnapshots.loaded &&
     portfolioPeriodSnapshots.sourceUpdatedAt === currentSnapshotSource &&
     !portfolioSnapshotsDirty &&
-    (portfolioPeriodSnapshots.months.size > 0 || portfolioPeriodSnapshots.weeks.size > 0 || portfolioPeriodSnapshots.days.size > 0);
+    (portfolioPeriodSnapshots.years.size > 0 || portfolioPeriodSnapshots.months.size > 0 || portfolioPeriodSnapshots.weeks.size > 0 || portfolioPeriodSnapshots.days.size > 0);
   const summary = portfolioSummary({ includePeriods: includePeriods && !canUseSnapshots });
   if (includePeriods) {
     if (canUseSnapshots) {
+      summary.years = new Map(portfolioPeriodSnapshots.years);
       summary.months = new Map(portfolioPeriodSnapshots.months);
       summary.weeks = new Map(portfolioPeriodSnapshots.weeks);
       summary.days = new Map(portfolioPeriodSnapshots.days);

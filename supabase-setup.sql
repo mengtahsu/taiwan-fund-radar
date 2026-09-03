@@ -87,7 +87,7 @@ create policy "Anyone can update fund nav requests"
 
 create table if not exists public.portfolio_period_snapshots (
   user_id uuid not null references auth.users(id) on delete cascade,
-  period_type text not null check (period_type in ('month', 'week')),
+  period_type text not null check (period_type in ('year', 'month', 'week', 'day')),
   period_key text not null,
   period_date text,
   invested numeric not null default 0,
@@ -100,6 +100,12 @@ create table if not exists public.portfolio_period_snapshots (
   updated_at timestamptz not null default now(),
   primary key (user_id, period_type, period_key)
 );
+
+alter table public.portfolio_period_snapshots
+  drop constraint if exists portfolio_period_snapshots_period_type_check;
+alter table public.portfolio_period_snapshots
+  add constraint portfolio_period_snapshots_period_type_check
+  check (period_type in ('year', 'month', 'week', 'day'));
 
 create index if not exists portfolio_period_snapshots_user_type_key_idx
   on public.portfolio_period_snapshots (user_id, period_type, period_key desc);

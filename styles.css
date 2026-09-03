@@ -1149,6 +1149,7 @@ textarea {
 }
 
 .holding-breakdown,
+.yearly-breakdown,
 .monthly-breakdown,
 .weekly-breakdown,
 .daily-breakdown {
@@ -1162,6 +1163,7 @@ textarea {
 }
 
 .holding-breakdown h4,
+.yearly-breakdown h4,
 .monthly-breakdown h4,
 .weekly-breakdown h4,
 .daily-breakdown h4 {
@@ -1170,6 +1172,7 @@ textarea {
 }
 
 .holding-breakdown p,
+.yearly-breakdown p,
 .monthly-breakdown p,
 .weekly-breakdown p,
 .daily-breakdown p {
@@ -1179,6 +1182,7 @@ textarea {
   font-weight: 700;
 }
 
+.yearly-breakdown p,
 .monthly-breakdown p,
 .weekly-breakdown p,
 .daily-breakdown p {
@@ -1225,6 +1229,7 @@ textarea {
   text-underline-offset: 3px;
 }
 
+.yearly-breakdown strong,
 .monthly-breakdown strong,
 .weekly-breakdown strong,
 .daily-breakdown strong,
@@ -1233,6 +1238,7 @@ textarea {
   white-space: nowrap;
 }
 
+.yearly-breakdown strong.up,
 .monthly-breakdown strong.up,
 .weekly-breakdown strong.up,
 .daily-breakdown strong.up,
@@ -1240,6 +1246,7 @@ textarea {
   color: var(--accent-dark);
 }
 
+.yearly-breakdown strong.down,
 .monthly-breakdown strong.down,
 .weekly-breakdown strong.down,
 .daily-breakdown strong.down,

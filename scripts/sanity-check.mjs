@@ -21,6 +21,26 @@ function assert(condition, message) {
   }
 }
 
+function extractNamedFunction(source, name) {
+  const start = source.indexOf(`function ${name}(`);
+  if (start < 0) {
+    return "";
+  }
+  const bodyStart = source.indexOf("{", start);
+  let depth = 0;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    if (source[index] === "{") {
+      depth += 1;
+    } else if (source[index] === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(start, index + 1);
+      }
+    }
+  }
+  return "";
+}
+
 function moneyDjFundId(value) {
   if (String(value || "").startsWith("manual:")) {
     return "";
@@ -305,6 +325,32 @@ const updateFundsSource = fs.readFileSync("update_funds.py", "utf8");
 const refreshNavFunctionSource = fs.readFileSync("supabase/functions/refresh-nav/index.ts", "utf8");
 const marketQuotesFunctionSource = fs.readFileSync("supabase/functions/market-quotes/index.ts", "utf8");
 const marketQuoteCacheSqlSource = fs.readFileSync("supabase-market-quote-cache.sql", "utf8");
+const portfolioSnapshotSqlSource = fs.readFileSync("supabase-portfolio-snapshots.sql", "utf8");
+const annualFunctionSource = extractNamedFunction(appSource, "annualProfitMapFromMonths");
+assert(Boolean(annualFunctionSource), "app.js should define annualProfitMapFromMonths");
+if (annualFunctionSource) {
+  const annualProfitMapFromMonths = Function(`${annualFunctionSource}; return annualProfitMapFromMonths;`)();
+  const annualRows = annualProfitMapFromMonths(new Map([
+    ["2025-12", { key: "2025-12", invested: 500, value: 550, profit: 50, valued: 1, missing: 0, details: [] }],
+    ["2026-01", { key: "2026-01", invested: 1000, value: 1100, profit: 100, valued: 1, missing: 0, details: [
+      { name: "測試基金", invested: 1000, value: 1100, profit: 100, startNav: 10, endNav: 11, date: "2026-01-30", missing: false }
+    ] }],
+    ["2026-02", { key: "2026-02", invested: 1500, value: 1650, profit: 50, valued: 2, missing: 1, details: [
+      { name: "測試基金", invested: 1000, value: 1150, profit: 50, startNav: 11, endNav: 11.5, date: "2026-02-27", missing: false },
+      { name: "第二基金", invested: 500, value: 500, profit: 0, startNav: 20, endNav: 20, date: "2026-02-27", missing: true }
+    ] }]
+  ]));
+  const year2026 = annualRows.get("2026");
+  assert(year2026?.profit === 150, `annual profit should sum monthly profits once: ${year2026?.profit}`);
+  assert(year2026?.invested === 1500, `annual invested should use the latest month, not sum months: ${year2026?.invested}`);
+  assert(year2026?.value === 1650, `annual value should use the latest month, not sum months: ${year2026?.value}`);
+  assert(year2026?.details?.find((item) => item.name === "測試基金")?.profit === 150, "annual fund detail should sum monthly profit");
+  assert(annualRows.get("2025")?.profit === 50, "annual rows should keep years separate");
+}
+assert(appSource.includes("ANNUAL_PERIOD_DISPLAY_LIMIT = 12"), "annual profit should show at most 12 years before history");
+assert(appSource.includes("每年賺賠"), "portfolio stats should render annual profit");
+assert(appSource.includes('pushRows("year", summary.years)'), "annual profit should be persisted as snapshots");
+assert(portfolioSnapshotSqlSource.includes("'year', 'month', 'week', 'day'"), "snapshot constraint should allow year, month, week, and day rows");
 assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_funds.py should parse MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");
