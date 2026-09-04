@@ -347,7 +347,8 @@ if (annualFunctionSource) {
   assert(year2026?.details?.find((item) => item.name === "測試基金")?.profit === 150, "annual fund detail should sum monthly profit");
   assert(annualRows.get("2025")?.profit === 50, "annual rows should keep years separate");
 }
-assert(appSource.includes("ANNUAL_PERIOD_DISPLAY_LIMIT = 12"), "annual profit should show at most 12 years before history");
+assert(appSource.includes("ANNUAL_PERIOD_DISPLAY_LIMIT = 3"), "annual profit should show at most 3 years before history");
+assert(appSource.includes("PERIOD_DISPLAY_LIMIT = 6"), "monthly and weekly profit should show at most 6 periods before history");
 assert(appSource.includes("每年賺賠"), "portfolio stats should render annual profit");
 assert(appSource.includes('pushRows("year", summary.years)'), "annual profit should be persisted as snapshots");
 assert(portfolioSnapshotSqlSource.includes("'year', 'month', 'week', 'day'"), "snapshot constraint should allow year, month, week, and day rows");
@@ -383,7 +384,7 @@ assert(appSource.includes("LOCAL_NAV_OVERRIDES_KEY"), "instant NAV refresh shoul
 assert(appSource.includes("applyLocalNavOverridesToFunds"), "fund load should reapply persisted NAV overrides");
 assert(appSource.includes("markPortfolioSnapshotsDirty();"), "instant NAV refresh should force portfolio period snapshots to recalculate");
 assert(appSource.indexOf("await loadMonthlyNavData();") < appSource.indexOf("const instantRefresh = await refreshOwnedFundNavFromFunction();"), "refresh flow should load monthly NAV history before applying instant NAV override");
-assert(appSource.includes("DAILY_PERIOD_DISPLAY_LIMIT = 10"), "daily profit should show at most 10 days");
+assert(appSource.includes("DAILY_PERIOD_DISPLAY_LIMIT = 6"), "daily profit should show at most 6 days");
 assert(appSource.includes("每天賺賠"), "portfolio stats should render daily profit");
 assert(appSource.includes("sortSoldByDate"), "sold purchases should be sorted by sell date");
 assert(appSource.includes('purchaseSortMode = "profit"'), "active purchases should default to profit-percent sorting");

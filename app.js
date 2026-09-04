@@ -157,9 +157,9 @@ let monthlyNavMeta = {
 };
 
 const DISPLAY_LIMIT = 50;
-const PERIOD_DISPLAY_LIMIT = 12;
-const ANNUAL_PERIOD_DISPLAY_LIMIT = 12;
-const DAILY_PERIOD_DISPLAY_LIMIT = 10;
+const PERIOD_DISPLAY_LIMIT = 6;
+const ANNUAL_PERIOD_DISPLAY_LIMIT = 3;
+const DAILY_PERIOD_DISPLAY_LIMIT = 6;
 const MAX_FUND_NAV_AGE_DAYS = 14;
 const MARKET_DISPLAY_IDS = ["twii", "txf", "sp500", "sox", "nasdaq", "nasdaqFuture", "nikkei", "kospi"];
 const MARKET_DISPLAY_LABELS = {
