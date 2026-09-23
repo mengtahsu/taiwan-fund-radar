@@ -487,12 +487,15 @@ assert(!appSource.includes("longTermMomentumBreakdown"), "score should not group
 assert(appSource.includes("event.target === modal"), "score detail modal should close when its backdrop is tapped");
 assert(!appSource.includes('<button class="score compact-score"'), "score circles should keep their existing non-button appearance");
 assert(!styleSource.includes(".score[data-score-fund]::after"), "clickable scores should not add a line below the number");
-assert(fundBoxSource.includes('const VERSION = "2.0"'), "trailing fund box algorithm should declare a new version");
+assert(fundBoxSource.includes('const VERSION = "2.1"'), "trailing fund box algorithm should declare a new version");
 assert(fundBoxSource.includes("width: 0.2"), "trailing fund boxes should remain exactly 20% wide");
 assert(fundBoxSource.includes("historyPoints: 400"), "trailing fund boxes should retain sparse bootstrap history");
 assert(fundBoxSource.includes("candidateValue > peak"), "fund box peaks should only move upward on a new high");
 assert(fundBoxSource.includes("value * (1 - settings.width)"), "fund box floors should trail the peak by exactly 20%");
 assert(fundBoxSource.includes('status: "distribution_unadjusted"'), "fund box should block unadjusted distribution NAV");
+assert(fundBoxSource.includes("distributionHistory(rows, seeds"), "cash distributions should adjust rows and saved peaks together");
+assert(appSource.includes("entry.analysis.rawPeakNav ?? entry.analysis.top"), "persist raw-date peaks, not rebased peaks");
+assert(updateFundsSource.includes("fetch_fund_distributions(fund_id, series, distributions)"), "scheduled NAV refresh should also fetch distributing funds' cash history");
 assert(fundBoxSource.includes("function buyDecision"), "fund box should translate technical states into a plain buy decision");
 assert(fundBoxSource.includes("function lowZoneMetrics"), "fund entry timing should measure the multi-month low zone");
 assert(fundBoxSource.includes('label: "低點區可分批"'), "a stabilized multi-month low should be a visible entry reference");

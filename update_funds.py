@@ -30,6 +30,7 @@ import unicodedata
 import uuid
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
@@ -389,6 +390,95 @@ def fetch_moneydj_bcd_nav(fund_id: str) -> list[tuple[datetime, float]]:
         if price > 0:
             series.append((date, price))
     return series
+
+
+class DistributionTableParser(HTMLParser):
+    """Read only the exact class's ex-date/currency/cash table, not its yield."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.inside = False
+        self.found = False
+        self.cell: list[str] | None = None
+        self.row: list[str] = []
+        self.rows: list[list[str]] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "table" and dict(attrs).get("id") == "a5_table":
+            self.inside = self.found = True
+        if not self.inside:
+            return
+        if tag == "tr":
+            self.row = []
+        elif tag in ("td", "th"):
+            self.cell = []
+
+    def handle_data(self, data: str) -> None:
+        if self.inside and self.cell is not None:
+            self.cell.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if not self.inside:
+            return
+        if tag in ("td", "th") and self.cell is not None:
+            self.row.append("".join(self.cell).strip())
+            self.cell = None
+        elif tag == "tr" and self.row:
+            self.rows.append(self.row)
+        elif tag == "table":
+            self.inside = False
+
+
+def parse_moneydj_distributions(text: str, fund_id: str) -> list[dict[str, Any]]:
+    # The watch-list ID identifies the share class, avoiding name-based matching.
+    if not re.search(r"addWatchList\(['\"]" + re.escape(fund_id) + r"['\"]\)", text):
+        raise ValueError("distribution page fund ID mismatch")
+    parser = DistributionTableParser()
+    parser.feed(text)
+    if not parser.found or not parser.rows or parser.rows[0][:3] != ["除息日", "幣別", "息值"]:
+        raise ValueError("distribution table missing or changed")
+    events: dict[str, dict[str, Any]] = {}
+    for row in parser.rows[1:]:
+        if len(row) != 4 or row[1] not in ("台幣", "新台幣", "TWD"):
+            raise ValueError("incomplete or non-TWD distribution row")
+        date = datetime.strptime(row[0], "%Y/%m/%d").date().isoformat()
+        amount = float(row[2].replace(",", ""))
+        if not math.isfinite(amount) or amount <= 0:
+            raise ValueError("invalid distribution cash amount")
+        if date in events and events[date]["amount"] != amount:
+            raise ValueError("conflicting distribution records")
+        events[date] = {"date": date, "amount": amount}
+    if not events:
+        raise ValueError("empty table does not prove no historical distributions")
+    return sorted(events.values(), key=lambda event: event["date"])
+
+
+def fetch_fund_distributions(fund_id: str, series: list[tuple[datetime, float]], previous: Any = None) -> dict[str, Any]:
+    url = f"https://m.moneydj.com/a5.aspx?{urlencode({'a': fund_id})}"
+    events = parse_moneydj_distributions(fetch_text(url), fund_id)
+    coverage_start = events[0]["date"]
+    # Preserve older events only when the two source windows overlap, so a
+    # truncated source never silently implies there were no missing dividends.
+    if isinstance(previous, dict) and previous.get("fundId") == fund_id:
+        old_events = previous.get("events", [])
+        if any(event.get("date") == coverage_start for event in old_events):
+            merged = {event["date"]: event for event in old_events if event.get("date", "") < coverage_start}
+            merged.update({event["date"]: event for event in events})
+            events = sorted(merged.values(), key=lambda event: event["date"])
+            coverage_start = events[0]["date"]
+    by_date = {date.date().isoformat(): nav for date, nav in series}
+    for event in events:
+        if event["date"] in by_date:
+            event["exNav"] = by_date[event["date"]]
+    now = datetime.now(timezone.utc)
+    return {
+        "fundId": fund_id,
+        "source": url,
+        "fetchedAt": now.isoformat(),
+        "checkedThrough": now.astimezone(timezone(timedelta(hours=8))).date().isoformat(),
+        "coverageStart": coverage_start,
+        "events": events,
+    }
 
 
 def parse_moneydj_mobile_latest_nav(text: str) -> tuple[datetime, float] | None:
@@ -1821,6 +1911,14 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
             day_rows = day_navs_from_series(series, days)
             if not month_ends and not week_ends and not day_rows:
                 return fund_id, None, "empty period nav"
+            distributions = cache.get("items", {}).get(fund_id, {}).get("distributions")
+            dividend = str(fund.get("dividend") or "")
+            if "配" in dividend and not any(word in dividend for word in ("不配", "累積")):
+                try:
+                    distributions = fetch_fund_distributions(fund_id, series, distributions)
+                except Exception as exc:
+                    # Keep NAV updates working, but never mark stale cash data fresh.
+                    print(f"{fund_id} distributions unavailable: {exc}", file=sys.stderr)
             return (
                 fund_id,
                 {
@@ -1830,6 +1928,7 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
                     "months": month_ends,
                     "weeks": week_ends,
                     "days": day_rows,
+                    "distributions": distributions,
                 },
                 None,
             )

@@ -1,7 +1,7 @@
 (function attachFundBox(globalScope) {
   "use strict";
 
-  const VERSION = "2.0";
+  const VERSION = "2.1";
   const DEFAULTS = Object.freeze({
     historyPoints: 400,
     minimumPoints: 1,
@@ -41,6 +41,49 @@
           (!trackingStartDate || seed.date >= trackingStartDate)
       )
       .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  // Back-adjust to the latest raw NAV scale. Ex-date cash is notionally
+  // reinvested only for this comparison; portfolio cash/units are not changed.
+  function distributionHistory(rows, seeds, options) {
+    const metadata = options.distributions;
+    const latestDate = rows.at(-1)?.date;
+    const start = options.trackingStartDate || rows[0]?.date;
+    const unavailable = (reason) => ({ valid: false, reason, rows, seeds });
+    if (!latestDate || !metadata || metadata.fundId !== options.fundId ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(metadata.coverageStart || "") ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(metadata.checkedThrough || "") ||
+        !Array.isArray(metadata.events)) {
+      return unavailable("配息資料尚未取得或基金代碼不符");
+    }
+    if (start < metadata.coverageStart) {
+      return unavailable("配息紀錄尚未涵蓋買入日期");
+    }
+    if (latestDate > metadata.checkedThrough) {
+      return unavailable("最新淨值已更新，配息資料待同步");
+    }
+    const byDate = new Map(rows.map((row) => [row.date, row.nav]));
+    const events = new Map();
+    for (const event of metadata.events) {
+      const date = String(event?.date || "");
+      const amount = finitePositive(event?.amount);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || amount === null) {
+        return unavailable("配息紀錄格式不完整");
+      }
+      // A purchase on the ex-date is priced ex-dividend, not entitled to it.
+      if (date <= start || date > latestDate) continue;
+      const exNav = finitePositive(byDate.get(date)) || finitePositive(event.exNav);
+      if (exNav === null) return unavailable(`缺 ${date} 除息日淨值`);
+      const previous = events.get(date);
+      if (previous && previous.amount !== amount) return unavailable("同日配息資料不一致");
+      events.set(date, { date, amount, exNav });
+    }
+    const adjustments = [...events.values()].sort((a, b) => a.date.localeCompare(b.date));
+    const factorAt = (date) => adjustments.reduce(
+      (factor, event) => date < event.date ? factor * event.exNav / (event.exNav + event.amount) : factor, 1
+    );
+    const adjust = (row) => ({ ...row, rawNav: row.nav, nav: row.nav * factorAt(row.date) });
+    return { valid: true, rows: rows.map(adjust), seeds: seeds.map(adjust), adjustments, factorAt };
   }
 
   function dateAgeDays(date, nowValue) {
@@ -186,9 +229,17 @@
       ? String(options.trackingStartDate)
       : "";
     const normalizedRows = normalizeRows(rawRows, settings.historyPoints);
-    const rows = trackingStartDate
+    let rows = trackingStartDate
       ? normalizedRows.filter((row) => row.date >= trackingStartDate)
       : normalizedRows;
+    let seeds = normalizePeakSeeds(options.peakSeeds, trackingStartDate);
+    const distribution = options.distributing && !options.adjusted
+      ? distributionHistory(rows, seeds, { ...options, trackingStartDate })
+      : null;
+    if (distribution?.valid) {
+      rows = distribution.rows;
+      seeds = distribution.seeds;
+    }
     const latest = rows.at(-1) || null;
     const base = {
       version: VERSION,
@@ -208,14 +259,13 @@
       topDetail: null
     };
 
-    if (options.distributing && !options.adjusted) {
-      return { ...base, status: "distribution_unadjusted" };
+    if (distribution && !distribution.valid) {
+      return { ...base, status: "distribution_unadjusted", distributionReason: distribution.reason };
     }
     if (rows.length < settings.minimumPoints || !latest) {
       return base;
     }
 
-    const seeds = normalizePeakSeeds(options.peakSeeds, trackingStartDate);
     let seedIndex = 0;
     let peak = null;
     let peakDate = null;
@@ -304,6 +354,10 @@
       position: boxPosition(latest.nav, bottom, peak),
       difference: relativeChange(latest.nav, bottom),
       peakDate,
+      // Persist the peak on its original date's scale, never an adjusted value.
+      rawPeakNav: distribution?.valid ? peak / distribution.factorAt(peakDate) : peak,
+      distributionAdjusted: Boolean(distribution?.valid || options.adjusted),
+      adjustments: distribution?.adjustments || [],
       topDetail: { value: peak, date: peakDate },
       ageDays
     };

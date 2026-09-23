@@ -945,12 +945,13 @@ async function loadFundTrailingBoxes() {
 }
 
 function persistFundTrailingBox(entry) {
-  if (!currentUser || !entry?.key || !Number.isFinite(Number(entry.analysis?.top))) {
+  if (!currentUser || !entry?.key || !(Number(entry.analysis?.top) > 0) ||
+      entry.analysis.status === "distribution_unadjusted") {
     return;
   }
   const existing = fundTrailingBoxes.get(entry.key);
   const trackingStartDate = entry.trackingStartDate;
-  const peakNav = Number(entry.analysis.top);
+  const peakNav = Number(entry.analysis.rawPeakNav ?? entry.analysis.top);
   const peakDate = String(entry.analysis.peakDate || entry.analysis.latest?.date || trackingStartDate);
   const unchanged =
     existing &&
@@ -1043,6 +1044,8 @@ function buildFundBoxStore(activePurchases) {
       ? window.FundBox.analyzeFundBox(navRows, {
           distributing,
           adjusted,
+          fundId: moneyDjFundId(item.fund_id),
+          distributions: navItem?.distributions,
           trackingStartDate,
           peakSeeds
         })
@@ -1062,7 +1065,7 @@ function buildFundBoxStore(activePurchases) {
       name: item.fund_name || fund?.name || key,
       navItem,
       distributing,
-      adjusted,
+      adjusted: analysis.distributionAdjusted || adjusted,
       trackingStartDate,
       exactHistoryStartDate,
       bootstrapLimited: Boolean(
@@ -2382,7 +2385,7 @@ function fundBoxChart(entry, options = {}) {
       ${selectedSegmentPopover}
     </div>
     <div class="fund-box-legend" aria-label="箱型圖例">
-      <span><i class="nav"></i>淨值</span>
+      <span><i class="nav"></i>${entry.distributing && entry.adjusted ? "還原淨值" : "淨值"}</span>
       <span><i class="trailing"></i>20%移動箱</span>
       ${stopBottom > 0 ? '<span><i class="stop"></i>目前箱底</span>' : ""}
     </div>
@@ -2528,7 +2531,7 @@ function fundBoxCurrentCalculation(entry) {
   const lines = [];
   if (analysis.top && analysis.bottom) {
     lines.push(`追蹤起點：${analysis.trackingStartDate || entry.trackingStartDate || "-"}；這筆買入紀錄使用自己的箱子。`);
-    lines.push(`箱頂採持有期間最高淨值 ${moneyNumber(analysis.top)}（${analysis.peakDate || "-"}）。`);
+    lines.push(`箱頂採持有期間最高${entry.distributing && entry.adjusted ? "還原" : ""}淨值 ${moneyNumber(analysis.top)}（${analysis.peakDate || "-"}）。`);
     lines.push(`20%箱底：${moneyNumber(analysis.top)} × 80% = ${moneyNumber(analysis.bottom)}。`);
     if (analysis.liveStatus === "trailing_breakdown") {
       lines.push(`最新淨值相對箱底：${moneyNumber(analysis.latest.nav)} ÷ ${moneyNumber(analysis.bottom)} - 1 = ${fundBoxPercent(analysis.difference)}；網站只提醒，由你判斷是否贖回。`);
@@ -2562,7 +2565,7 @@ function renderFundBoxDetail(entry) {
     : "最高淨值目前未寫入帳號；請勿把本頁當成持久紀錄";
   const blockedNotice =
     analysis.status === "distribution_unadjusted"
-      ? '<p class="fund-box-notice danger">這是配息型基金，目前歷史資料沒有可靠的配息還原值。圖表只顯示原始淨值，不提供箱型判斷，以免把除息誤判成跌破。</p>'
+      ? `<p class="fund-box-notice danger">${escapeHtml(analysis.distributionReason || "配息資料尚未取得")}。暫停箱型判斷，避免把除息誤判成跌破；下次雲端更新取得完整資料後會自動恢復。</p>`
       : analysis.status === "stale"
         ? `<p class="fund-box-notice danger">最新歷史淨值停在 ${escapeHtml(latestDate)}，已超過 7 天，因此暫停產生新訊號。</p>`
         : analysis.status === "insufficient"
@@ -2588,6 +2591,7 @@ function renderFundBoxDetail(entry) {
     </div>
     ${blockedNotice}
     ${bootstrapNotice}
+    ${entry.distributing && entry.adjusted ? '<p class="fund-box-notice">箱型圖使用配息還原淨值，已換算至最新淨值基準；箱頂、箱底可直接對照最新淨值。除息會調整歷史刻度，不代表虧損，也不會改動你的單位數或損益紀錄。</p>' : ""}
     <section class="fund-box-chart-section" aria-label="箱型圖"></section>
     <section class="fund-box-method">
       <h4>這檔基金怎麼算</h4>
@@ -2600,14 +2604,16 @@ function renderFundBoxDetail(entry) {
         <li>目前淨值回到期間低點上方 5% 內，而且低點後連續 3 個交易日不再破底，才顯示「低點區可分批」。</li>
         <li>每筆買入紀錄各自使用一套20%移動箱；即使基金相同，也從各自的買入日期與買入淨值開始計算。</li>
         <li>箱頂是這次持有週期開始後曾出現的最高淨值；淨值創新高時，箱頂立即上移，不等待三日確認。</li>
-        <li>箱底永遠等於箱頂 × 80%，因此箱寬固定20%；箱頂與箱底只能上升，回檔時不會下降。</li>
+        <li>箱底永遠等於箱頂 × 80%，因此箱寬固定20%；同一還原基準下箱頂與箱底只能上升。除息換算刻度不是降低停損標準。</li>
         <li>基金上漲時不顯示停利，也不自動賣出再買回，讓資金持續留在原基金。</li>
         <li>最新淨值第一次等於或低於箱底就顯示「跌破箱底」；這只是醒目提醒，不會自動贖回或新增賣出紀錄。</li>
         <li>最高淨值與日期保存在你的帳號資料庫；重新整理或圖表只載入近期資料時，既有箱頂不會因此消失。</li>
         <li>某筆紀錄賣出後只清除該筆箱子，不影響同基金的其他持有紀錄；日後新增買入會建立新箱子。</li>
         <li>資料超過7天未更新時暫停新的跌破判斷，但保留最後箱頂與箱底供查看。</li>
         <li>圖表可選2個月或4個月並左右移動；這些操作只改變畫面，不會重設最高淨值。</li>
-        <li>配息型基金必須使用可靠的還原淨值，否則配息造成的淨值下降可能被誤判，因此暫停箱型訊號。</li>
+        <li>配息型依確切基金代碼取得除息日與每單位息值；對除息日前的淨值乘以「除息日淨值 ÷（除息日淨值＋每單位配息）」，多次配息連乘。這是配息再投入的報酬比較基準，不表示你實際再投入。</li>
+        <li>只調整買入日之後、最新淨值日以前（含當日）的除息；除息日買入不加回當次配息。保存的是高點當日原始淨值，重新整理再換算，不會重複扣息。</li>
+        <li>配息紀錄未涵蓋買入日、缺除息日淨值，或最新淨值超過配息查核日期時，暫停箱型訊號，不猜測未取得的配息。</li>
         <li>所有箱型與跌破狀態只供你判斷，不構成買賣建議，也不會代替你操作交易。</li>
       </ol>
     </section>
