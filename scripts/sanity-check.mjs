@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 const failures = [];
+const appSource = fs.readFileSync("app.js", "utf8");
 
 function fail(message) {
   failures.push(message);
@@ -268,6 +269,52 @@ const manualFundValuation = purchaseValuation([], {
 assert(manualFundValuation.currentValue === 500000, "manual fund valuation should use entered NAV as current NAV");
 assert(manualFundValuation.profit === 0, "manual fund valuation should keep profit at zero when NAV is unchanged");
 
+const manualPeriodSource = [
+  extractNamedFunction(appSource, "monthKeyFromDate"),
+  extractNamedFunction(appSource, "weekKeyFromDate"),
+  extractNamedFunction(appSource, "dayKeyFromDate"),
+  extractNamedFunction(appSource, "periodKeyFromDate"),
+  extractNamedFunction(appSource, "manualProfitRowsForPurchase")
+].join("\n");
+const manualProfitRowsForPurchase = Function(`${manualPeriodSource}; return manualProfitRowsForPurchase;`)();
+const manualPurchase = {
+  fund_id: "manual:資金",
+  fund_name: "資金",
+  buy_date: "2026-08-07",
+  amount: 350000,
+  nav: 100
+};
+for (const [periodType, calendarRows] of Object.entries({
+  month: [
+    { period: "2026-08", date: "2026-08-31" },
+    { period: "2026-09", date: "2026-09-30" }
+  ],
+  week: [
+    { period: "2026-W36", date: "2026-09-04" },
+    { period: "2026-W37", date: "2026-09-11" }
+  ],
+  day: [
+    { period: "2026-09-29", date: "2026-09-29" },
+    { period: "2026-09-30", date: "2026-09-30" }
+  ]
+})) {
+  const result = manualProfitRowsForPurchase(manualPurchase, periodType, calendarRows);
+  assert(result.rows.length === 2, `manual purchase should continue through every ${periodType} period`);
+  assert(result.rows.every((row) => row.invested === 350000), `manual ${periodType} capital should remain invested`);
+  assert(result.rows.every((row) => row.value === 350000 && row.profit === 0), `manual ${periodType} value should use entered amount`);
+}
+const soldManualRows = manualProfitRowsForPurchase(
+  { ...manualPurchase, sell_date: "2026-09-15", sell_nav: 110 },
+  "month",
+  [
+    { period: "2026-08", date: "2026-08-31" },
+    { period: "2026-09", date: "2026-09-30" }
+  ]
+).rows;
+const soldManualSeptember = soldManualRows.find((row) => row.period === "2026-09");
+assert(soldManualSeptember?.invested === 0, "sold manual capital should leave invested capital in the sale period");
+assert(soldManualSeptember?.profit === 35000, `sold manual capital should realize sale profit: ${soldManualSeptember?.profit}`);
+
 const ambiguousFunds = [
   { fundId: "AAA001", name: "範例高股息基金A不配息", nav: 10 },
   { fundId: "AAA002", name: "範例高股息基金B配息", nav: 9 }
@@ -317,7 +364,6 @@ for (const [window, key] of [[20, "ma20"], [60, "ma60"]]) {
   assert(Math.abs(Number(latestTwiiHistory?.[key]) - expected) <= 0.02, `${key} does not match ${window}-day average`);
 }
 
-const appSource = fs.readFileSync("app.js", "utf8");
 const styleSource = fs.readFileSync("styles.css", "utf8");
 const fundBoxSource = fs.readFileSync("fund-box.js", "utf8");
 const trailingBoxSqlSource = fs.readFileSync("supabase-trailing-boxes.sql", "utf8");
@@ -352,6 +398,7 @@ assert(appSource.includes("PERIOD_DISPLAY_LIMIT = 6"), "monthly and weekly profi
 assert(appSource.includes("每年賺賠"), "portfolio stats should render annual profit");
 assert(appSource.includes('pushRows("year", summary.years)'), "annual profit should be persisted as snapshots");
 assert(portfolioSnapshotSqlSource.includes("'year', 'month', 'week', 'day'"), "snapshot constraint should allow year, month, week, and day rows");
+assert(appSource.includes('return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}`'), "portfolio snapshot version should include purchase records");
 assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_funds.py should parse MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");

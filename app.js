@@ -1240,6 +1240,88 @@ function dayKeyFromDate(value) {
   return String(value || "").slice(0, 10) || "未填日期";
 }
 
+function periodKeyFromDate(value, periodType) {
+  if (periodType === "day") {
+    return dayKeyFromDate(value);
+  }
+  return periodType === "week" ? weekKeyFromDate(value) : monthKeyFromDate(value);
+}
+
+function portfolioPeriodCalendar(periodType) {
+  const sourceKey = periodType === "day" ? "days" : periodType === "week" ? "weeks" : "months";
+  const rowsByPeriod = new Map();
+  Object.values(monthlyNavMeta.items || {}).forEach((navItem) => {
+    (navItem?.[sourceKey] || []).forEach((row) => {
+      const date = String(row?.date || "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return;
+      }
+      const period = periodKeyFromDate(date, periodType);
+      const existing = rowsByPeriod.get(period);
+      if (!existing || date > existing.date) {
+        rowsByPeriod.set(period, { period, date });
+      }
+    });
+  });
+  return [...rowsByPeriod.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function manualProfitRowsForPurchase(item, periodType, calendarRows) {
+  const amount = Number(item.amount) || 0;
+  const buyNav = Number(item.nav) || 0;
+  const buyDate = String(item.buy_date || "").slice(0, 10);
+  if (amount <= 0 || buyNav <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(buyDate)) {
+    return { rows: [], missing: true };
+  }
+
+  const sellDate = String(item.sell_date || "").slice(0, 10);
+  const isSold = /^\d{4}-\d{2}-\d{2}$/.test(sellDate);
+  const rowsByPeriod = new Map();
+  (calendarRows || [])
+    .filter((point) => point.date >= buyDate && (!isSold || point.date < sellDate))
+    .forEach((point) => {
+      rowsByPeriod.set(point.period, {
+        period: point.period,
+        date: point.date,
+        profit: 0,
+        invested: amount,
+        value: amount,
+        startNav: buyNav,
+        endNav: buyNav,
+        valued: 1
+      });
+    });
+
+  let missingSale = false;
+  if (isSold) {
+    const sellNav = Number(item.sell_nav) || 0;
+    const sellAmount = Number(item.sell_amount) || 0;
+    const proceeds = sellAmount > 0 ? sellAmount : sellNav > 0 ? (amount / buyNav) * sellNav : null;
+    const sellPeriod = periodKeyFromDate(sellDate, periodType);
+    const row = rowsByPeriod.get(sellPeriod) || {
+      period: sellPeriod,
+      date: sellDate,
+      profit: 0,
+      invested: 0,
+      value: 0,
+      startNav: buyNav,
+      endNav: sellNav || buyNav,
+      valued: proceeds === null ? 0 : 1
+    };
+    row.date = sellDate;
+    row.invested = 0;
+    row.value = 0;
+    row.endNav = sellNav || buyNav;
+    row.profit = proceeds === null ? 0 : proceeds - amount;
+    row.valued = proceeds === null ? 0 : 1;
+    rowsByPeriod.set(sellPeriod, row);
+    missingSale = proceeds === null;
+  }
+
+  const rows = [...rowsByPeriod.values()].sort((a, b) => a.date.localeCompare(b.date));
+  return { rows, missing: rows.length === 0 || missingSale };
+}
+
 function periodIndex(period, periodType) {
   if (periodType === "day") {
     const time = Date.parse(`${period}T00:00:00Z`);
@@ -1271,7 +1353,10 @@ function periodsAreContinuous(previousPeriod, currentPeriod, periodType) {
   return previous !== null && current !== null && current - previous === 1;
 }
 
-function periodProfitRowsForPurchase(item, periodType) {
+function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
+  if (String(item.fund_id || "").startsWith("manual:")) {
+    return manualProfitRowsForPurchase(item, periodType, calendarRows);
+  }
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
   const units = amount > 0 && buyNav > 0 ? amount / buyNav : 0;
@@ -1360,16 +1445,16 @@ function periodProfitRowsForPurchase(item, periodType) {
   return { rows, missing: rows.length === 0 || hasGap || (isSold && !hasSellNav) };
 }
 
-function monthlyProfitRowsForPurchase(item) {
-  return periodProfitRowsForPurchase(item, "month");
+function monthlyProfitRowsForPurchase(item, calendarRows) {
+  return periodProfitRowsForPurchase(item, "month", calendarRows);
 }
 
-function weeklyProfitRowsForPurchase(item) {
-  return periodProfitRowsForPurchase(item, "week");
+function weeklyProfitRowsForPurchase(item, calendarRows) {
+  return periodProfitRowsForPurchase(item, "week", calendarRows);
 }
 
-function dailyProfitRowsForPurchase(item) {
-  return periodProfitRowsForPurchase(item, "day");
+function dailyProfitRowsForPurchase(item, calendarRows) {
+  return periodProfitRowsForPurchase(item, "day", calendarRows);
 }
 
 function annualProfitMapFromMonths(months) {
@@ -1508,6 +1593,13 @@ function purchaseValuation(item) {
 
 function portfolioSummary(options = {}) {
   const includePeriods = options.includePeriods !== false;
+  const periodCalendars = includePeriods
+    ? {
+        month: portfolioPeriodCalendar("month"),
+        week: portfolioPeriodCalendar("week"),
+        day: portfolioPeriodCalendar("day")
+      }
+    : null;
   const summary = {
     invested: 0,
     valuedCostBasis: 0,
@@ -1558,7 +1650,7 @@ function portfolioSummary(options = {}) {
       return;
     }
 
-    const monthly = monthlyProfitRowsForPurchase(item);
+    const monthly = monthlyProfitRowsForPurchase(item, periodCalendars.month);
     if (monthly.missing && !monthly.rows.length) {
       const isActive = !item.sell_date;
       const fallbackValue = isActive && valuation.currentValue !== null ? valuation.currentValue : null;
@@ -1648,7 +1740,7 @@ function portfolioSummary(options = {}) {
       summary.months.set(buyMonthKey, month);
     }
 
-    const weekly = weeklyProfitRowsForPurchase(item);
+    const weekly = weeklyProfitRowsForPurchase(item, periodCalendars.week);
     if (weekly.missing && !weekly.rows.length) {
       const isActive = !item.sell_date;
       const fallbackValue = isActive && valuation.currentValue !== null ? valuation.currentValue : null;
@@ -1747,7 +1839,7 @@ function portfolioSummary(options = {}) {
       summary.weeks.set(buyWeekKey, week);
     }
 
-    const daily = dailyProfitRowsForPurchase(item);
+    const daily = dailyProfitRowsForPurchase(item, periodCalendars.day);
     daily.rows.forEach((row) => {
       const day = summary.days.get(row.period) || {
         key: row.period,
@@ -1783,8 +1875,23 @@ function portfolioSummary(options = {}) {
   return summary;
 }
 
+function portfolioPurchaseFingerprint() {
+  const fields = ["id", "fund_id", "buy_date", "amount", "nav", "sell_date", "sell_nav", "sell_amount"];
+  const source = [...purchases]
+    .sort((a, b) => String(a.id || "").localeCompare(String(b.id || "")))
+    .map((item) => fields.map((field) => String(item?.[field] ?? "")).join("\u001f"))
+    .join("\u001e");
+  let hash = 2166136261;
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
 function portfolioSnapshotSource() {
-  return monthlyNavMeta.updatedAt || sourceMeta.updatedAt || "no-source-time";
+  const dataSource = monthlyNavMeta.updatedAt || sourceMeta.updatedAt || "no-source-time";
+  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}`;
 }
 
 function resetPortfolioSnapshots() {
@@ -1917,8 +2024,7 @@ async function loadPortfolioPeriodSnapshots() {
   }
 }
 
-function snapshotRowsFromSummary(summary) {
-  const sourceUpdatedAt = portfolioSnapshotSource();
+function snapshotRowsFromSummary(summary, sourceUpdatedAt = portfolioSnapshotSource()) {
   const rows = [];
   const pushRows = (periodType, periods) => {
     periods.forEach((item) => {
@@ -1949,7 +2055,8 @@ async function savePortfolioPeriodSnapshots(summary) {
     return;
   }
   portfolioSnapshotsSaving = true;
-  const rows = snapshotRowsFromSummary(summary);
+  const sourceUpdatedAt = portfolioSnapshotSource();
+  const rows = snapshotRowsFromSummary(summary, sourceUpdatedAt);
   try {
     const deleteResult = await db.from("portfolio_period_snapshots").delete().eq("user_id", currentUser.id);
     if (deleteResult.error) {
@@ -1961,17 +2068,21 @@ async function savePortfolioPeriodSnapshots(summary) {
         throw error;
       }
     }
-    portfolioPeriodSnapshots = {
-      loaded: true,
-      supported: true,
-      sourceUpdatedAt: portfolioSnapshotSource(),
-      years: recentPeriodMapFromSummaryMap(summary.years, ANNUAL_PERIOD_DISPLAY_LIMIT),
-      months: recentPeriodMapFromSummaryMap(summary.months, PERIOD_DISPLAY_LIMIT),
-      weeks: recentPeriodMapFromSummaryMap(summary.weeks, PERIOD_DISPLAY_LIMIT),
-      days: recentPeriodMapFromSummaryMap(summary.days, DAILY_PERIOD_DISPLAY_LIMIT)
-    };
-    portfolioSnapshotsDirty = false;
-    renderTwiiTrendChart();
+    if (portfolioSnapshotSource() === sourceUpdatedAt) {
+      portfolioPeriodSnapshots = {
+        loaded: true,
+        supported: true,
+        sourceUpdatedAt,
+        years: recentPeriodMapFromSummaryMap(summary.years, ANNUAL_PERIOD_DISPLAY_LIMIT),
+        months: recentPeriodMapFromSummaryMap(summary.months, PERIOD_DISPLAY_LIMIT),
+        weeks: recentPeriodMapFromSummaryMap(summary.weeks, PERIOD_DISPLAY_LIMIT),
+        days: recentPeriodMapFromSummaryMap(summary.days, DAILY_PERIOD_DISPLAY_LIMIT)
+      };
+      portfolioSnapshotsDirty = false;
+      renderTwiiTrendChart();
+    } else {
+      portfolioSnapshotsDirty = true;
+    }
   } catch (_error) {
     portfolioPeriodSnapshots.supported = false;
   } finally {
