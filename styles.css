@@ -2172,6 +2172,87 @@ footer a {
   color: var(--danger);
 }
 
+.forecast-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+}
+
+.forecast-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.forecast-heading h3 {
+  margin: 3px 0 0;
+}
+
+.forecast-date {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.forecast-stat {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.forecast-stat span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.forecast-stat strong {
+  overflow-wrap: anywhere;
+  font-size: 22px;
+}
+
+.forecast-stat.primary strong {
+  color: var(--accent-dark);
+}
+
+.forecast-note,
+.forecast-method {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.forecast-method summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--accent-dark);
+  font-weight: 900;
+}
+
+.forecast-method ol {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding-left: 22px;
+}
+
 .muted-box {
   color: var(--muted);
   font-weight: 800;
@@ -2315,6 +2396,15 @@ footer a {
 
   .detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .forecast-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .forecast-heading {
+    align-items: start;
+    flex-direction: column;
   }
 
   .fund-box-modal {
