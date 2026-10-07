@@ -434,6 +434,16 @@ function applyLocalNavOverridesToFunds() {
   return applied;
 }
 
+function normalCdfForScore(value) {
+  const sign = value < 0 ? -1 : 1;
+  const absolute = Math.abs(value) / Math.sqrt(2);
+  const t = 1 / (1 + 0.3275911 * absolute);
+  const polynomial = 1 - (
+    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t
+  ) * Math.exp(-absolute * absolute);
+  return 0.5 * (1 + sign * polynomial);
+}
+
 function oneMonthForecastScore(fund) {
   const nav = Number(fund.nav);
   const volatility = Number(fund.volatility);
@@ -456,14 +466,23 @@ function oneMonthForecastScore(fund) {
     const returnRate = Number(fund[period.key]) / 100;
     return sum + (Math.log1p(returnRate) / period.months) * period.weight;
   }, 0) / weightTotal;
-  return (Math.exp(monthlyLogReturn) - 1) * 100;
+  const monthlyVolatility = (volatility / 100) / Math.sqrt(12);
+  return {
+    expectedReturn: (Math.exp(monthlyLogReturn) - 1) * 100,
+    downProbability: monthlyVolatility > 0
+      ? normalCdfForScore(-monthlyLogReturn / monthlyVolatility) * 100
+      : (monthlyLogReturn < 0 ? 100 : 0)
+  };
 }
 
 function performanceScoreParts(fund) {
-  const forecastReturn = oneMonthForecastScore(fund);
+  const forecast = oneMonthForecastScore(fund);
+  const forecastReturn = forecast?.expectedReturn ?? null;
+  const downProbability = forecast?.downProbability ?? null;
   return [
     { label: "近 1 月績效", detail: scorePercentValue(fund.return1m), score: Number(fund.return1m) || 0, factor: 2, factorLabel: "2" },
     { label: "估算 1 個月後漲跌幅", detail: scorePercentValue(forecastReturn), score: forecastReturn || 0, factor: 2, factorLabel: "2" },
+    { label: "跌低於目前機率", detail: scorePercentValue(downProbability), score: downProbability || 0, factor: -1, factorLabel: "-1" },
     { label: "近 3 月績效", detail: scorePercentValue(fund.return3m), score: Number(fund.return3m) || 0, factor: 2, factorLabel: "2" },
     { label: "近 6 月績效", detail: scorePercentValue(fund.return6m), score: Number(fund.return6m) || 0, factor: 0.4, factorLabel: "0.4" },
     { label: "近 1 年績效", detail: scorePercentValue(fund.return1y), score: Number(fund.return1y) || 0, factor: 0.1, factorLabel: "0.1" }
@@ -514,9 +533,9 @@ function scoreFund(fund) {
 
 function scoreTitle() {
   return {
-    growth: "自訂綜合分數：近 1 月績效 × 2、估算一個月後漲跌幅 × 2、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加 Sharpe 20% 與風險符合度 10%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
-    income: "自訂綜合分數：近 1 月績效 × 2、估算一個月後漲跌幅 × 2、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加配息型態 35%、低波動 30% 與風險符合度 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
-    stability: "自訂綜合分數：近 1 月績效 × 2、估算一個月後漲跌幅 × 2、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加低波動 35%、風險符合度 30% 與 Sharpe 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分"
+    growth: "自訂綜合分數：近 1 月績效 × 2、估算一個月後漲跌幅 × 2、跌低於目前機率 × -1、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加 Sharpe 20% 與風險符合度 10%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
+    income: "自訂綜合分數：近 1 月績效 × 2、估算一個月後漲跌幅 × 2、跌低於目前機率 × -1、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加配息型態 35%、低波動 30% 與風險符合度 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分",
+    stability: "自訂綜合分數：近 1 月績效 × 2、估算一個月後漲跌幅 × 2、跌低於目前機率 × -1、近 3 月績效 × 2、近 6 月績效 × 0.4、近 1 年績效 × 0.1，再加低波動 35%、風險符合度 30% 與 Sharpe 20%。各期績效直接作為分數，沒有上限，缺資料為 0 分"
   }[goal()];
 }
 
@@ -542,16 +561,20 @@ function renderScoreDetail(fund) {
   const partRows = breakdown.parts
     .map((part) => {
       const points = part.score * part.factor;
+      const displayPoints = points === 0 ? 0 : points;
       return `
         <div class="score-detail-row">
           <div><strong>${escapeHtml(part.label)}</strong><small>${escapeHtml(part.detail)}</small></div>
           <span>${part.score.toFixed(1)} × ${part.factorLabel}</span>
-          <strong>${points.toFixed(1)}</strong>
+          <strong>${displayPoints.toFixed(1)}</strong>
         </div>
       `;
     })
     .join("");
-  const sumText = breakdown.parts.map((part) => (part.score * part.factor).toFixed(1)).join(" + ");
+  const sumText = breakdown.parts.map((part) => {
+    const points = part.score * part.factor;
+    return (points === 0 ? 0 : points).toFixed(1);
+  }).join(" + ");
   return `
     <div class="score-modal-summary">
       <div><span>綜合分數</span><strong>${breakdown.score}</strong></div>
@@ -560,7 +583,7 @@ function renderScoreDetail(fund) {
     <div class="score-detail-head"><span>項目</span><span>分數 × 倍率</span><span>得分</span></div>
     <div class="score-detail-list">${partRows}</div>
     <p class="score-total">${sumText} = ${breakdown.total.toFixed(1)} → ${breakdown.score}</p>
-    <p class="score-modal-note">近 1 月績效、估算一個月後漲跌幅與近 3 月績效各乘 2；近 6 月乘 0.4；近 1 年乘 0.1。估算一個月後漲跌幅沿用詳情頁模型，漲幾 % 就是幾分，跌幾 % 就是負幾分，缺資料為 0 分，不另作換算或限制。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。</p>
+    <p class="score-modal-note">近 1 月績效、估算一個月後漲跌幅與近 3 月績效各乘 2；跌低於目前機率乘 -1，也就是機率 20% 扣 20 分；近 6 月乘 0.4；近 1 年乘 0.1。估算沿用詳情頁模型，漲幾 % 就是幾分，跌幾 % 就是負幾分，缺資料為 0 分，不另作換算或限制。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。</p>
     ${detailUrl ? `<a class="score-detail-link" href="${detailUrl}">查看基金詳情與一個月後估算</a>` : ""}
   `;
 }
