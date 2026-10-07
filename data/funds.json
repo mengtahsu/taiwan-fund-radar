@@ -8211,8 +8211,7 @@
         "台幣",
         "RR4",
         "3月 9.13%",
-        "1年 103.52%",
-        "基富通可買"
+        "1年 103.52%"
       ],
       "ticker": "ACJS06",
       "fundId": "ACJS06",
@@ -8224,13 +8223,7 @@
       "return6m": 66.01,
       "returnYtd": 68.12,
       "feeUnavailable": true,
-      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS06",
-      "channel": "基富通",
-      "fundrichFundId": "TW000T2005Y4#TWD",
-      "fundrichName": "MoneyDJ ACJS06 FundRich",
-      "fundrichUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS06,100&b=1&c=fundrich&d=2",
-      "fundrichAppUrl": "https://www.moneydj.com/RoboOrder/GoOrder.aspx?a=ACJS06,100&b=1&c=fundrich&d=2",
-      "fundrichSource": "MoneyDJ 申購清單"
+      "moneyDjUrl": "https://m.moneydj.com/a1.aspx?a=ACJS06"
     },
     {
       "name": "富蘭克林華美AI新科技基金-N類型(台幣)",
