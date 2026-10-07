@@ -511,6 +511,7 @@ function scorePercentValue(value) {
 
 function renderScoreDetail(fund) {
   const breakdown = scoreBreakdown(fund);
+  const detailUrl = fundDetailUrl(fund);
   const partRows = breakdown.parts
     .map((part) => {
       const points = part.score * part.factor;
@@ -533,6 +534,7 @@ function renderScoreDetail(fund) {
     <div class="score-detail-list">${partRows}</div>
     <p class="score-total">${sumText} = ${breakdown.total.toFixed(1)} → ${breakdown.score}</p>
     <p class="score-modal-note">近 1 月與近 3 月績效各乘 2；近 6 月乘 0.4；近 1 年乘 0.1。漲幾 % 就是幾分，跌幾 % 就是負幾分，缺資料為 0 分，不另作換算或限制。Sharpe = 報酬 / 波動。分數只用來排序，不代表買賣建議。</p>
+    ${detailUrl ? `<a class="score-detail-link" href="${detailUrl}">查看基金詳情與一個月後估算</a>` : ""}
   `;
 }
 
@@ -689,13 +691,18 @@ function riskClass(risk) {
   return risk >= 4 ? "risk-high" : "risk-low";
 }
 
+function fundDetailUrl(fund) {
+  const detailId = String(fund?.fundId || fund?.name || "").trim();
+  return detailId ? `detail.html?id=${encodeURIComponent(detailId)}` : "";
+}
+
 function renderFundName(fund) {
   const name = escapeHtml(displayFundName(fund.name));
-  const detailId = String(fund.fundId || fund.name || "").trim();
-  if (!detailId) {
+  const url = moneyDjFundUrl(fund.fundId);
+  if (!url) {
     return name;
   }
-  return `<a class="fund-name-link" href="detail.html?id=${encodeURIComponent(detailId)}" title="查看基金詳情與一個月後估算">${name}</a>`;
+  return `<a class="fund-name-link" href="${url}">${name}</a>`;
 }
 
 function moneyDjFundUrl(fundId) {

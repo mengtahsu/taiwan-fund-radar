@@ -1459,6 +1459,17 @@ textarea {
   line-height: 1.55;
 }
 
+.score-detail-link {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 12px;
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .period-detail-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
