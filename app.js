@@ -691,11 +691,11 @@ function riskClass(risk) {
 
 function renderFundName(fund) {
   const name = escapeHtml(displayFundName(fund.name));
-  const url = moneyDjFundUrl(fund.fundId);
-  if (!url) {
+  const detailId = String(fund.fundId || fund.name || "").trim();
+  if (!detailId) {
     return name;
   }
-  return `<a class="fund-name-link" href="${url}">${name}</a>`;
+  return `<a class="fund-name-link" href="detail.html?id=${encodeURIComponent(detailId)}" title="查看基金詳情與一個月後估算">${name}</a>`;
 }
 
 function moneyDjFundUrl(fundId) {
