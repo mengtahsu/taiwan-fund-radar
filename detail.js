@@ -142,6 +142,10 @@ function renderForecast(fund) {
           <span>估算中位數</span>
           <strong>${formatNumber(forecast.medianNav)}</strong>
         </div>
+        <div class="forecast-stat ${forecast.expectedReturn >= 0 ? "positive" : "negative"}">
+          <span>估算漲跌幅</span>
+          <strong>${forecast.expectedReturn >= 0 ? "+" : ""}${forecast.expectedReturn.toFixed(2)}%</strong>
+        </div>
         <div class="forecast-stat">
           <span>80%情境區間</span>
           <strong>${formatNumber(forecast.lowerNav)}～${formatNumber(forecast.upperNav)}</strong>
