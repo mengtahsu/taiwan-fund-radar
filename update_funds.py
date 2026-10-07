@@ -72,13 +72,6 @@ TWII_TREND_FETCH_DAYS = 2500
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
 
-# A channel list can contain a fund that is visible in the catalogue but not
-# actually orderable after the user's account and eligibility are applied.
-# Keep these confirmed unavailable funds out of all purchase buttons.
-CONFIRMED_UNAVAILABLE_PURCHASE_FUND_IDS = {
-    "ACJS06",  # 富邦精選五虎基金: user confirmed it is unavailable in FundRich
-}
-
 TAIWAN_ETFS = [
     {
         "symbol": "0050.TW",
@@ -2267,27 +2260,6 @@ def enrich_channel_links(
     fundrich_lookup: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     tags = list(fund.get("tags") or [])
-    fund_id = moneydj_fund_code(fund)
-    if fund_id in CONFIRMED_UNAVAILABLE_PURCHASE_FUND_IDS:
-        for field in (
-            "channel",
-            "fubonFundId",
-            "fubonBuyUrl",
-            "fubonMatchedName",
-            "fubonPurchaseTypes",
-            "fundrichFundId",
-            "fundrichName",
-            "fundrichUrl",
-            "fundrichAppUrl",
-            "fundrichSource",
-        ):
-            fund.pop(field, None)
-        fund["tags"] = [
-            tag
-            for tag in tags
-            if tag not in {"富邦銀行可買", "基富通可買"}
-        ]
-        return fund
     fubon = find_channel_match(fund, fubon_lookup, require_nav_match=True)
     if fubon:
         fund["channel"] = "台北富邦銀行"
