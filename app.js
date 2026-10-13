@@ -200,6 +200,7 @@ let portfolioPeriodSnapshots = {
 };
 let portfolioSnapshotsDirty = false;
 let portfolioSnapshotsSaving = false;
+let portfolioSnapshotsSaveQueued = false;
 let periodDetailStore = new Map();
 let periodHistoryStore = new Map();
 let fundBoxStore = new Map();
@@ -2108,7 +2109,11 @@ function snapshotRowsFromSummary(summary, sourceUpdatedAt = portfolioSnapshotSou
 }
 
 async function savePortfolioPeriodSnapshots(summary) {
-  if (!db || !currentUser || !portfolioPeriodSnapshots.supported || portfolioSnapshotsSaving) {
+  if (!db || !currentUser || !portfolioPeriodSnapshots.supported) {
+    return;
+  }
+  if (portfolioSnapshotsSaving) {
+    portfolioSnapshotsSaveQueued = true;
     return;
   }
   portfolioSnapshotsSaving = true;
@@ -2144,6 +2149,25 @@ async function savePortfolioPeriodSnapshots(summary) {
     portfolioPeriodSnapshots.supported = false;
   } finally {
     portfolioSnapshotsSaving = false;
+    if (portfolioSnapshotsSaveQueued && portfolioPeriodSnapshots.supported) {
+      portfolioSnapshotsSaveQueued = false;
+      void rebuildPortfolioSnapshots();
+    }
+  }
+}
+
+async function rebuildPortfolioSnapshots() {
+  if (!db || !currentUser || !portfolioPeriodSnapshots.supported || !purchases.length) {
+    return;
+  }
+  if (!monthlyNavMeta.updatedAt) {
+    await loadMonthlyNavData();
+  }
+  const summary = portfolioSummary({ includePeriods: true });
+  setPortfolioDailyCapital([...summary.days.values()], portfolioSnapshotSource());
+  await savePortfolioPeriodSnapshots(summary);
+  if (!portfolioPeriodsLoading) {
+    renderPurchases({ includePeriods: true });
   }
 }
 
@@ -2928,6 +2952,7 @@ async function submitSellModal(event) {
   setMessage(els.purchaseMessage, "已記錄賣出。");
   markPortfolioSnapshotsDirty();
   await loadPurchases();
+  await rebuildPortfolioSnapshots();
 }
 
 function renderPortfolioPeriodSections(summary, canUseSnapshots) {
@@ -3623,6 +3648,7 @@ async function savePurchase(event) {
   setMessage(els.purchaseMessage, "已儲存。");
   markPortfolioSnapshotsDirty();
   await loadPurchases();
+  await rebuildPortfolioSnapshots();
 }
 
 async function deletePurchase(id) {
@@ -3640,6 +3666,7 @@ async function deletePurchase(id) {
   setMessage(els.purchaseMessage, "已刪除。");
   markPortfolioSnapshotsDirty();
   await loadPurchases();
+  await rebuildPortfolioSnapshots();
 }
 
 async function editPurchase(id) {
@@ -3694,6 +3721,7 @@ async function editPurchase(id) {
   setMessage(els.purchaseMessage, "已更新買入紀錄。");
   markPortfolioSnapshotsDirty();
   await loadPurchases();
+  await rebuildPortfolioSnapshots();
 }
 
 function markPurchaseSold(id) {
@@ -3729,6 +3757,7 @@ async function clearPurchaseSale(id) {
   setMessage(els.purchaseMessage, "已取消賣出。");
   markPortfolioSnapshotsDirty();
   await loadPurchases();
+  await rebuildPortfolioSnapshots();
 }
 
 async function signIn() {
