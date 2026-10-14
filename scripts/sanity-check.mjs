@@ -311,7 +311,9 @@ for (const [periodType, calendarRows] of Object.entries({
   ]
 })) {
   const result = manualProfitRowsForPurchase(manualPurchase, periodType, calendarRows);
-  assert(result.rows.length === 2, `manual purchase should continue through every ${periodType} period`);
+  const buyPeriod = periodType === "month" ? "2026-08" : periodType === "week" ? "2026-W32" : "2026-08-07";
+  assert(result.rows.length === (periodType === "month" ? 2 : 3), `manual purchase should include its buy ${periodType} and later periods`);
+  assert(result.rows.some((row) => row.period === buyPeriod && (periodType === "month" || row.date === "2026-08-07")), `manual purchase should appear in its buy ${periodType}`);
   assert(result.rows.every((row) => row.invested === 350000), `manual ${periodType} capital should remain invested`);
   assert(result.rows.every((row) => row.value === 350000 && row.profit === 0), `manual ${periodType} value should use entered amount`);
 }
@@ -410,7 +412,7 @@ assert(appSource.includes("PERIOD_DISPLAY_LIMIT = 6"), "monthly and weekly profi
 assert(appSource.includes("每年賺賠"), "portfolio stats should render annual profit");
 assert(appSource.includes('pushRows("year", summary.years)'), "annual profit should be persisted as snapshots");
 assert(portfolioSnapshotSqlSource.includes("'year', 'month', 'week', 'day'"), "snapshot constraint should allow year, month, week, and day rows");
-assert(appSource.includes('return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}`'), "portfolio snapshot version should include purchase records");
+assert(appSource.includes('return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}`'), "portfolio snapshot version should include purchase records and manual-cash logic version");
 assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_funds.py should parse MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");
