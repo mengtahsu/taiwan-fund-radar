@@ -106,6 +106,39 @@ const manualRows = context.manualProfitRowsForPurchase(
 assert.equal(manualRows.rows.find((row) => row.date === "2026-10-14")?.invested, 310000);
 context.monthlyNavIndex = null;
 
+const originalPurchases = context.purchases;
+const originalFundLookup = context.currentFundForPurchase;
+context.purchases = [
+  {
+    id: "cash-1008",
+    fund_id: "manual:cash-1008",
+    fund_name: "資金1008",
+    buy_date: "2026-10-08",
+    amount: 1008000,
+    nav: 100,
+    sell_date: "2026-10-14",
+    sell_nav: 100
+  },
+  {
+    id: "cash-1014",
+    fund_id: "manual:cash-1014",
+    fund_name: "資金1014",
+    buy_date: "2026-10-14",
+    amount: 1014000,
+    nav: 100
+  }
+];
+context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : originalFundLookup(item);
+const cashReplacement = context.portfolioSummary();
+assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v2$/);
+const replacementDay = cashReplacement.days.get("2026-10-14");
+assert.equal(replacementDay?.invested, 1014000);
+assert.equal(replacementDay?.details.find((detail) => detail.name === "資金1014")?.invested, 1014000);
+assert.equal(cashReplacement.weeks.get("2026-W42")?.invested, 1014000);
+assert.equal(cashReplacement.months.get("2026-10")?.invested, 1014000);
+context.purchases = originalPurchases;
+context.currentFundForPurchase = originalFundLookup;
+
 navItem.days.shift();
 const delayedFirstNav = context.dailyProfitRowsForPurchase(purchase, []);
 assert.equal(delayedFirstNav.rows.find((row) => row.date === "2026-10-08")?.invested, 200000);

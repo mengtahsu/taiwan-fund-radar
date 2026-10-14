@@ -1357,6 +1357,19 @@ function manualProfitRowsForPurchase(item, periodType, calendarRows) {
         valued: 1
       });
     });
+  const buyPeriod = periodKeyFromDate(buyDate, periodType);
+  if (!rowsByPeriod.has(buyPeriod)) {
+    rowsByPeriod.set(buyPeriod, {
+      period: buyPeriod,
+      date: buyDate,
+      profit: 0,
+      invested: amount,
+      value: amount,
+      startNav: buyNav,
+      endNav: buyNav,
+      valued: 1
+    });
+  }
 
   let missingSale = false;
   if (isSold) {
@@ -1961,7 +1974,10 @@ function portfolioPurchaseFingerprint() {
 
 function portfolioSnapshotSource() {
   const dataSource = monthlyNavMeta.updatedAt || monthlyNavIndex?.updatedAt || sourceMeta.updatedAt || "no-source-time";
-  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}`;
+  const manualVersion = purchases.some((item) => String(item.fund_id || "").startsWith("manual:"))
+    ? "|manual-buy:v2"
+    : "";
+  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}`;
 }
 
 function resetPortfolioSnapshots() {
