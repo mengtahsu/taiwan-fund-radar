@@ -130,11 +130,15 @@ jobs:
         if: steps.update_gate.outputs.should_update == 'true'
         run: timeout 1m python3 update_funds.py --provider twii-history --once || echo "TWII history update timed out or failed; deploying committed data/twii_history.json if present"
 
+      - name: Build per-fund NAV history
+        if: steps.update_gate.outputs.should_update == 'true'
+        run: node scripts/build-nav-history.mjs
+
       - name: Run sanity checks
         if: steps.update_gate.outputs.should_update == 'true'
         run: |
           set +e
-          sanity_output=$(python3 scripts/test_distributions.py 2>&1 && node scripts/fund-box-test.mjs 2>&1 && node scripts/portfolio-period-test.mjs 2>&1 && node scripts/sanity-check.mjs 2>&1)
+          sanity_output=$(python3 scripts/test_distributions.py 2>&1 && node scripts/fund-box-test.mjs 2>&1 && node scripts/portfolio-period-test.mjs 2>&1 && node scripts/nav-history-test.mjs 2>&1 && node scripts/sanity-check.mjs 2>&1)
           sanity_status=$?
           echo "$sanity_output"
           {

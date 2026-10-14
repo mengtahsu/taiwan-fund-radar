@@ -4,9 +4,10 @@
 
 ## 使用方式
 
-直接開啟 `index.html` 即可使用。若想用本機伺服器：
+本機執行時先從歷史淨值快取產生按基金拆分的檔案，再啟動伺服器：
 
 ```sh
+node scripts/build-nav-history.mjs
 python3 -m http.server 8000
 ```
 
@@ -15,6 +16,8 @@ python3 -m http.server 8000
 ## 自動更新
 
 更新器是 `update_funds.py`。它會從設定檔指定的 JSON URL 抓資料，驗證欄位後寫入 `data/funds.json`。
+
+`data/monthly_nav.json` 是更新器的完整歷史淨值快取。部署時會自動產生 `data/nav_history/index.json`、共用交易日期表及每檔基金的淨值檔；首頁只讀取小索引，「我的基金」只讀取買過的基金。產生檔不進 Git，完整快取保留供後續更新及讀取故障時備援。快取超過 25 MiB 時建置紀錄會提出警示，不會刪除既有紀錄或損益快照。
 
 ## 線上部署
 

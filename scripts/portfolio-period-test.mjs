@@ -60,6 +60,7 @@ const navItem = {
 const context = {
   purchases: [purchase],
   monthlyNavMeta: { updatedAt: "2026-10-13T23:35:58Z", items: { ACJS06: navItem } },
+  monthlyNavIndex: null,
   sourceMeta: { updatedAt: "2026-10-13T23:35:58Z" },
   currentFundForPurchase: () => ({ nav: 243.42, navDate: "10/13" }),
   currentUser: { id: "test-user" },
@@ -68,6 +69,7 @@ const context = {
   portfolioSnapshotsSaveQueued: false,
   portfolioSnapshotsDirty: true,
   portfolioPeriodsLoading: false,
+  loadMonthlyNavData: async () => true,
   ANNUAL_PERIOD_DISPLAY_LIMIT: 3,
   PERIOD_DISPLAY_LIMIT: 6,
   DAILY_PERIOD_DISPLAY_LIMIT: 6,
@@ -86,6 +88,23 @@ assert.equal(summary.weeks.get("2026-W41")?.date, "2026-10-08");
 assert.equal(summary.weeks.get("2026-W42")?.invested, 200000);
 assert.equal(summary.days.get("2026-10-08")?.profit, 0);
 assert(Math.abs(summary.days.get("2026-10-12").profit - 200000 * (252.77 / 252.4 - 1)) < 0.01);
+
+context.monthlyNavIndex = {
+  updatedAt: context.monthlyNavMeta.updatedAt,
+  calendar: {
+    day: [
+      { period: "2026-10-08", date: "2026-10-08" },
+      { period: "2026-10-14", date: "2026-10-14" }
+    ]
+  }
+};
+const manualRows = context.manualProfitRowsForPurchase(
+  { fund_id: "manual:cash", buy_date: "2026-10-08", amount: 310000, nav: 100 },
+  "day",
+  context.portfolioPeriodCalendar("day")
+);
+assert.equal(manualRows.rows.find((row) => row.date === "2026-10-14")?.invested, 310000);
+context.monthlyNavIndex = null;
 
 navItem.days.shift();
 const delayedFirstNav = context.dailyProfitRowsForPurchase(purchase, []);

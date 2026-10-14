@@ -113,6 +113,7 @@ const marginPayload = readJson("data/margin.json");
 const twiiHistoryPayload = readJson("data/twii_history.json");
 const navCachePayload = readJson("data/nav_cache.json");
 const monthlyNavPayload = readJson("data/monthly_nav.json");
+const navHistoryIndex = readJson("data/nav_history/index.json");
 
 function ageHours(value) {
   const time = Date.parse(value || "");
@@ -220,9 +221,20 @@ if (navCacheItems.ACYT161) {
 const monthlyNavItems = monthlyNavPayload?.items && typeof monthlyNavPayload.items === "object" ? monthlyNavPayload.items : {};
 assert(Object.keys(monthlyNavItems).length >= 20, `monthly NAV item count too small: ${Object.keys(monthlyNavItems).length}`);
 assert(ageHours(monthlyNavPayload?.updatedAt) <= 96, `monthly_nav.json too old: ${monthlyNavPayload?.updatedAt}`);
+assert(navHistoryIndex?.updatedAt === monthlyNavPayload?.updatedAt, "NAV history index is not from the current cache");
+assert(
+  JSON.stringify(navHistoryIndex?.ids) === JSON.stringify(Object.keys(monthlyNavItems).sort()),
+  "NAV history index does not match monthly_nav.json"
+);
+for (const period of ["month", "week", "day"]) {
+  assert(Array.isArray(navHistoryIndex?.calendar?.[period]) && navHistoryIndex.calendar[period].length > 0,
+    `NAV history ${period} calendar is empty`);
+}
 const monthlyYuantaA = monthlyNavItems.ACYT161;
 assert(Boolean(monthlyYuantaA), "monthly_nav missing ACYT161");
 if (monthlyYuantaA) {
+  const publishedYuantaA = readJson("data/nav_history/ACYT161.json");
+  assert(JSON.stringify(publishedYuantaA) === JSON.stringify(monthlyYuantaA), "ACYT161 per-fund NAV differs from cache");
   assert(Array.isArray(monthlyYuantaA.months) && monthlyYuantaA.months.length >= 3, "ACYT161 monthly NAV has too few months");
   assert(Array.isArray(monthlyYuantaA.weeks) && monthlyYuantaA.weeks.length >= 8, "ACYT161 weekly NAV has too few weeks");
   assert(Array.isArray(monthlyYuantaA.days) && monthlyYuantaA.days.length >= 10, "ACYT161 daily NAV has too few days");

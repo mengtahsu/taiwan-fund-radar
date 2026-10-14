@@ -155,6 +155,11 @@ let monthlyNavMeta = {
   updatedAt: null,
   items: {}
 };
+let monthlyNavIndex = null;
+let monthlyNavIndexPromise = null;
+let monthlyNavLoadPromise = null;
+let monthlyNavLoadedIds = new Set();
+let monthlyNavLoadFailed = false;
 
 const DISPLAY_LIMIT = 50;
 const PERIOD_DISPLAY_LIMIT = 6;
@@ -1306,6 +1311,9 @@ function periodKeyFromDate(value, periodType) {
 }
 
 function portfolioPeriodCalendar(periodType) {
+  if (monthlyNavIndex?.updatedAt === monthlyNavMeta.updatedAt && Array.isArray(monthlyNavIndex.calendar?.[periodType])) {
+    return monthlyNavIndex.calendar[periodType];
+  }
   const sourceKey = periodType === "day" ? "days" : periodType === "week" ? "weeks" : "months";
   const rowsByPeriod = new Map();
   Object.values(monthlyNavMeta.items || {}).forEach((navItem) => {
@@ -1952,7 +1960,7 @@ function portfolioPurchaseFingerprint() {
 }
 
 function portfolioSnapshotSource() {
-  const dataSource = monthlyNavMeta.updatedAt || sourceMeta.updatedAt || "no-source-time";
+  const dataSource = monthlyNavMeta.updatedAt || monthlyNavIndex?.updatedAt || sourceMeta.updatedAt || "no-source-time";
   return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}`;
 }
 
@@ -2164,8 +2172,8 @@ async function rebuildPortfolioSnapshots() {
   if (!db || !currentUser || !portfolioPeriodSnapshots.supported || !purchases.length) {
     return;
   }
-  if (!monthlyNavMeta.updatedAt) {
-    await loadMonthlyNavData();
+  if (!(await loadMonthlyNavData())) {
+    return;
   }
   const summary = portfolioSummary({ includePeriods: true });
   setPortfolioDailyCapital([...summary.days.values()], portfolioSnapshotSource());
@@ -3058,22 +3066,23 @@ function bindPortfolioPeriodButtons() {
 }
 
 function renderPortfolioPeriodPlaceholder() {
+  const status = monthlyNavLoadFailed ? "歷史淨值暫時無法載入，原有快照未更動。" : "讀取中...";
   return `
     <div class="yearly-breakdown period-loading">
       <h4>每年賺賠</h4>
-      <p>讀取中...</p>
+      <p>${status}</p>
     </div>
     <div class="monthly-breakdown period-loading">
       <h4>每月賺賠</h4>
-      <p>讀取中...</p>
+      <p>${status}</p>
     </div>
     <div class="weekly-breakdown period-loading">
       <h4>每週賺賠</h4>
-      <p>讀取中...</p>
+      <p>${status}</p>
     </div>
     <div class="daily-breakdown period-loading">
       <h4>每天賺賠</h4>
-      <p>讀取中...</p>
+      <p>${status}</p>
     </div>
   `;
 }
@@ -3231,7 +3240,7 @@ function applyPendingPurchaseFund() {
 }
 
 function portfolioPeriodsReady() {
-  return Boolean(monthlyNavMeta.updatedAt) && !portfolioPeriodsLoading;
+  return monthlyNavHistoryReady() && !portfolioPeriodsLoading;
 }
 
 async function loadPortfolioPeriodsInBackground(options = {}) {
@@ -3401,6 +3410,9 @@ async function loadPurchases(options = {}) {
     renderPurchases({ includePeriods: false });
   }
   void loadPortfolioPeriodsInBackground({ render: options.render });
+  if (isPortfolioView && options.requestNavHistory !== false) {
+    void loadMonthlyNavData();
+  }
 }
 
 async function requestOwnedFundNavHistory() {
@@ -3548,29 +3560,143 @@ async function refreshOwnedFundNavFromFunction() {
   }
 }
 
-async function loadMonthlyNavData() {
+function monthlyNavHistoryIds() {
+  const ids = new Set();
+  purchases.forEach((item) => {
+    if (String(item.fund_id || "").startsWith("manual:")) {
+      return;
+    }
+    for (const id of [moneyDjFundId(item.fund_id), moneyDjFundId(currentFundForPurchase(item)?.fundId)]) {
+      if (id) {
+        ids.add(id);
+      }
+    }
+  });
+  return [...ids];
+}
+
+function monthlyNavHistoryReady() {
+  if (monthlyNavLoadFailed || !monthlyNavMeta.updatedAt ||
+      (monthlyNavIndex && monthlyNavMeta.updatedAt !== monthlyNavIndex.updatedAt)) {
+    return false;
+  }
+  const available = new Set(monthlyNavIndex?.ids || Object.keys(monthlyNavMeta.items || {}));
+  return monthlyNavHistoryIds().every((id) => !available.has(id) || monthlyNavLoadedIds.has(id));
+}
+
+async function loadMonthlyNavIndex(force = false) {
+  if (!force && monthlyNavIndex) {
+    return monthlyNavIndex;
+  }
+  if (monthlyNavIndexPromise) {
+    const pending = await monthlyNavIndexPromise;
+    if (!force) {
+      return pending;
+    }
+  }
+  const request = (async () => {
+    try {
+      const response = await fetch("data/nav_history/index.json", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("找不到淨值索引。");
+      }
+      const payload = await response.json();
+      if (!payload.updatedAt || !Array.isArray(payload.ids) || !["month", "week", "day"].every(
+        (period) => Array.isArray(payload.calendar?.[period])
+      )) {
+        throw new Error("淨值索引格式不正確。");
+      }
+      monthlyNavIndex = payload;
+      renderTwiiTrendChart();
+      return payload;
+    } catch (_error) {
+      return null;
+    }
+  })();
+  monthlyNavIndexPromise = request;
   try {
+    return await request;
+  } finally {
+    if (monthlyNavIndexPromise === request) {
+      monthlyNavIndexPromise = null;
+    }
+  }
+}
+
+async function fetchMonthlyNavData(force) {
+  const index = await loadMonthlyNavIndex(force);
+  let payload;
+  if (index) {
+    try {
+      const available = new Set(index.ids);
+      const ids = monthlyNavHistoryIds().filter((id) => available.has(id));
+      const reuse = !force && !monthlyNavLoadFailed && monthlyNavMeta.updatedAt === index.updatedAt;
+      const items = reuse ? { ...monthlyNavMeta.items } : {};
+      const missingIds = ids.filter((id) => !reuse || !monthlyNavLoadedIds.has(id));
+      const fetched = await Promise.all(missingIds.map(async (id) => {
+        const response = await fetch(`data/nav_history/${id}.json?v=${encodeURIComponent(index.updatedAt)}`, {
+          cache: force ? "no-store" : "default"
+        });
+        if (!response.ok) {
+          throw new Error(`找不到 ${id} 的歷史淨值。`);
+        }
+        const item = await response.json();
+        if (String(item?.fundId || "") !== id) {
+          throw new Error(`${id} 的歷史淨值資料不相符。`);
+        }
+        return [id, item];
+      }));
+      fetched.forEach(([id, item]) => { items[id] = item; });
+      payload = { source: index.source, updatedAt: index.updatedAt, items };
+      monthlyNavLoadedIds = new Set(ids);
+    } catch (_error) {
+      payload = null;
+    }
+  }
+  if (!payload) {
     const response = await fetch("data/monthly_nav.json", { cache: "no-store" });
     if (!response.ok) {
-      throw new Error("找不到月底淨值資料。");
+      throw new Error("找不到歷史淨值資料。");
     }
-    const payload = await response.json();
-    monthlyNavMeta = {
-      source: payload.source || "月底淨值資料",
-      updatedAt: payload.updatedAt || null,
-      items: payload.items || {}
-    };
-  } catch (error) {
-    monthlyNavMeta = {
-      source: "月底淨值未載入",
-      updatedAt: null,
-      items: {}
-    };
+    payload = await response.json();
+    if (!payload.updatedAt || !payload.items || (index && payload.updatedAt !== index.updatedAt)) {
+      throw new Error("歷史淨值資料版本不一致。");
+    }
+    monthlyNavLoadedIds = new Set(Object.keys(payload.items));
+  }
+  monthlyNavMeta = {
+    source: payload.source || "歷史淨值資料",
+    updatedAt: payload.updatedAt,
+    items: payload.items
+  };
+  monthlyNavLoadFailed = false;
+  if (fundDataLoaded) {
+    applyLocalNavOverridesToFunds();
+  }
+  renderPurchases();
+  return true;
+}
+
+async function loadMonthlyNavData(options = {}) {
+  const force = options.force === true;
+  while (monthlyNavLoadPromise) {
+    await monthlyNavLoadPromise;
+  }
+  if (!force && monthlyNavHistoryReady()) {
+    return true;
+  }
+  const request = fetchMonthlyNavData(force).catch(() => {
+    monthlyNavLoadFailed = true;
+    renderPurchases({ includePeriods: false });
+    return false;
+  });
+  monthlyNavLoadPromise = request;
+  try {
+    return await request;
   } finally {
-    if (fundDataLoaded) {
-      applyLocalNavOverridesToFunds();
+    if (monthlyNavLoadPromise === request) {
+      monthlyNavLoadPromise = null;
     }
-    renderPurchases();
   }
 }
 
@@ -3595,7 +3721,7 @@ async function refreshPurchaseValues() {
     const requestedCount = await requestOwnedFundNavHistory();
     const beforeSnapshot = purchaseNavSnapshot();
     await fetchLatestFundValues();
-    await loadMonthlyNavData();
+    await loadMonthlyNavData({ force: true });
     const instantRefresh = await refreshOwnedFundNavFromFunction();
     renderPurchases();
     const changedCount = changedPurchaseNavCount(beforeSnapshot);
@@ -4495,6 +4621,9 @@ async function loadLatestData() {
     syncLabels();
     renderFunds();
     renderPurchases();
+    if (isPortfolioView && purchases.length) {
+      void loadMonthlyNavData();
+    }
   }
 }
 
@@ -4633,7 +4762,7 @@ document.querySelectorAll("[data-margin-window]").forEach((button) => {
 initAuth();
 initTwiiTrendInteraction();
 loadLatestData();
-loadMonthlyNavData();
+void loadMonthlyNavIndex();
 loadMarketData();
 loadMarginData();
 loadTwiiTrendData();
