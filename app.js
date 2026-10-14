@@ -1450,20 +1450,24 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
 
   let previousNav = buyNav;
   let previousPeriod = periodFromDate(buyDate);
-  let hasBaseline = periodType !== "day";
   let hasGap = false;
   const rowsByPeriod = new Map();
+  if (periodType === "day" && !points.some((point) => point.date === buyDate)) {
+    rowsByPeriod.set(buyDate, {
+      period: buyDate,
+      date: buyDate,
+      profit: 0,
+      invested: amount,
+      value: amount,
+      startNav: buyNav,
+      endNav: buyNav,
+      valued: 1
+    });
+  }
   points
     .sort((a, b) => String(a.date).localeCompare(String(b.date)))
     .forEach((point) => {
       const isSalePoint = isSold && point.period === sellPeriod && point.date === sellDate;
-      if (!hasBaseline && !isSalePoint && point.date > buyDate) {
-        previousNav = point.nav;
-        previousPeriod = point.period;
-        hasBaseline = true;
-        return;
-      }
-      hasBaseline = true;
       if (!periodsAreContinuous(previousPeriod, point.period, periodType)) {
         hasGap = true;
         if (!isSalePoint) {
