@@ -1429,6 +1429,18 @@ textarea {
   font-weight: 900;
 }
 
+.cash-adjustment-date,
+.cash-adjustment-difference {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cash-adjustment-difference {
+  color: var(--accent-dark);
+}
+
 .period-modal-close {
   position: absolute;
   top: 10px;

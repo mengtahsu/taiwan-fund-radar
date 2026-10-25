@@ -195,6 +195,7 @@ let currentUser = null;
 let purchases = [];
 let recurringPlans = [];
 let recurringEvents = [];
+let cashAdjustments = [];
 let recurringPlansSupported = true;
 let recurringAutoSupported = true;
 let recurringSyncPromise = null;
@@ -1336,9 +1337,25 @@ function periodKeyFromDate(value, periodType) {
   return periodType === "week" ? weekKeyFromDate(value) : monthKeyFromDate(value);
 }
 
+function cashAdjustmentCarryDates(periodType) {
+  const dates = [...new Set(cashAdjustments.map((row) => row.effective_date))];
+  if (periodType !== "day") return dates;
+  return [...new Set(dates.flatMap((date) => [
+    new Date(Date.parse(`${date}T00:00:00Z`) - 86400000).toISOString().slice(0, 10),
+    date
+  ]))];
+}
+
 function portfolioPeriodCalendar(periodType) {
+  const adjustmentDates = periodType === "day" ? cashAdjustmentCarryDates("day") : [];
+  const withAdjustmentDates = (rows) => {
+    if (!adjustmentDates.length) return rows;
+    const byDate = new Map(rows.map((row) => [row.date, row]));
+    adjustmentDates.forEach((date) => byDate.set(date, { period: date, date }));
+    return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+  };
   if (monthlyNavIndex?.updatedAt === monthlyNavMeta.updatedAt && Array.isArray(monthlyNavIndex.calendar?.[periodType])) {
-    return monthlyNavIndex.calendar[periodType];
+    return withAdjustmentDates(monthlyNavIndex.calendar[periodType]);
   }
   const sourceKey = periodType === "day" ? "days" : periodType === "week" ? "weeks" : "months";
   const rowsByPeriod = new Map();
@@ -1355,7 +1372,7 @@ function portfolioPeriodCalendar(periodType) {
       }
     });
   });
-  return [...rowsByPeriod.values()].sort((a, b) => a.date.localeCompare(b.date));
+  return withAdjustmentDates([...rowsByPeriod.values()].sort((a, b) => a.date.localeCompare(b.date)));
 }
 
 function cashDeductionsForSource(item) {
@@ -1370,7 +1387,10 @@ function cashBalanceAt(item, date = todayInputValue()) {
   const spent = cashDeductionsForSource(item)
     .filter((purchase) => cashDeductionDate(purchase) <= date)
     .reduce((sum, purchase) => sum + (Number(purchase.amount) || 0), 0);
-  return Math.max(0, (Number(item.amount) || 0) - spent);
+  const changed = cashAdjustments
+    .filter((row) => row.cash_purchase_id === item.id && row.effective_date <= date)
+    .reduce((sum, row) => sum + (Number(row.delta) || 0), 0);
+  return Math.max(0, (Number(item.amount) || 0) + changed - spent);
 }
 
 function isCashSource(item) {
@@ -1389,25 +1409,16 @@ function manualProfitRowsForPurchase(item, periodType, calendarRows) {
   const isSold = /^\d{4}-\d{2}-\d{2}$/.test(sellDate);
   const isCash = isCashSource(item);
   const rowsByPeriod = new Map();
-  const transfers = isCash ? cashDeductionsForSource(item).sort((a, b) => cashDeductionDate(a).localeCompare(cashDeductionDate(b))) : [];
-  let transferIndex = 0;
-  let remaining = amount;
-  const balanceOn = (date) => {
-    while (transferIndex < transfers.length && cashDeductionDate(transfers[transferIndex]) <= date) {
-      remaining -= Number(transfers[transferIndex].amount) || 0;
-      transferIndex += 1;
-    }
-    return Math.max(0, remaining);
-  };
-  const transferPoints = transfers.map((purchase) => ({
-    period: periodKeyFromDate(cashDeductionDate(purchase), periodType),
-    date: cashDeductionDate(purchase)
-  }));
+  const transferDates = isCash ? [
+    ...cashDeductionsForSource(item).map(cashDeductionDate),
+    ...cashAdjustments.filter((row) => row.cash_purchase_id === item.id).map((row) => row.effective_date)
+  ] : [];
+  const transferPoints = transferDates.map((date) => ({ period: periodKeyFromDate(date, periodType), date }));
   [...(calendarRows || []), ...transferPoints]
     .filter((point) => point.date >= buyDate && (!isSold || point.date < sellDate))
     .sort((a, b) => a.date.localeCompare(b.date))
     .forEach((point) => {
-      const balance = isCash ? balanceOn(point.date) : amount;
+      const balance = isCash ? cashBalanceAt(item, point.date) : amount;
       const previous = rowsByPeriod.get(point.period);
       if (previous && previous.date >= point.date) {
         return;
@@ -1533,6 +1544,20 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
       date: row.date,
       nav: Number(row.nav)
     }));
+
+  if (cashAdjustments.length) {
+    const navDays = [...(navItem?.days || [])]
+      .filter((row) => Number(row.nav) > 0 && row.date >= buyDate)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    const adjustmentDates = cashAdjustmentCarryDates(periodType);
+    adjustmentDates.forEach((date) => {
+      const period = periodFromDate(date);
+      if (date < buyDate || (isSold && date >= sellDate) ||
+          points.some((point) => periodType === "day" ? point.date === date : point.period === period)) return;
+      const priorNav = navDays.filter((day) => day.date <= date).at(-1);
+      points.push({ period, date, nav: Number(priorNav?.nav) || buyNav });
+    });
+  }
 
   if (isSold && hasSellNav) {
     points.push({
@@ -2089,10 +2114,15 @@ function portfolioSummary(options = {}) {
 
 function portfolioPurchaseFingerprint() {
   const fields = ["id", "fund_id", "buy_date", "amount", "nav", "sell_date", "sell_nav", "sell_amount", "cash_source_id", "scheduled_date"];
-  const source = [...purchases]
+  const purchaseSource = [...purchases]
     .sort((a, b) => String(a.id || "").localeCompare(String(b.id || "")))
     .map((item) => fields.map((field) => String(item?.[field] ?? "")).join("\u001f"))
     .join("\u001e");
+  const adjustmentSource = [...cashAdjustments]
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)))
+    .map((row) => [row.id, row.cash_purchase_id, row.effective_date, row.delta].join("\u001f"))
+    .join("\u001e");
+  const source = `${purchaseSource}\u001d${adjustmentSource}`;
   let hash = 2166136261;
   for (let index = 0; index < source.length; index += 1) {
     hash ^= source.charCodeAt(index);
@@ -2104,7 +2134,7 @@ function portfolioPurchaseFingerprint() {
 function portfolioSnapshotSource() {
   const dataSource = monthlyNavMeta.updatedAt || monthlyNavIndex?.updatedAt || sourceMeta.updatedAt || "no-source-time";
   const manualVersion = purchases.some((item) => String(item.fund_id || "").startsWith("manual:"))
-    ? "|manual-buy:v3"
+    ? "|manual-buy:v4"
     : "";
   return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}`;
 }
@@ -3083,6 +3113,89 @@ function hideSellModal() {
   }
 }
 
+function ensureCashAdjustmentModal() {
+  let modal = document.querySelector("#cashAdjustmentModal");
+  if (modal) return modal;
+  modal = document.createElement("div");
+  modal.id = "cashAdjustmentModal";
+  modal.className = "period-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <form class="sell-modal-panel" role="dialog" aria-modal="true" aria-labelledby="cashAdjustmentTitle">
+      <button class="period-modal-close" type="button" aria-label="關閉">×</button>
+      <h3 id="cashAdjustmentTitle">調整資金</h3>
+      <p class="sell-modal-fund"></p>
+      <p class="cash-adjustment-date"></p>
+      <label>今天的餘額
+        <input class="cash-adjustment-balance" type="number" min="0" step="1" inputmode="decimal" required>
+      </label>
+      <p class="cash-adjustment-difference"></p>
+      <div class="button-row">
+        <button class="primary" type="submit">儲存餘額</button>
+        <button class="cash-adjustment-cancel" type="button">取消</button>
+      </div>
+      <p class="cash-adjustment-message form-message" role="status"></p>
+    </form>
+  `;
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.closest(".period-modal-close") || event.target.closest(".cash-adjustment-cancel")) {
+      modal.hidden = true;
+    }
+  });
+  modal.querySelector(".cash-adjustment-balance").addEventListener("input", () => {
+    const next = Number(modal.querySelector(".cash-adjustment-balance").value);
+    const difference = next - Number(modal.dataset.previousBalance);
+    modal.querySelector(".cash-adjustment-difference").textContent =
+      Number.isFinite(next) && next >= 0 ? `${difference < 0 ? "支出" : difference > 0 ? "存入" : "沒有變動"}${difference ? ` ${wholeMoneyNumber(Math.abs(difference))}` : ""}` : "";
+  });
+  modal.querySelector("form").addEventListener("submit", submitCashAdjustment);
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function showCashAdjustmentModal(id) {
+  const item = purchases.find((purchase) => purchase.id === id);
+  if (!item || !isCashSource(item) || item.sell_date) return;
+  const modal = ensureCashAdjustmentModal();
+  const balance = cashBalanceAt(item);
+  modal.dataset.purchaseId = id;
+  modal.dataset.previousBalance = String(balance);
+  modal.querySelector(".sell-modal-fund").textContent = item.fund_name;
+  modal.querySelector(".cash-adjustment-date").textContent = `${todayInputValue()} 台灣時間；不會改動過去日期的餘額`;
+  modal.querySelector(".cash-adjustment-balance").value = String(balance);
+  modal.querySelector(".cash-adjustment-difference").textContent = "沒有變動";
+  modal.querySelector(".cash-adjustment-message").textContent = "";
+  modal.hidden = false;
+  modal.querySelector(".cash-adjustment-balance").focus();
+}
+
+async function submitCashAdjustment(event) {
+  event.preventDefault();
+  const modal = ensureCashAdjustmentModal();
+  const balance = Number(modal.querySelector(".cash-adjustment-balance").value);
+  const message = modal.querySelector(".cash-adjustment-message");
+  if (!Number.isSafeInteger(balance) || balance < 0) {
+    setMessage(message, "請輸入不小於 0 的整數餘額。", true);
+    return;
+  }
+  const button = modal.querySelector('button[type="submit"]');
+  button.disabled = true;
+  const { error } = await db.rpc("set_cash_balance", {
+    p_cash_purchase_id: modal.dataset.purchaseId,
+    p_target_balance: balance
+  });
+  button.disabled = false;
+  if (error) {
+    setMessage(message, `儲存失敗：${error.message}`, true);
+    return;
+  }
+  modal.hidden = true;
+  setMessage(els.purchaseMessage, `資金餘額已記錄為 ${wholeMoneyNumber(balance)}；過去的本金不變。`);
+  markPortfolioSnapshotsDirty();
+  await loadPurchases();
+  await rebuildPortfolioSnapshots();
+}
+
 async function submitSellModal(event) {
   event.preventDefault();
   const modal = ensureSellModal();
@@ -3468,12 +3581,14 @@ function renderPurchases(options = {}) {
           ${item.recurring_plan_id ? `<span class="purchase-plan-tag">${isPending ? "定期定額待淨值" : item.cash_source_id ? "定期定額估算" : "定期定額"}</span>` : ""}
           <p>${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${isPending ? "待公布" : moneyNumber(item.nav)}</p>
           <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
+          ${isCashSource(item) && !valuation.isSold ? `<p>目前餘額 ${wholeMoneyNumber(cashBalanceAt(item))}</p>` : ""}
           ${valuation.isSold || isPending ? "" : renderFundBoxTrigger(item)}
           ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
         </div>
         <div class="purchase-actions">
-          <button type="button" data-edit-purchase="${escapeHtml(item.id)}">編輯</button>
-          ${isPending ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>`}
+          ${isCashSource(item) && !valuation.isSold ? `<button class="primary" type="button" data-adjust-cash="${escapeHtml(item.id)}">調整資金</button>` : ""}
+          <button type="button" data-edit-purchase="${escapeHtml(item.id)}">${isCashSource(item) ? cashAdjustments.some((row) => row.cash_purchase_id === item.id) ? "編輯備註" : "編輯原始" : "編輯"}</button>
+          ${isPending || (isCashSource(item) && cashAdjustments.some((row) => row.cash_purchase_id === item.id)) ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>`}
           ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
           <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
         </div>
@@ -3504,6 +3619,9 @@ function renderPurchases(options = {}) {
   document.querySelectorAll("[data-edit-purchase]").forEach((button) => {
     button.addEventListener("click", () => editPurchase(button.dataset.editPurchase));
   });
+  document.querySelectorAll("[data-adjust-cash]").forEach((button) => {
+    button.addEventListener("click", () => showCashAdjustmentModal(button.dataset.adjustCash));
+  });
   document.querySelectorAll("[data-sell-purchase]").forEach((button) => {
     button.addEventListener("click", () => markPurchaseSold(button.dataset.sellPurchase));
   });
@@ -3518,6 +3636,7 @@ function renderPurchases(options = {}) {
 async function loadPurchases(options = {}) {
   if (!db || !currentUser) {
     purchases = [];
+    cashAdjustments = [];
     recurringPlans = [];
     fundTrailingBoxes = new Map();
     resetPortfolioSnapshots();
@@ -3564,6 +3683,28 @@ async function loadPurchases(options = {}) {
     return;
   }
   await trailingBoxesPromise;
+  const adjustments = [];
+  for (let offset = 0; ; offset += 1000) {
+    const result = await db.from("cash_balance_adjustments")
+      .select("id,cash_purchase_id,effective_date,delta")
+      .eq("user_id", currentUser.id)
+      .order("effective_date", { ascending: true })
+      .order("id", { ascending: true })
+      .range(offset, offset + 999);
+    if (result.error) {
+      purchases = [];
+      cashAdjustments = [];
+      setMessage(els.purchaseMessage, `資金調整紀錄讀取失敗：${result.error.message}`, true);
+      if (options.render !== false) {
+        els.portfolioStats.innerHTML = "";
+        els.purchaseList.innerHTML = '<div class="empty">資金紀錄讀取失敗，請稍後重試。</div>';
+      }
+      return;
+    }
+    adjustments.push(...(result.data || []));
+    if ((result.data || []).length < 1000) break;
+  }
+  cashAdjustments = adjustments;
   purchases = data || [];
   renderRecurringFundOptions();
   renderRecurringCashSources();
@@ -4476,6 +4617,17 @@ async function editPurchase(id) {
   }
   const item = purchases.find((purchase) => purchase.id === id);
   if (!item) {
+    return;
+  }
+  if (isCashSource(item) && cashAdjustments.some((row) => row.cash_purchase_id === id)) {
+    const note = window.prompt("備註，可留空", item.note || "");
+    if (note === null) return;
+    const { error } = await db.from("fund_purchases").update({ note: note.trim() || null }).eq("id", id);
+    if (error) {
+      setMessage(els.purchaseMessage, `更新失敗：${error.message}`, true);
+      return;
+    }
+    await loadPurchases();
     return;
   }
   const isManualFund = String(item.fund_id || "").startsWith("manual:");

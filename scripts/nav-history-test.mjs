@@ -35,6 +35,7 @@ try {
   let blockFund = "";
   const context = {
     purchases: [{ fund_id: "ACJS06" }],
+    cashAdjustments: [],
     recurringPlans: [],
     monthlyNavMeta: { source: "not loaded", updatedAt: null, items: {} },
     monthlyNavIndex: null,
@@ -61,7 +62,7 @@ try {
   };
   vm.createContext(context);
   vm.runInContext(source.slice(start, end), context);
-  const calendarStart = source.indexOf("function portfolioPeriodCalendar(");
+  const calendarStart = source.indexOf("function cashAdjustmentCarryDates(");
   const calendarEnd = source.indexOf("function manualProfitRowsForPurchase(", calendarStart);
   assert(calendarStart >= 0 && calendarEnd > calendarStart);
   vm.runInContext(source.slice(calendarStart, calendarEnd), context);

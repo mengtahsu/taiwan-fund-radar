@@ -3,6 +3,7 @@ import fs from "node:fs";
 const failures = [];
 const appSource = fs.readFileSync("app.js", "utf8");
 const recurringAutoSql = fs.readFileSync("supabase-recurring-auto-debits.sql", "utf8");
+const cashAdjustmentSql = fs.readFileSync("supabase-cash-balance-adjustments.sql", "utf8");
 
 function fail(message) {
   failures.push(message);
@@ -293,7 +294,7 @@ const manualPeriodSource = [
   extractNamedFunction(appSource, "isCashSource"),
   extractNamedFunction(appSource, "manualProfitRowsForPurchase")
 ].join("\n");
-const manualProfitRowsForPurchase = Function(`const purchases = []; ${manualPeriodSource}; return manualProfitRowsForPurchase;`)();
+const manualProfitRowsForPurchase = Function(`const purchases = []; const cashAdjustments = []; ${manualPeriodSource}; return manualProfitRowsForPurchase;`)();
 const manualPurchase = {
   fund_id: "manual:資金",
   fund_name: "資金",
@@ -455,6 +456,13 @@ assert(recurringAutoSql.includes("function public.start_recurring_deduction") &&
   recurringAutoSql.includes("function public.settle_recurring_deduction") &&
   recurringAutoSql.includes("primary key (user_id, plan_id, scheduled_date)"),
   "database must atomically post and deduplicate recurring cash transfers");
+assert(cashAdjustmentSql.includes("security definer") &&
+  cashAdjustmentSql.includes("function public.set_cash_balance") &&
+  cashAdjustmentSql.includes("enable row level security") &&
+  cashAdjustmentSql.includes("revoke insert, update, delete on public.cash_balance_adjustments from authenticated"),
+  "cash adjustments must be recorded through a protected balance-setting RPC");
+assert(appSource.includes('db.rpc("set_cash_balance"') && appSource.includes("cashAdjustmentCarryDates"),
+  "cash balance changes must update historical portfolio periods");
 assert(appSource.indexOf("await loadMonthlyNavData();") < appSource.indexOf("const instantRefresh = await refreshOwnedFundNavFromFunction();"), "refresh flow should load monthly NAV history before applying instant NAV override");
 assert(appSource.includes("DAILY_PERIOD_DISPLAY_LIMIT = 6"), "daily profit should show at most 6 days");
 assert(appSource.includes("每天賺賠"), "portfolio stats should render daily profit");

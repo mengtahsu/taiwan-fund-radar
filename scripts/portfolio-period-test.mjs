@@ -28,7 +28,7 @@ function extractFunction(name) {
 
 const names = [
   "monthKeyFromDate", "weekKeyFromDate", "dayKeyFromDate", "periodKeyFromDate",
-  "portfolioPeriodCalendar", "cashDeductionsForSource", "cashDeductionDate", "cashBalanceAt", "isCashSource",
+  "cashAdjustmentCarryDates", "portfolioPeriodCalendar", "cashDeductionsForSource", "cashDeductionDate", "cashBalanceAt", "isCashSource",
   "manualProfitRowsForPurchase", "periodIndex",
   "periodsAreContinuous", "periodProfitRowsForPurchase", "monthlyProfitRowsForPurchase",
   "weeklyProfitRowsForPurchase", "dailyProfitRowsForPurchase", "annualProfitMapFromMonths",
@@ -60,6 +60,7 @@ const navItem = {
 };
 const context = {
   purchases: [purchase],
+  cashAdjustments: [],
   monthlyNavMeta: { updatedAt: "2026-10-13T23:35:58Z", items: { ACJS06: navItem } },
   monthlyNavIndex: null,
   sourceMeta: { updatedAt: "2026-10-13T23:35:58Z" },
@@ -134,7 +135,7 @@ context.purchases = [
 ];
 context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : originalFundLookup(item);
 const cashReplacement = context.portfolioSummary();
-assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v3$/);
+assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v4$/);
 const replacementDay = cashReplacement.days.get("2026-10-14");
 assert.equal(replacementDay?.invested, 1014000);
 assert.equal(replacementDay?.details.find((detail) => detail.name === "資金1014")?.invested, 1014000);
@@ -145,6 +146,61 @@ context.currentFundForPurchase = originalFundLookup;
 
 const originalNavMeta = context.monthlyNavMeta;
 const originalNavIndex = context.monthlyNavIndex;
+context.purchases = [
+  { id: "cash-balance", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-30", amount: 300000, nav: 100 },
+  { id: "held-fund", fund_id: "ACJS06", fund_name: "富邦精選五虎基金", buy_date: "2026-10-31", amount: 50000, nav: 200 }
+];
+context.cashAdjustments = [
+  { id: "cash-spend", cash_purchase_id: "cash-balance", effective_date: "2026-11-01", delta: -20000 },
+  { id: "cash-deposit", cash_purchase_id: "cash-balance", effective_date: "2026-11-02", delta: 10000 }
+];
+context.todayInputValue = () => "2026-11-02";
+context.monthlyNavMeta = {
+  updatedAt: "2026-11-02T08:00:00Z",
+  items: { ACJS06: {
+    days: [{ day: "2026-10-31", date: "2026-10-31", nav: 200 }],
+    weeks: [{ week: "2026-W44", date: "2026-10-31", nav: 200 }],
+    months: [{ month: "2026-10", date: "2026-10-31", nav: 200 }]
+  } }
+};
+context.monthlyNavIndex = {
+  updatedAt: context.monthlyNavMeta.updatedAt,
+  calendar: {
+    day: [{ period: "2026-10-31", date: "2026-10-31" }],
+    week: [{ period: "2026-W44", date: "2026-10-31" }],
+    month: [{ period: "2026-10", date: "2026-10-31" }]
+  }
+};
+context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : { nav: 200, navDate: "10/31" };
+const adjusted = context.portfolioSummary();
+assert.equal(context.cashBalanceAt(context.purchases[0], "2026-10-31"), 300000);
+assert.equal(context.cashBalanceAt(context.purchases[0], "2026-11-01"), 280000);
+assert.equal(context.cashBalanceAt(context.purchases[0], "2026-11-02"), 290000);
+assert.equal(adjusted.days.get("2026-10-31")?.invested, 350000);
+assert.equal(adjusted.days.get("2026-11-01")?.invested, 330000, "non-trading day retains the held fund");
+assert.equal(adjusted.days.get("2026-11-02")?.invested, 340000);
+assert.equal(adjusted.days.get("2026-11-01")?.profit, 0, "spending is not an investment loss");
+assert.equal(adjusted.weeks.get("2026-W44")?.invested, 330000);
+assert.equal(adjusted.weeks.get("2026-W45")?.invested, 340000);
+assert.equal(adjusted.months.get("2026-10")?.invested, 350000);
+assert.equal(adjusted.months.get("2026-11")?.invested, 340000);
+assert.equal(adjusted.invested, 340000);
+assert.equal(adjusted.currentValue, 340000);
+context.cashAdjustments.push({ id: "cash-spend-2", cash_purchase_id: "cash-balance", effective_date: "2026-11-05", delta: -1000 });
+context.todayInputValue = () => "2026-11-05";
+const nonTradingGap = context.portfolioSummary();
+assert.equal(nonTradingGap.days.get("2026-11-04")?.invested, 340000, "yesterday keeps the old balance without a NAV update");
+assert.equal(nonTradingGap.days.get("2026-11-05")?.invested, 339000);
+assert.equal(nonTradingGap.days.get("2026-11-05")?.profit, 0);
+const adjustedFingerprint = context.portfolioPurchaseFingerprint();
+context.cashAdjustments = [];
+assert.notEqual(context.portfolioPurchaseFingerprint(), adjustedFingerprint, "cash adjustments invalidate snapshots");
+context.purchases = originalPurchases;
+context.todayInputValue = () => "2026-10-25";
+context.monthlyNavMeta = originalNavMeta;
+context.monthlyNavIndex = originalNavIndex;
+context.currentFundForPurchase = originalFundLookup;
+
 context.purchases = [
   { id: "cash-30", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-20", amount: 300000, nav: 100 },
   { id: "auto-20", fund_id: "ACJS06", fund_name: "富邦精選五虎基金", buy_date: "2026-10-25", amount: 20000, nav: 200,
