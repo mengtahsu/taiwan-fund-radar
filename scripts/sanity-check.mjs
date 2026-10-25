@@ -473,7 +473,7 @@ assert(appSource.includes('purchaseSortMode === "box"'), "active purchases shoul
 assert(appSource.includes("aPosition - bPosition"), "box-position sorting should put the lowest box position first");
 assert(appSource.includes("analysis.position !== null && analysis.position !== undefined"), "missing box positions must sort last instead of being coerced to zero");
 assert(appSource.includes("buildFundBoxStore(activePurchaseItems.filter(") &&
-  appSource.indexOf("buildFundBoxStore(activePurchaseItems.filter(") < appSource.indexOf("sortActivePurchases(activePurchaseItems)"),
+  appSource.indexOf("buildFundBoxStore(activePurchaseItems.filter(") < appSource.indexOf("sortActivePurchases(groupActiveRecurringPurchases(activePurchaseItems))"),
   "only active purchases with usable NAV should build fund boxes before sorting");
 assert(appSource.includes('renderPurchases({ includeStats: false })'), "changing purchase sort should not recalculate portfolio period statistics");
 assert(styleSource.includes(".purchase-sort button.active"), "purchase sort should have a clear selected state");
