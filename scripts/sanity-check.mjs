@@ -286,9 +286,12 @@ const manualPeriodSource = [
   extractNamedFunction(appSource, "weekKeyFromDate"),
   extractNamedFunction(appSource, "dayKeyFromDate"),
   extractNamedFunction(appSource, "periodKeyFromDate"),
+  extractNamedFunction(appSource, "cashDeductionsForSource"),
+  extractNamedFunction(appSource, "cashBalanceAt"),
+  extractNamedFunction(appSource, "isCashSource"),
   extractNamedFunction(appSource, "manualProfitRowsForPurchase")
 ].join("\n");
-const manualProfitRowsForPurchase = Function(`${manualPeriodSource}; return manualProfitRowsForPurchase;`)();
+const manualProfitRowsForPurchase = Function(`const purchases = []; ${manualPeriodSource}; return manualProfitRowsForPurchase;`)();
 const manualPurchase = {
   fund_id: "manual:資金",
   fund_name: "資金",
