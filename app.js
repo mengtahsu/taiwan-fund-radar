@@ -193,6 +193,8 @@ if (isPortfolioView) {
 
 let currentUser = null;
 let purchases = [];
+let recurringPlans = [];
+let recurringPlansSupported = true;
 let purchaseSortMode = "profit";
 let portfolioPeriodSnapshots = {
   loaded: false,
@@ -260,12 +262,25 @@ const els = {
   authMessage: document.querySelector("#authMessage"),
   purchaseForm: document.querySelector("#purchaseForm"),
   purchaseFundId: document.querySelector("#purchaseFundId"),
+  purchaseRecurringPlanId: document.querySelector("#purchaseRecurringPlanId"),
+  purchaseRecurringContext: document.querySelector("#purchaseRecurringContext"),
   purchaseFundName: document.querySelector("#purchaseFundName"),
   purchaseDate: document.querySelector("#purchaseDate"),
   purchaseAmount: document.querySelector("#purchaseAmount"),
   purchaseNav: document.querySelector("#purchaseNav"),
   purchaseNote: document.querySelector("#purchaseNote"),
   purchaseMessage: document.querySelector("#purchaseMessage"),
+  recurringPlanForm: document.querySelector("#recurringPlanForm"),
+  recurringPlanId: document.querySelector("#recurringPlanId"),
+  recurringFundName: document.querySelector("#recurringFundName"),
+  recurringFundOptions: document.querySelector("#recurringFundOptions"),
+  recurringAmount: document.querySelector("#recurringAmount"),
+  recurringDay: document.querySelector("#recurringDay"),
+  recurringStartDate: document.querySelector("#recurringStartDate"),
+  recurringMessage: document.querySelector("#recurringMessage"),
+  recurringPlanList: document.querySelector("#recurringPlanList"),
+  addRecurringPlan: document.querySelector("#addRecurringPlanBtn"),
+  cancelRecurringPlan: document.querySelector("#cancelRecurringPlanBtn"),
   portfolioStats: document.querySelector("#portfolioStats"),
   purchaseSort: document.querySelector("#purchaseSort"),
   purchaseList: document.querySelector("#purchaseList"),
@@ -835,7 +850,14 @@ function setMessage(element, text, isError = false) {
 }
 
 function todayInputValue() {
-  return new Date().toISOString().slice(0, 10);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
 }
 
 function moneyNumber(value) {
@@ -3221,6 +3243,7 @@ function setPurchaseFund(fund) {
     window.location.href = "?view=portfolio";
     return;
   }
+  clearRecurringPurchaseSelection();
   els.purchaseFundId.value = fundLookupKey(fund);
   els.purchaseFundName.value = fund.name;
   els.purchaseDate.value = els.purchaseDate.value || todayInputValue();
@@ -3242,6 +3265,7 @@ function applyPendingPurchaseFund() {
   window.sessionStorage.removeItem("pendingPurchaseFund");
   try {
     const fund = JSON.parse(raw);
+    clearRecurringPurchaseSelection();
     els.purchaseFundId.value = fund.fundId || "";
     els.purchaseFundName.value = fund.name || "";
     els.purchaseDate.value = els.purchaseDate.value || todayInputValue();
@@ -3331,6 +3355,7 @@ function renderPurchases(options = {}) {
             <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
             ${renderPurchaseScore(matchedFund)}
           </div>
+          ${item.recurring_plan_id ? '<span class="purchase-plan-tag">定期定額</span>' : ""}
           <p>${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${moneyNumber(item.nav)}</p>
           <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
           ${valuation.isSold ? "" : renderFundBoxTrigger(item)}
@@ -3383,26 +3408,37 @@ function renderPurchases(options = {}) {
 async function loadPurchases(options = {}) {
   if (!db || !currentUser) {
     purchases = [];
+    recurringPlans = [];
     fundTrailingBoxes = new Map();
     resetPortfolioSnapshots();
     renderTwiiTrendChart();
+    renderRecurringPlans();
     if (options.render !== false) {
       renderPurchases();
     }
     return;
   }
   const trailingBoxesPromise = loadFundTrailingBoxes();
-  let { data, error } = await db
-    .from("fund_purchases")
-    .select("id,fund_id,fund_name,buy_date,amount,nav,sell_date,sell_nav,sell_amount,note,created_at")
-    .order("buy_date", { ascending: false })
-    .order("created_at", { ascending: false });
-  if (error && /sell_/i.test(error.message || "")) {
+  let fields = "id,fund_id,fund_name,buy_date,amount,nav,sell_date,sell_nav,sell_amount,recurring_plan_id,note,created_at";
+  let data;
+  let error;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     ({ data, error } = await db
       .from("fund_purchases")
-      .select("id,fund_id,fund_name,buy_date,amount,nav,note,created_at")
+      .select(fields)
       .order("buy_date", { ascending: false })
       .order("created_at", { ascending: false }));
+    if (!error) {
+      break;
+    }
+    if (/recurring_plan_id/i.test(error.message || "") && fields.includes("recurring_plan_id")) {
+      recurringPlansSupported = false;
+      fields = fields.replace(",recurring_plan_id", "");
+    } else if (/sell_/i.test(error.message || "") && fields.includes("sell_date")) {
+      fields = fields.replace(",sell_date,sell_nav,sell_amount", "");
+    } else {
+      break;
+    }
   }
   if (error) {
     await trailingBoxesPromise;
@@ -3416,6 +3452,8 @@ async function loadPurchases(options = {}) {
   }
   await trailingBoxesPromise;
   purchases = data || [];
+  renderRecurringFundOptions();
+  renderRecurringPlans();
   cleanupInactiveFundTrailingBoxes(purchases.filter((item) => !item.sell_date));
   renderTwiiTrendChart();
   portfolioPeriodsLoading = true;
@@ -3758,6 +3796,253 @@ async function refreshPurchaseValues() {
   }
 }
 
+function recurringFundLabel(fund) {
+  return `${fund.name}｜${fund.fundId}`;
+}
+
+function recurringFundChoices() {
+  const choices = new Map();
+  [...funds, ...purchases.map((item) => ({ fundId: item.fund_id, name: item.fund_name }))].forEach((fund) => {
+    const fundId = String(fund.fundId || "").trim();
+    if (fundId && !fundId.startsWith("manual:") && fund.name && !choices.has(fundId)) {
+      choices.set(fundId, { fundId, name: fund.name });
+    }
+  });
+  return [...choices.values()].sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
+}
+
+function nextRecurringDebitDate(plan, today = todayInputValue()) {
+  const firstDate = String(plan.start_date || "").slice(0, 10);
+  const base = firstDate > today ? firstDate : today;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(base) || !Number.isInteger(Number(plan.debit_day))) {
+    return null;
+  }
+  const year = Number(base.slice(0, 4));
+  const month = Number(base.slice(5, 7)) - 1;
+  for (let offset = 0; offset < 2; offset += 1) {
+    const firstOfMonth = new Date(Date.UTC(year, month + offset, 1));
+    const candidateYear = firstOfMonth.getUTCFullYear();
+    const candidateMonth = firstOfMonth.getUTCMonth();
+    const lastDay = new Date(Date.UTC(candidateYear, candidateMonth + 1, 0)).getUTCDate();
+    const day = Math.min(Number(plan.debit_day), lastDay);
+    const date = `${candidateYear}-${String(candidateMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    if (date >= base) {
+      return date;
+    }
+  }
+  return null;
+}
+
+function renderRecurringPlans() {
+  if (!els.recurringPlanList) {
+    return;
+  }
+  els.addRecurringPlan.disabled = !currentUser || !recurringPlansSupported;
+  if (!currentUser) {
+    els.recurringPlanList.innerHTML = '<p class="recurring-note">登入後可查看定期定額計畫。</p>';
+    return;
+  }
+  if (!recurringPlansSupported) {
+    els.recurringPlanList.innerHTML = '<p class="recurring-note">定期定額資料表尚未啟用，原有買入紀錄不受影響。</p>';
+    return;
+  }
+  if (!recurringPlans.length) {
+    els.recurringPlanList.innerHTML = '<p class="recurring-note">尚未建立計畫。</p>';
+    return;
+  }
+  const ordered = [...recurringPlans].sort((a, b) => Number(a.paused) - Number(b.paused) || Number(a.debit_day) - Number(b.debit_day));
+  els.recurringPlanList.innerHTML = ordered.map((plan) => {
+    const records = purchases.filter((item) => item.recurring_plan_id === plan.id);
+    const latestRecord = records.reduce((latest, item) => item.buy_date > latest ? item.buy_date : latest, "");
+    const nextDate = plan.paused ? null : nextRecurringDebitDate(plan);
+    return `
+      <div class="recurring-plan-item${plan.paused ? " paused" : ""}">
+        <div>
+          <strong>${escapeHtml(plan.fund_name)}</strong>
+          <p>每月 ${escapeHtml(String(plan.debit_day))} 日 · ${twd(plan.monthly_amount)}${plan.paused ? " · 已暫停" : nextDate ? ` · 下次預定 ${escapeHtml(compactDate(nextDate))}` : ""}</p>
+          <p>已記錄 ${records.length} 筆${latestRecord ? ` · 最近 ${escapeHtml(compactDate(latestRecord))}` : ""}</p>
+        </div>
+        <div class="recurring-plan-actions">
+          <button class="primary" type="button" data-record-plan="${escapeHtml(plan.id)}">記錄扣款</button>
+          <button type="button" data-edit-plan="${escapeHtml(plan.id)}">編輯</button>
+          <button type="button" data-toggle-plan="${escapeHtml(plan.id)}">${plan.paused ? "恢復" : "暫停"}</button>
+          <button class="delete-plan" type="button" data-delete-plan="${escapeHtml(plan.id)}">刪除</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderRecurringFundOptions() {
+  if (els.recurringFundOptions) {
+    els.recurringFundOptions.innerHTML = recurringFundChoices()
+      .map((fund) => `<option value="${escapeHtml(recurringFundLabel(fund))}"></option>`)
+      .join("");
+  }
+}
+
+async function loadRecurringPlans() {
+  if (!db || !currentUser || !recurringPlansSupported) {
+    recurringPlans = [];
+    renderRecurringPlans();
+    return;
+  }
+  const userId = currentUser.id;
+  const { data, error } = await db.from("recurring_investment_plans")
+    .select("id,user_id,fund_id,fund_name,monthly_amount,debit_day,start_date,paused")
+    .eq("user_id", userId);
+  if (currentUser?.id !== userId) {
+    return;
+  }
+  if (error) {
+    recurringPlans = [];
+    recurringPlansSupported = false;
+    renderRecurringPlans();
+    setMessage(els.recurringMessage, "定期定額資料暫時無法讀取，請確認資料表已啟用。", true);
+    return;
+  }
+  recurringPlans = data || [];
+  renderRecurringPlans();
+}
+
+function closeRecurringPlanForm() {
+  els.recurringPlanForm.hidden = true;
+  els.recurringPlanForm.reset();
+  els.recurringPlanId.value = "";
+  els.recurringFundName.disabled = false;
+  els.recurringStartDate.value = todayInputValue();
+}
+
+function openRecurringPlanForm(planId = "") {
+  if (!currentUser || !recurringPlansSupported) {
+    return;
+  }
+  const plan = recurringPlans.find((item) => item.id === planId);
+  els.recurringPlanForm.hidden = false;
+  els.recurringPlanId.value = plan?.id || "";
+  els.recurringFundName.value = plan ? recurringFundLabel({ name: plan.fund_name, fundId: plan.fund_id }) : "";
+  els.recurringFundName.disabled = Boolean(plan && purchases.some((item) => item.recurring_plan_id === plan.id));
+  els.recurringAmount.value = plan?.monthly_amount || "";
+  els.recurringDay.value = plan?.debit_day || "";
+  els.recurringStartDate.value = plan?.start_date || todayInputValue();
+  setMessage(els.recurringMessage, "");
+  els.recurringFundName.disabled ? els.recurringAmount.focus() : els.recurringFundName.focus();
+}
+
+async function saveRecurringPlan(event) {
+  event.preventDefault();
+  if (!requireLogin() || !recurringPlansSupported) {
+    return;
+  }
+  const existing = recurringPlans.find((item) => item.id === els.recurringPlanId.value);
+  const enteredFund = els.recurringFundName.value.trim();
+  const selectedFund = recurringFundChoices().find((fund) => recurringFundLabel(fund) === enteredFund);
+  const fund = existing && enteredFund === recurringFundLabel({ name: existing.fund_name, fundId: existing.fund_id })
+    ? { fundId: existing.fund_id, name: existing.fund_name }
+    : selectedFund;
+  const amount = Number(els.recurringAmount.value);
+  const day = Number(els.recurringDay.value);
+  const startDate = els.recurringStartDate.value;
+  if (!fund || !moneyDjFundId(fund.fundId)) {
+    setMessage(els.recurringMessage, "請從基金候選清單選擇正確的基金。", true);
+    return;
+  }
+  if (!Number.isFinite(amount) || amount <= 0 || !Number.isInteger(day) || day < 1 || day > 31 || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+    setMessage(els.recurringMessage, "請確認每月金額、扣款日及開始日期。", true);
+    return;
+  }
+  if (existing && purchases.some((item) => item.recurring_plan_id === existing.id) && fund.fundId !== existing.fund_id) {
+    setMessage(els.recurringMessage, "已有扣款紀錄的計畫不能更換基金，請另建計畫。", true);
+    return;
+  }
+  if (recurringPlans.some((item) => item.id !== existing?.id && item.fund_id === fund.fundId && Number(item.debit_day) === day)) {
+    setMessage(els.recurringMessage, "同一基金與扣款日已有計畫。", true);
+    return;
+  }
+  const values = {
+    fund_id: fund.fundId,
+    fund_name: fund.name,
+    monthly_amount: amount,
+    debit_day: day,
+    start_date: startDate,
+    updated_at: new Date().toISOString()
+  };
+  const query = existing
+    ? db.from("recurring_investment_plans").update(values).eq("id", existing.id).eq("user_id", currentUser.id)
+    : db.from("recurring_investment_plans").insert({ ...values, user_id: currentUser.id });
+  const { error } = await query;
+  if (error) {
+    setMessage(els.recurringMessage, `儲存失敗：${error.message}`, true);
+    return;
+  }
+  closeRecurringPlanForm();
+  setMessage(els.recurringMessage, existing ? "計畫已更新。" : "計畫已建立，尚未計入本金。");
+  await loadRecurringPlans();
+}
+
+function recordRecurringPurchase(planId) {
+  const plan = recurringPlans.find((item) => item.id === planId);
+  if (!plan || !requireLogin()) {
+    return;
+  }
+  els.purchaseRecurringPlanId.value = plan.id;
+  els.purchaseFundId.value = plan.fund_id;
+  els.purchaseFundName.value = plan.fund_name;
+  els.purchaseDate.value = todayInputValue();
+  els.purchaseAmount.value = plan.monthly_amount;
+  els.purchaseNav.value = "";
+  els.purchaseNote.value = "";
+  els.purchaseRecurringContext.textContent = `定期定額：${plan.fund_name}。請填實際扣款日期與買入淨值。`;
+  els.purchaseRecurringContext.hidden = false;
+  setMessage(els.purchaseMessage, "");
+  document.querySelector(".purchase-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  els.purchaseDate.focus({ preventScroll: true });
+}
+
+async function toggleRecurringPlan(planId) {
+  const plan = recurringPlans.find((item) => item.id === planId);
+  if (!plan || !db || !currentUser) {
+    return;
+  }
+  const { error } = await db.from("recurring_investment_plans")
+    .update({ paused: !plan.paused, updated_at: new Date().toISOString() })
+    .eq("id", plan.id).eq("user_id", currentUser.id);
+  if (error) {
+    setMessage(els.recurringMessage, `更新失敗：${error.message}`, true);
+    return;
+  }
+  setMessage(els.recurringMessage, plan.paused ? "已恢復計畫。" : "已暫停計畫；既有買入不受影響。");
+  await loadRecurringPlans();
+}
+
+async function deleteRecurringPlan(planId) {
+  const plan = recurringPlans.find((item) => item.id === planId);
+  if (!plan || !db || !currentUser) {
+    return;
+  }
+  if (!window.confirm(`確定刪除「${plan.fund_name}」定期定額計畫？已記錄的買入會保留。`)) {
+    return;
+  }
+  const { error } = await db.from("recurring_investment_plans").delete()
+    .eq("id", plan.id).eq("user_id", currentUser.id);
+  if (error) {
+    setMessage(els.recurringMessage, `刪除失敗：${error.message}`, true);
+    return;
+  }
+  if (els.purchaseRecurringPlanId.value === plan.id) {
+    clearRecurringPurchaseSelection();
+  }
+  setMessage(els.recurringMessage, "已刪除計畫，歷史買入紀錄保留。");
+  await loadPurchases({ requestNavHistory: false });
+  await loadRecurringPlans();
+}
+
+function clearRecurringPurchaseSelection() {
+  els.purchaseRecurringPlanId.value = "";
+  els.purchaseRecurringContext.hidden = true;
+  els.purchaseRecurringContext.textContent = "";
+}
+
 async function savePurchase(event) {
   event.preventDefault();
   if (!requireLogin()) {
@@ -3768,6 +4053,8 @@ async function savePurchase(event) {
   const fundName = typedFundName;
   const amount = Number(els.purchaseAmount.value);
   const nav = els.purchaseNav.value ? Number(els.purchaseNav.value) : null;
+  const recurringPlanId = els.purchaseRecurringPlanId.value;
+  const recurringPlan = recurringPlans.find((plan) => plan.id === recurringPlanId);
   if (!fundId || !fundName) {
     setMessage(els.purchaseMessage, "請先選基金，或直接輸入基金名稱。", true);
     return;
@@ -3776,7 +4063,15 @@ async function savePurchase(event) {
     setMessage(els.purchaseMessage, "請填買入日期和買入金額。", true);
     return;
   }
-  const { error } = await db.from("fund_purchases").insert({
+  if (recurringPlanId && (!recurringPlan || recurringPlan.fund_id !== fundId)) {
+    setMessage(els.purchaseMessage, "定期定額計畫與基金不符，請重新選擇計畫。", true);
+    return;
+  }
+  if (recurringPlanId && (!Number.isFinite(nav) || nav <= 0 || els.purchaseDate.value > todayInputValue())) {
+    setMessage(els.purchaseMessage, "定期定額請填實際扣款日期（不可晚於今天）與買入淨值。", true);
+    return;
+  }
+  const values = {
     user_id: currentUser.id,
     fund_id: fundId,
     fund_name: fundName,
@@ -3784,13 +4079,18 @@ async function savePurchase(event) {
     amount,
     nav,
     note: els.purchaseNote.value.trim() || null
-  });
+  };
+  if (recurringPlanId) {
+    values.recurring_plan_id = recurringPlanId;
+  }
+  const { error } = await db.from("fund_purchases").insert(values);
   if (error) {
     setMessage(els.purchaseMessage, `儲存失敗：${error.message}`, true);
     return;
   }
   els.purchaseAmount.value = "";
   els.purchaseNote.value = "";
+  clearRecurringPurchaseSelection();
   setMessage(els.purchaseMessage, "已儲存。");
   markPortfolioSnapshotsDirty();
   await loadPurchases();
@@ -3950,13 +4250,19 @@ async function initAuth() {
   fundTrailingBoxesSupported = true;
   renderAuthState();
   await loadPurchases();
+  await loadRecurringPlans();
   db.auth.onAuthStateChange(async (_event, session) => {
     currentUser = session?.user || null;
+    recurringPlans = [];
+    recurringPlansSupported = true;
+    closeRecurringPlanForm();
+    clearRecurringPurchaseSelection();
     fundTrailingBoxesSupported = true;
     fundTrailingBoxes = new Map();
     renderAuthState();
     renderFunds();
     await loadPurchases();
+    await loadRecurringPlans();
   });
 }
 
@@ -4608,6 +4914,25 @@ els.signOut?.addEventListener("click", signOut);
 els.purchaseForm?.addEventListener("submit", savePurchase);
 els.purchaseFundName?.addEventListener("input", () => {
   els.purchaseFundId.value = "";
+  clearRecurringPurchaseSelection();
+});
+els.addRecurringPlan?.addEventListener("click", () => openRecurringPlanForm());
+els.cancelRecurringPlan?.addEventListener("click", closeRecurringPlanForm);
+els.recurringPlanForm?.addEventListener("submit", saveRecurringPlan);
+els.recurringPlanList?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-record-plan], button[data-edit-plan], button[data-toggle-plan], button[data-delete-plan]");
+  if (!button) {
+    return;
+  }
+  if (button.dataset.recordPlan) {
+    recordRecurringPurchase(button.dataset.recordPlan);
+  } else if (button.dataset.editPlan) {
+    openRecurringPlanForm(button.dataset.editPlan);
+  } else if (button.dataset.togglePlan) {
+    void toggleRecurringPlan(button.dataset.togglePlan);
+  } else if (button.dataset.deletePlan) {
+    void deleteRecurringPlan(button.dataset.deletePlan);
+  }
 });
 els.refreshPurchases?.addEventListener("click", refreshPurchaseValues);
 els.purchaseSort?.addEventListener("click", (event) => {
@@ -4621,6 +4946,9 @@ els.purchaseSort?.addEventListener("click", (event) => {
 });
 if (els.purchaseDate) {
   els.purchaseDate.value = todayInputValue();
+}
+if (els.recurringStartDate) {
+  els.recurringStartDate.value = todayInputValue();
 }
 applyPendingPurchaseFund();
 
@@ -4636,6 +4964,7 @@ async function loadLatestData() {
   } finally {
     syncLabels();
     renderFunds();
+    renderRecurringFundOptions();
     renderPurchases();
     if (isPortfolioView && purchases.length) {
       void loadMonthlyNavData();

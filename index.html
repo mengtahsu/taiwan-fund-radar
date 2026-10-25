@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20260819-4">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20261025-1">
   </head>
   <body>
     <header class="topbar">
@@ -227,6 +227,8 @@
             <h3>新增買入</h3>
             <form id="purchaseForm" class="purchase-form">
               <input id="purchaseFundId" type="hidden">
+              <input id="purchaseRecurringPlanId" type="hidden">
+              <p id="purchaseRecurringContext" class="recurring-context" hidden></p>
               <label>
                 基金
                 <input id="purchaseFundName" type="text" placeholder="從基金卡片帶入，或直接輸入基金名稱">
@@ -254,6 +256,44 @@
             <p id="purchaseMessage" class="form-message"></p>
           </section>
         </div>
+
+        <section class="recurring-panel" aria-labelledby="recurringTitle">
+          <div class="list-header">
+            <div>
+              <h3 id="recurringTitle">定期定額</h3>
+              <p class="recurring-note">實際扣款並記錄後，才計入本金。</p>
+            </div>
+            <button id="addRecurringPlanBtn" type="button">新增計畫</button>
+          </div>
+          <form id="recurringPlanForm" class="recurring-form" hidden>
+            <input id="recurringPlanId" type="hidden">
+            <label>
+              基金
+              <input id="recurringFundName" type="text" list="recurringFundOptions" autocomplete="off" placeholder="輸入基金名稱搜尋" required>
+              <datalist id="recurringFundOptions"></datalist>
+            </label>
+            <div class="recurring-form-grid">
+              <label>
+                每月金額
+                <input id="recurringAmount" type="number" min="1" step="1" inputmode="decimal" required>
+              </label>
+              <label>
+                扣款日
+                <input id="recurringDay" type="number" min="1" max="31" step="1" inputmode="numeric" required>
+              </label>
+              <label>
+                開始日期
+                <input id="recurringStartDate" type="date" required>
+              </label>
+            </div>
+            <div class="button-row">
+              <button class="primary" type="submit">儲存計畫</button>
+              <button id="cancelRecurringPlanBtn" type="button">取消</button>
+            </div>
+          </form>
+          <p id="recurringMessage" class="form-message" role="status"></p>
+          <div id="recurringPlanList" class="recurring-plan-list"></div>
+        </section>
 
         <section class="purchase-list-section" aria-label="我的買入紀錄">
           <div class="list-header">
@@ -284,6 +324,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="fund-box.js?v=tw-funds-20260924-1"></script>
-    <script src="app.js?v=tw-funds-20261014-03"></script>
+    <script src="app.js?v=tw-funds-20261025-1"></script>
   </body>
 </html>
