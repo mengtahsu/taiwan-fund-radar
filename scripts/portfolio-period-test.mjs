@@ -28,7 +28,8 @@ function extractFunction(name) {
 
 const names = [
   "monthKeyFromDate", "weekKeyFromDate", "dayKeyFromDate", "periodKeyFromDate",
-  "portfolioPeriodCalendar", "manualProfitRowsForPurchase", "periodIndex",
+  "portfolioPeriodCalendar", "cashDeductionsForSource", "cashBalanceAt", "isCashSource",
+  "manualProfitRowsForPurchase", "periodIndex",
   "periodsAreContinuous", "periodProfitRowsForPurchase", "monthlyProfitRowsForPurchase",
   "weeklyProfitRowsForPurchase", "dailyProfitRowsForPurchase", "annualProfitMapFromMonths",
   "monthlyNavForPurchase", "purchaseValuation", "portfolioSummary",
@@ -63,7 +64,10 @@ const context = {
   monthlyNavIndex: null,
   sourceMeta: { updatedAt: "2026-10-13T23:35:58Z" },
   currentFundForPurchase: () => ({ nav: 243.42, navDate: "10/13" }),
+  moneyDjFundId: (value) => value,
+  navDateComparableValue: (value) => Date.parse((String(value).length === 5 ? `2026-${String(value).replace("/", "-")}` : value) + "T00:00:00Z"),
   currentUser: { id: "test-user" },
+  todayInputValue: () => "2026-10-25",
   portfolioPeriodSnapshots: { supported: true },
   portfolioSnapshotsSaving: false,
   portfolioSnapshotsSaveQueued: false,
@@ -130,13 +134,56 @@ context.purchases = [
 ];
 context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : originalFundLookup(item);
 const cashReplacement = context.portfolioSummary();
-assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v2$/);
+assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v3$/);
 const replacementDay = cashReplacement.days.get("2026-10-14");
 assert.equal(replacementDay?.invested, 1014000);
 assert.equal(replacementDay?.details.find((detail) => detail.name === "資金1014")?.invested, 1014000);
 assert.equal(cashReplacement.weeks.get("2026-W42")?.invested, 1014000);
 assert.equal(cashReplacement.months.get("2026-10")?.invested, 1014000);
 context.purchases = originalPurchases;
+context.currentFundForPurchase = originalFundLookup;
+
+const originalNavMeta = context.monthlyNavMeta;
+const originalNavIndex = context.monthlyNavIndex;
+context.purchases = [
+  { id: "cash-30", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-20", amount: 300000, nav: 100 },
+  { id: "auto-20", fund_id: "ACJS06", fund_name: "富邦精選五虎基金", buy_date: "2026-10-25", amount: 20000, nav: 200,
+    cash_source_id: "cash-30", scheduled_date: "2026-10-25", recurring_plan_id: "plan-1" }
+];
+context.monthlyNavMeta = {
+  updatedAt: originalNavMeta.updatedAt,
+  items: { ACJS06: {
+    days: [{ day: "2026-10-25", date: "2026-10-25", nav: 200 }],
+    weeks: [{ week: "2026-W43", date: "2026-10-25", nav: 200 }],
+    months: [{ month: "2026-10", date: "2026-10-25", nav: 200 }]
+  } }
+};
+context.monthlyNavIndex = {
+  updatedAt: context.monthlyNavMeta.updatedAt,
+  calendar: {
+    day: [{ period: "2026-10-24", date: "2026-10-24" }, { period: "2026-10-25", date: "2026-10-25" }],
+    week: [{ period: "2026-W43", date: "2026-10-25" }],
+    month: [{ period: "2026-10", date: "2026-10-25" }]
+  }
+};
+context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : { nav: 200, navDate: "10/25" };
+const transferred = context.portfolioSummary();
+assert.equal(context.cashBalanceAt(context.purchases[0], "2026-10-24"), 300000);
+assert.equal(context.cashBalanceAt(context.purchases[0], "2026-10-25"), 280000);
+assert.equal(transferred.invested, 300000);
+assert.equal(transferred.currentValue, 300000);
+assert.equal(transferred.days.get("2026-10-24")?.invested, 300000);
+assert.equal(transferred.days.get("2026-10-25")?.invested, 300000);
+assert.equal(transferred.days.get("2026-10-25")?.details.find((row) => row.name === "資金")?.invested, 280000);
+assert.equal(transferred.weeks.get("2026-W43")?.invested, 300000);
+assert.equal(transferred.months.get("2026-10")?.invested, 300000);
+context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : { nav: 180, navDate: "10/24" };
+assert.equal(context.purchaseValuation(context.purchases[1]).currentValue, 20000, "published NAV beats stale fund card NAV");
+context.purchases.pop();
+assert.equal(context.cashBalanceAt(context.purchases[0]), 300000, "deleting the buy releases cash");
+context.purchases = originalPurchases;
+context.monthlyNavMeta = originalNavMeta;
+context.monthlyNavIndex = originalNavIndex;
 context.currentFundForPurchase = originalFundLookup;
 
 navItem.days.shift();

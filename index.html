@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20261025-1">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20261025-2">
   </head>
   <body>
     <header class="topbar">
@@ -261,7 +261,7 @@
           <div class="list-header">
             <div>
               <h3 id="recurringTitle">定期定額</h3>
-              <p class="recurring-note">實際扣款並記錄後，才計入本金。</p>
+              <p class="recurring-note">開啟頁面時依公開淨值補記估算扣款；不會向銀行下單。</p>
             </div>
             <button id="addRecurringPlanBtn" type="button">新增計畫</button>
           </div>
@@ -272,6 +272,10 @@
               <input id="recurringFundName" type="text" list="recurringFundOptions" autocomplete="off" placeholder="輸入基金名稱搜尋" required>
               <datalist id="recurringFundOptions"></datalist>
             </label>
+              <label>
+                扣款資金
+                <select id="recurringCashSource" required></select>
+              </label>
             <div class="recurring-form-grid">
               <label>
                 每月金額
@@ -324,6 +328,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="fund-box.js?v=tw-funds-20260924-1"></script>
-    <script src="app.js?v=tw-funds-20261025-1"></script>
+    <script src="app.js?v=tw-funds-20261025-2"></script>
   </body>
 </html>

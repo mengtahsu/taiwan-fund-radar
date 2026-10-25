@@ -47,6 +47,7 @@ const context = {
   db: { from: () => ({ insert: async (value) => { values.push(value); return { error: null }; } }) },
   requireLogin: () => true,
   setMessage: (_element, message) => messages.push(message),
+  moneyDjFundId: (value) => value,
   markPortfolioSnapshotsDirty: () => {},
   loadPurchases: async () => {},
   rebuildPortfolioSnapshots: async () => {}
@@ -56,6 +57,9 @@ vm.runInContext([
   "function todayInputValue() { return '2026-10-16'; }",
   "function clearRecurringPurchaseSelection() { els.purchaseRecurringPlanId.value = ''; els.purchaseRecurringContext.hidden = true; }",
   extractFunction("nextRecurringDebitDate"),
+  extractFunction("recurringDueDates"),
+  extractFunction("firstPublishedNavForDebit"),
+  extractFunction("recurringRecordCoversDue"),
   extractFunction("savePurchase")
 ].join("\n"), context);
 
@@ -63,6 +67,14 @@ assert.equal(context.nextRecurringDebitDate(plan, "2026-10-16"), "2026-10-31");
 assert.equal(context.nextRecurringDebitDate(plan, "2026-11-01"), "2026-11-30");
 assert.equal(context.nextRecurringDebitDate(plan, "2027-02-01"), "2027-02-28");
 assert.equal(context.nextRecurringDebitDate({ ...plan, start_date: "2026-12-05", debit_day: 10 }, "2026-10-16"), "2026-12-10");
+assert.equal(context.recurringDueDates({ ...plan, auto_start_date: "2026-10-16" }, "2026-11-30").join(","), "2026-10-31,2026-11-30");
+context.monthlyNavMeta = { items: { ACJS06: { days: [
+  { date: "2026-11-30", nav: 207 }, { date: "2026-10-29", nav: 198 },
+  { date: "2026-11-02", nav: 201 }
+] } } };
+assert.equal(context.firstPublishedNavForDebit(plan, "2026-10-31", "2026-11-02")?.date, "2026-11-02");
+assert.equal(context.firstPublishedNavForDebit(plan, "2026-10-31", "2026-11-01"), null, "do not use stale NAV before a weekend debit");
+assert.equal(context.recurringRecordCoversDue({ buy_date: "2026-11-02" }, "2026-10-31"), true, "next-month settlement must count for the scheduled month");
 
 const event = { preventDefault() {} };
 elements.purchaseNav.value = "";
@@ -99,16 +111,19 @@ assert(!("recurring_plan_id" in values[1]), "single purchases must work before t
 
 const planWrites = [];
 context.recurringPlans = [];
-context.purchases = [];
+context.purchases = [{ id: "cash-1", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-01", amount: 300000, nav: 100 }];
 Object.assign(elements, {
   recurringPlanId: { value: "" },
   recurringFundName: { value: `${plan.fund_name}｜${plan.fund_id}` },
   recurringAmount: { value: "200000" },
   recurringDay: { value: "31" },
   recurringStartDate: { value: "2026-10-16" },
+  recurringCashSource: { value: "cash-1" },
   recurringMessage: {}
 });
 context.recurringPlansSupported = true;
+context.recurringAutoSupported = true;
+context.isCashSource = (item) => item.fund_id.startsWith("manual:") && item.fund_name.startsWith("資金");
 context.recurringFundChoices = () => [{ fundId: plan.fund_id, name: plan.fund_name }];
 context.recurringFundLabel = (fund) => `${fund.name}｜${fund.fundId}`;
 context.moneyDjFundId = (value) => value === plan.fund_id ? value : "";
@@ -126,5 +141,35 @@ assert.equal(planWrites.length, 1);
 assert.equal(planWrites[0].fund_id, plan.fund_id);
 assert.equal(planWrites[0].user_id, "user-1");
 assert.equal(planWrites[0].monthly_amount, 200000);
+assert.equal(planWrites[0].cash_source_id, "cash-1");
+assert.equal(planWrites[0].auto_start_date, "2026-10-16");
 
-console.log("Recurring plan tests passed: month-end dates, plan creation, fund identity, actual NAV, and single-buy compatibility");
+let rpcCalls = 0;
+let reloads = 0;
+const syncContext = {
+  currentUser: { id: "user-1" },
+  recurringPlans: [{ ...plan, debit_day: 16, auto_start_date: "2026-10-16", cash_source_id: "cash-1" }],
+  recurringEvents: [],
+  recurringAutoSupported: true,
+  purchases: [],
+  db: { rpc: async () => { rpcCalls += 1; return { data: "buy-1", error: null }; } },
+  loadMonthlyNavData: async () => true,
+  recurringDueDates: () => ["2026-10-16"],
+  firstPublishedNavForDebit: () => ({ date: "2026-10-16", nav: 202.25 }),
+  todayInputValue: () => "2026-10-16",
+  compactDate: (value) => value,
+  markPortfolioSnapshotsDirty: () => {},
+  loadPurchases: async () => { reloads += 1; },
+  rebuildPortfolioSnapshots: async () => {},
+  loadRecurringPlans: async () => {},
+  setMessage: () => {},
+  els: { recurringMessage: {} }
+};
+vm.createContext(syncContext);
+vm.runInContext("let recurringSyncPromise = null;\n" + extractFunction("syncRecurringPlans"), syncContext);
+await syncContext.syncRecurringPlans();
+await syncContext.syncRecurringPlans();
+assert.equal(rpcCalls, 1, "the same scheduled date must not be posted twice on reload");
+assert.equal(reloads, 1);
+
+console.log("Recurring plan tests passed: month-end dates, source selection, NAV availability, and idempotent posting");

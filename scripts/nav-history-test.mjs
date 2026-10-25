@@ -35,6 +35,7 @@ try {
   let blockFund = "";
   const context = {
     purchases: [{ fund_id: "ACJS06" }],
+    recurringPlans: [],
     monthlyNavMeta: { source: "not loaded", updatedAt: null, items: {} },
     monthlyNavIndex: null,
     monthlyNavIndexPromise: null,
