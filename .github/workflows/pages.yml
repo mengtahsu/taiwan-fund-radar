@@ -59,6 +59,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Confirm data still needs an update
         id: update_gate
@@ -149,14 +151,26 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           exit "$sanity_status"
 
-      - name: Upload Pages artifact
+      - name: Check that main has not advanced
         if: steps.update_gate.outputs.should_update == 'true'
+        id: current_branch
+        run: |
+          git fetch --no-tags origin main
+          if [ "$(git rev-parse HEAD)" = "$(git rev-parse FETCH_HEAD)" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            echo 'A newer commit exists; skip deploying this older checkout.'
+          fi
+
+      - name: Upload Pages artifact
+        if: steps.update_gate.outputs.should_update == 'true' && steps.current_branch.outputs.current == 'true'
         uses: actions/upload-pages-artifact@v4
         with:
           path: .
 
       - name: Deploy to GitHub Pages
-        if: steps.update_gate.outputs.should_update == 'true'
+        if: steps.update_gate.outputs.should_update == 'true' && steps.current_branch.outputs.current == 'true'
         id: deployment
         timeout-minutes: 35
         env:
