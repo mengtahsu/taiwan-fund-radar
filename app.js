@@ -4096,6 +4096,9 @@ async function syncRecurringPlans(manual = false) {
     const errors = [];
     const today = todayInputValue();
     for (const plan of recurringPlans.filter((item) => !item.paused && item.cash_source_id && item.auto_start_date)) {
+      if (currentUser?.id !== userId) {
+        return;
+      }
       const records = purchases.filter((item) => item.recurring_plan_id === plan.id);
       for (const date of recurringDueDates(plan, today)) {
         if (recurringEvents.some((event) => event.plan_id === plan.id && event.scheduled_date === date) ||
@@ -4105,6 +4108,9 @@ async function syncRecurringPlans(manual = false) {
         const navPoint = firstPublishedNavForDebit(plan, date, today);
         if (!navPoint) {
           continue;
+        }
+        if (currentUser?.id !== userId) {
+          return;
         }
         const { data, error } = await db.rpc("post_recurring_deduction", {
           p_plan_id: plan.id,
@@ -4534,6 +4540,7 @@ async function initAuth() {
     currentUser = session?.user || null;
     recurringPlans = [];
     recurringEvents = [];
+    recurringSyncPromise = null;
     recurringPlansSupported = true;
     recurringAutoSupported = true;
     closeRecurringPlanForm();
