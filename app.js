@@ -4499,6 +4499,7 @@ async function saveRecurringPlan(event) {
     ? { fundId: existing.fund_id, name: existing.fund_name }
     : selectedFund;
   const amount = Number(els.recurringAmount.value);
+  const amountChanged = Boolean(existing && Number(existing.monthly_amount) !== amount);
   const day = Number(els.recurringDay.value);
   const startDate = els.recurringStartDate.value;
   const cashSourceId = els.recurringCashSource.value;
@@ -4547,7 +4548,11 @@ async function saveRecurringPlan(event) {
     return;
   }
   closeRecurringPlanForm();
-  setMessage(els.recurringMessage, existing ? "計畫已更新；到期且淨值公布後會自動入帳。" : "計畫已建立；從今天起到期且淨值公布後自動入帳。");
+  setMessage(els.recurringMessage, existing
+    ? amountChanged
+      ? "計畫已更新；新金額適用於台灣時間明天起的扣款，過去扣款金額不變。"
+      : "計畫已更新；到期且淨值公布後會自動入帳。"
+    : "計畫已建立；從今天起到期且淨值公布後自動入帳。");
   await loadRecurringPlans();
 }
 
