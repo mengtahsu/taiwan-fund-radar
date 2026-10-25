@@ -199,6 +199,9 @@ let cashAdjustments = [];
 let recurringPlansSupported = true;
 let recurringAutoSupported = true;
 let recurringSyncPromise = null;
+let recordChoiceFund = null;
+let pendingRecurringFund = null;
+let selectedRecurringFund = null;
 let purchaseSortMode = "profit";
 let portfolioPeriodSnapshots = {
   loaded: false,
@@ -3487,20 +3490,25 @@ function requireLogin() {
   return false;
 }
 
+function navigateToRecordFund(fund, mode) {
+  window.sessionStorage.setItem(
+    "pendingPurchaseFund",
+    JSON.stringify({
+      mode,
+      fundId: fundLookupKey(fund),
+      name: fund.name,
+      nav: typeof fund.nav === "number" && fund.nav > 0 ? fund.nav : null
+    })
+  );
+  window.location.href = "?view=portfolio";
+}
+
 function setPurchaseFund(fund) {
-  if (!requireLogin()) {
+  if (!isPortfolioView) {
+    navigateToRecordFund(fund, "single");
     return;
   }
-  if (!isPortfolioView) {
-    window.sessionStorage.setItem(
-      "pendingPurchaseFund",
-      JSON.stringify({
-        fundId: fundLookupKey(fund),
-        name: fund.name,
-        nav: typeof fund.nav === "number" && fund.nav > 0 ? fund.nav : null
-      })
-    );
-    window.location.href = "?view=portfolio";
+  if (!requireLogin()) {
     return;
   }
   clearRecurringPurchaseSelection();
@@ -3514,6 +3522,70 @@ function setPurchaseFund(fund) {
   els.purchaseAmount.focus();
 }
 
+function setRecurringFund(fund) {
+  if (!isPortfolioView) {
+    navigateToRecordFund(fund, "recurring");
+    return;
+  }
+  const selected = { fundId: fundLookupKey(fund), name: fund.name };
+  if (!currentUser) {
+    pendingRecurringFund = selected;
+    window.sessionStorage.setItem("pendingPurchaseFund", JSON.stringify({ mode: "recurring", ...selected }));
+    requireLogin();
+    return;
+  }
+  openRecurringPlanForm("", selected);
+  document.querySelector(".recurring-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function ensureRecordChoiceModal() {
+  let modal = document.querySelector("#recordChoiceModal");
+  if (modal) return modal;
+  modal = document.createElement("div");
+  modal.id = "recordChoiceModal";
+  modal.className = "period-modal record-choice-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div class="period-modal-panel record-choice-panel" role="dialog" aria-modal="true" aria-labelledby="recordChoiceTitle">
+      <button class="period-modal-close" type="button" aria-label="關閉">×</button>
+      <h3 id="recordChoiceTitle">記錄方式</h3>
+      <p class="record-choice-fund"></p>
+      <div class="record-choice-actions">
+        <button type="button" data-record-mode="single">單筆買入</button>
+        <button class="primary" type="button" data-record-mode="recurring">定期定額</button>
+      </div>
+    </div>
+  `;
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.closest(".period-modal-close")) {
+      hideRecordChoiceModal();
+      return;
+    }
+    const mode = event.target.closest("[data-record-mode]")?.dataset.recordMode;
+    if (!mode || !recordChoiceFund) return;
+    const fund = recordChoiceFund;
+    hideRecordChoiceModal();
+    if (mode === "recurring") setRecurringFund(fund);
+    else setPurchaseFund(fund);
+  });
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function showRecordChoiceModal(fund) {
+  recordChoiceFund = fund;
+  const modal = ensureRecordChoiceModal();
+  modal.querySelector(".record-choice-fund").textContent = displayFundName(fund.name) || fund.name;
+  modal.hidden = false;
+  modal.querySelector("[data-record-mode='single']").focus();
+}
+
+function hideRecordChoiceModal() {
+  const modal = document.querySelector("#recordChoiceModal");
+  if (modal) modal.hidden = true;
+  recordChoiceFund = null;
+}
+
 function applyPendingPurchaseFund() {
   if (!isPortfolioView || !els.purchaseFundId || !els.purchaseFundName) {
     return;
@@ -3522,9 +3594,14 @@ function applyPendingPurchaseFund() {
   if (!raw) {
     return;
   }
-  window.sessionStorage.removeItem("pendingPurchaseFund");
   try {
     const fund = JSON.parse(raw);
+    if (fund.mode === "recurring" && fund.fundId && fund.name) {
+      pendingRecurringFund = { fundId: fund.fundId, name: fund.name };
+      setMessage(els.authMessage, `登入後會帶入 ${displayFundName(fund.name) || fund.name} 的定期定額計畫。`);
+      return;
+    }
+    window.sessionStorage.removeItem("pendingPurchaseFund");
     clearRecurringPurchaseSelection();
     els.purchaseFundId.value = fund.fundId || "";
     els.purchaseFundName.value = fund.name || "";
@@ -3535,8 +3612,17 @@ function applyPendingPurchaseFund() {
     setMessage(els.purchaseMessage, "");
     els.purchaseAmount.focus();
   } catch (_error) {
-    // Ignore stale session data.
+    window.sessionStorage.removeItem("pendingPurchaseFund");
   }
+}
+
+function openPendingRecurringFund() {
+  if (!currentUser || !pendingRecurringFund) return;
+  const fund = pendingRecurringFund;
+  pendingRecurringFund = null;
+  window.sessionStorage.removeItem("pendingPurchaseFund");
+  setMessage(els.authMessage, "");
+  setRecurringFund(fund);
 }
 
 function portfolioPeriodsReady() {
@@ -4464,19 +4550,28 @@ function closeRecurringPlanForm() {
   els.recurringPlanForm.reset();
   els.recurringPlanId.value = "";
   els.recurringFundName.disabled = false;
+  els.recurringFundName.readOnly = false;
   els.recurringCashSource.disabled = false;
   els.recurringStartDate.value = todayInputValue();
+  selectedRecurringFund = null;
 }
 
-function openRecurringPlanForm(planId = "") {
+function openRecurringPlanForm(planId = "", selectedFund = null) {
   if (!currentUser || !recurringPlansSupported) {
     return;
   }
   const plan = recurringPlans.find((item) => item.id === planId);
+  selectedRecurringFund = !plan && selectedFund ? {
+    fundId: String(selectedFund.fundId || ""),
+    name: String(selectedFund.name || "")
+  } : null;
   els.recurringPlanForm.hidden = false;
   els.recurringPlanId.value = plan?.id || "";
-  els.recurringFundName.value = plan ? recurringFundLabel({ name: plan.fund_name, fundId: plan.fund_id }) : "";
+  els.recurringFundName.value = plan
+    ? recurringFundLabel({ name: plan.fund_name, fundId: plan.fund_id })
+    : selectedRecurringFund ? recurringFundLabel(selectedRecurringFund) : "";
   els.recurringFundName.disabled = Boolean(plan && purchases.some((item) => item.recurring_plan_id === plan.id));
+  els.recurringFundName.readOnly = Boolean(selectedRecurringFund);
   const availableCash = purchases.filter((item) => isCashSource(item) && !item.sell_date && cashBalanceAt(item) > 0);
   renderRecurringCashSources(plan?.cash_source_id || (availableCash.length === 1 ? availableCash[0].id : ""));
   els.recurringCashSource.disabled = Boolean(plan && purchases.some((item) => item.cash_source_id === plan.cash_source_id && item.recurring_plan_id === plan.id));
@@ -4484,7 +4579,7 @@ function openRecurringPlanForm(planId = "") {
   els.recurringDay.value = plan?.debit_day || "";
   els.recurringStartDate.value = plan?.start_date || todayInputValue();
   setMessage(els.recurringMessage, "");
-  els.recurringFundName.disabled ? els.recurringAmount.focus() : els.recurringFundName.focus();
+  els.recurringFundName.disabled || selectedRecurringFund ? els.recurringAmount.focus() : els.recurringFundName.focus();
 }
 
 async function saveRecurringPlan(event) {
@@ -4497,7 +4592,8 @@ async function saveRecurringPlan(event) {
   const selectedFund = recurringFundChoices().find((fund) => recurringFundLabel(fund) === enteredFund);
   const fund = existing && enteredFund === recurringFundLabel({ name: existing.fund_name, fundId: existing.fund_id })
     ? { fundId: existing.fund_id, name: existing.fund_name }
-    : selectedFund;
+    : selectedRecurringFund && enteredFund === recurringFundLabel(selectedRecurringFund)
+      ? selectedRecurringFund : selectedFund;
   const amount = Number(els.recurringAmount.value);
   const amountChanged = Boolean(existing && Number(existing.monthly_amount) !== amount);
   const day = Number(els.recurringDay.value);
@@ -4846,7 +4942,11 @@ async function initAuth() {
   renderAuthState();
   await loadPurchases();
   await loadRecurringPlans();
-  db.auth.onAuthStateChange(async (_event, session) => {
+  openPendingRecurringFund();
+  db.auth.onAuthStateChange(async (event, session) => {
+    if (event === "INITIAL_SESSION" && (session?.user?.id || null) === (currentUser?.id || null)) {
+      return;
+    }
     currentUser = session?.user || null;
     recurringPlans = [];
     recurringEvents = [];
@@ -4861,6 +4961,7 @@ async function initAuth() {
     renderFunds();
     await loadPurchases();
     await loadRecurringPlans();
+    openPendingRecurringFund();
   });
 }
 
@@ -5405,7 +5506,7 @@ function renderFunds() {
     button.addEventListener("click", () => {
       const fund = funds.find((item) => fundLookupKey(item) === button.dataset.buyFund);
       if (fund) {
-        setPurchaseFund(fund);
+        showRecordChoiceModal(fund);
       }
     });
   });
@@ -5482,6 +5583,7 @@ function resetFilters() {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    hideRecordChoiceModal();
     hidePeriodDetailModal();
     hideSellModal();
     hideScoreModal();

@@ -123,6 +123,7 @@ Object.assign(elements, {
 });
 context.recurringPlansSupported = true;
 context.recurringAutoSupported = true;
+context.selectedRecurringFund = null;
 context.isCashSource = (item) => item.fund_id.startsWith("manual:") && item.fund_name.startsWith("資金");
 context.recurringFundChoices = () => [{ fundId: plan.fund_id, name: plan.fund_name }];
 context.recurringFundLabel = (fund) => `${fund.name}｜${fund.fundId}`;

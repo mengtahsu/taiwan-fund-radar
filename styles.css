@@ -1012,6 +1012,7 @@ button:disabled {
 
 .recurring-panel {
   min-width: 0;
+  scroll-margin-top: 70px;
 }
 
 .recurring-panel .list-header > div {
@@ -1408,6 +1409,28 @@ textarea {
 .sell-modal-panel h3 {
   margin: 0 40px 12px 0;
   font-size: 18px;
+}
+
+.record-choice-panel {
+  width: min(380px, 100%);
+}
+
+.record-choice-fund {
+  margin: 0 0 18px;
+  color: var(--accent-dark);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.record-choice-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.record-choice-actions button {
+  min-height: 44px;
+  padding: 8px;
 }
 
 .sell-modal-panel {
