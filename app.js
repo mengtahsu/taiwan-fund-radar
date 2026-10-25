@@ -1362,9 +1362,13 @@ function cashDeductionsForSource(item) {
   return purchases.filter((purchase) => purchase.cash_source_id === item.id);
 }
 
+function cashDeductionDate(item) {
+  return String(item.scheduled_date || item.buy_date || "").slice(0, 10);
+}
+
 function cashBalanceAt(item, date = todayInputValue()) {
   const spent = cashDeductionsForSource(item)
-    .filter((purchase) => String(purchase.buy_date || "") <= date)
+    .filter((purchase) => cashDeductionDate(purchase) <= date)
     .reduce((sum, purchase) => sum + (Number(purchase.amount) || 0), 0);
   return Math.max(0, (Number(item.amount) || 0) - spent);
 }
@@ -1385,19 +1389,19 @@ function manualProfitRowsForPurchase(item, periodType, calendarRows) {
   const isSold = /^\d{4}-\d{2}-\d{2}$/.test(sellDate);
   const isCash = isCashSource(item);
   const rowsByPeriod = new Map();
-  const transfers = isCash ? cashDeductionsForSource(item).sort((a, b) => a.buy_date.localeCompare(b.buy_date)) : [];
+  const transfers = isCash ? cashDeductionsForSource(item).sort((a, b) => cashDeductionDate(a).localeCompare(cashDeductionDate(b))) : [];
   let transferIndex = 0;
   let remaining = amount;
   const balanceOn = (date) => {
-    while (transferIndex < transfers.length && transfers[transferIndex].buy_date <= date) {
+    while (transferIndex < transfers.length && cashDeductionDate(transfers[transferIndex]) <= date) {
       remaining -= Number(transfers[transferIndex].amount) || 0;
       transferIndex += 1;
     }
     return Math.max(0, remaining);
   };
   const transferPoints = transfers.map((purchase) => ({
-    period: periodKeyFromDate(purchase.buy_date, periodType),
-    date: purchase.buy_date
+    period: periodKeyFromDate(cashDeductionDate(purchase), periodType),
+    date: cashDeductionDate(purchase)
   }));
   [...(calendarRows || []), ...transferPoints]
     .filter((point) => point.date >= buyDate && (!isSold || point.date < sellDate))
@@ -1501,6 +1505,12 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
   }
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
+  const scheduledDate = item.cash_source_id ? String(item.scheduled_date || "").slice(0, 10) : "";
+  if (scheduledDate && buyNav <= 0) {
+    return manualProfitRowsForPurchase({
+      ...item, fund_id: "manual:pending", buy_date: scheduledDate, nav: 1
+    }, periodType, calendarRows);
+  }
   const units = amount > 0 && buyNav > 0 ? amount / buyNav : 0;
   if (units <= 0) {
     return { rows: [], missing: true };
@@ -1588,6 +1598,21 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
     });
 
   const rows = [...rowsByPeriod.values()];
+  if (scheduledDate && scheduledDate < buyDate) {
+    const pending = manualProfitRowsForPurchase({
+      ...item,
+      fund_id: "manual:pending",
+      buy_date: scheduledDate,
+      nav: 1,
+      sell_date: buyDate,
+      sell_nav: 1,
+      sell_amount: amount
+    }, periodType, calendarRows).rows.filter((row) =>
+      row.date < buyDate && !rows.some((existing) => existing.period === row.period)
+    );
+    rows.push(...pending);
+    rows.sort((a, b) => a.date.localeCompare(b.date));
+  }
   return { rows, missing: rows.length === 0 || hasGap || (isSold && !hasSellNav) };
 }
 
@@ -1705,6 +1730,18 @@ function annualProfitMapFromMonths(months) {
 function purchaseValuation(item) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
+  if (item.cash_source_id && item.recurring_plan_id && buyNav <= 0 && !item.sell_date) {
+    return {
+      fund: currentFundForPurchase(item),
+      currentNav: 0,
+      units: 0,
+      isSold: false,
+      currentValue: amount,
+      costBasis: amount,
+      profit: 0,
+      profitPercent: 0
+    };
+  }
   let fund = currentFundForPurchase(item);
   if (item.cash_source_id && item.recurring_plan_id) {
     const days = monthlyNavMeta.items?.[moneyDjFundId(item.fund_id)]?.days || [];
@@ -3410,12 +3447,15 @@ function renderPurchases(options = {}) {
   });
   const renderPurchaseItem = (item) => {
     const valuation = purchaseValuation(item);
+    const isPending = Boolean(item.cash_source_id && item.recurring_plan_id && !(Number(item.nav) > 0));
     const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
     const matchedFund = valuation.fund;
-    const currentDate = valuation.isSold ? item.sell_date : isCashSource(item) ? todayInputValue() : matchedFund?.navDate;
+    const currentDate = valuation.isSold ? item.sell_date : isPending ? item.scheduled_date : isCashSource(item) ? todayInputValue() : matchedFund?.navDate;
     const currentNavText = valuation.currentNav ? moneyNumber(valuation.currentNav) : "-";
     const currentAmountText = valuation.currentValue === null ? "-" : wholeMoneyNumber(valuation.currentValue);
-    const valueLine = valuation.isSold
+    const valueLine = isPending
+      ? `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 待淨值 / 損益`
+      : valuation.isSold
       ? `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 淨值 ${currentNavText} / 賺賠`
       : `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 淨值 ${currentNavText} / 損益`;
     return `
@@ -3425,15 +3465,15 @@ function renderPurchases(options = {}) {
             <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
             ${renderPurchaseScore(matchedFund)}
           </div>
-          ${item.recurring_plan_id ? `<span class="purchase-plan-tag">${item.cash_source_id ? "定期定額估算" : "定期定額"}</span>` : ""}
-          <p>${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${moneyNumber(item.nav)}</p>
+          ${item.recurring_plan_id ? `<span class="purchase-plan-tag">${isPending ? "定期定額待淨值" : item.cash_source_id ? "定期定額估算" : "定期定額"}</span>` : ""}
+          <p>${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${isPending ? "待公布" : moneyNumber(item.nav)}</p>
           <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
-          ${valuation.isSold ? "" : renderFundBoxTrigger(item)}
+          ${valuation.isSold || isPending ? "" : renderFundBoxTrigger(item)}
           ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
         </div>
         <div class="purchase-actions">
           <button type="button" data-edit-purchase="${escapeHtml(item.id)}">編輯</button>
-          <button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>
+          ${isPending ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>`}
           ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
           <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
         </div>
@@ -3441,7 +3481,7 @@ function renderPurchases(options = {}) {
     `;
   };
   const activePurchaseItems = purchases.filter((item) => !item.sell_date);
-  buildFundBoxStore(activePurchaseItems);
+  buildFundBoxStore(activePurchaseItems.filter((item) => !item.cash_source_id || Number(item.nav) > 0));
   const activePurchases = sortActivePurchases(activePurchaseItems);
   const soldPurchases = sortSoldByDate(purchases.filter((item) => item.sell_date));
   updatePurchaseSortControl(activePurchases.length);
@@ -3990,19 +4030,24 @@ function renderRecurringPlans() {
   els.recurringPlanList.innerHTML = ordered.map((plan) => {
     const records = purchases.filter((item) => item.recurring_plan_id === plan.id);
     const latestRecord = records.reduce((latest, item) => item.buy_date > latest ? item.buy_date : latest, "");
-    const nextDate = plan.paused ? null : nextRecurringDebitDate(plan);
+    const today = todayInputValue();
+    const todayRecorded = recurringEvents.some((event) => event.plan_id === plan.id && event.scheduled_date === today) ||
+      records.some((item) => item.buy_date === today);
+    const nextDate = plan.paused ? null : nextRecurringDebitDate(plan, todayRecorded
+      ? new Date(Date.parse(`${today}T00:00:00Z`) + 86400000).toISOString().slice(0, 10) : today);
     const cashSource = purchases.find((item) => item.id === plan.cash_source_id);
     const automatic = recurringAutoSupported && Boolean(plan.cash_source_id && plan.auto_start_date);
     const pending = automatic && !plan.paused ? recurringDueDates(plan).filter((date) =>
       !recurringEvents.some((event) => event.plan_id === plan.id && event.scheduled_date === date) &&
       !records.some((item) => recurringRecordCoversDue(item, date))
     ).length : 0;
+    const awaitingNav = records.filter((item) => item.cash_source_id && !(Number(item.nav) > 0)).length;
     return `
       <div class="recurring-plan-item${plan.paused ? " paused" : ""}">
         <div>
           <strong>${escapeHtml(plan.fund_name)}</strong>
           <p>每月 ${escapeHtml(String(plan.debit_day))} 日 · ${twd(plan.monthly_amount)}${plan.paused ? " · 已暫停" : nextDate ? ` · 下次預定 ${escapeHtml(compactDate(nextDate))}` : ""}</p>
-          <p>${automatic ? `自動從 ${escapeHtml(cashSource?.fund_name || "資金")} 扣 · 餘額 ${wholeMoneyNumber(cashSource ? cashBalanceAt(cashSource) : 0)}` : "尚未設定自動扣款資金"}${pending ? ` · ${pending} 期待處理` : ""}</p>
+          <p>${automatic ? `自動從 ${escapeHtml(cashSource?.fund_name || "資金")} 扣 · 餘額 ${wholeMoneyNumber(cashSource ? cashBalanceAt(cashSource) : 0)}` : "尚未設定自動扣款資金"}${awaitingNav ? ` · ${awaitingNav} 筆待淨值` : ""}${pending ? ` · ${pending} 期待扣款` : ""}</p>
           <p>已記錄 ${records.length} 筆${latestRecord ? ` · 最近 ${escapeHtml(compactDate(latestRecord))}` : ""}</p>
         </div>
         <div class="recurring-plan-actions">
@@ -4077,7 +4122,9 @@ async function syncRecurringPlans(manual = false) {
     return recurringSyncPromise;
   }
   if (!db || !currentUser || !recurringAutoSupported || !recurringPlans.some((plan) =>
-    !plan.paused && plan.cash_source_id && plan.auto_start_date
+    plan.cash_source_id && plan.auto_start_date && (!plan.paused || purchases.some((item) =>
+      item.recurring_plan_id === plan.id && item.cash_source_id && !(Number(item.nav) > 0)
+    ))
   )) {
     return;
   }
@@ -4086,33 +4133,64 @@ async function syncRecurringPlans(manual = false) {
     setMessage(els.recurringMessage, "正在檢查已到期扣款與公開淨值…");
   }
   const request = (async () => {
-    if (!(await loadMonthlyNavData({ force: manual })) || currentUser?.id !== userId) {
-      if (manual && currentUser?.id === userId) {
-        setMessage(els.recurringMessage, "淨值資料暫時無法讀取，沒有新增扣款。", true);
-      }
+    await loadMonthlyNavData({ force: manual });
+    if (currentUser?.id !== userId) {
       return;
     }
-    let posted = 0;
+    let started = 0;
+    let settled = 0;
     const errors = [];
     const today = todayInputValue();
-    for (const plan of recurringPlans.filter((item) => !item.paused && item.cash_source_id && item.auto_start_date)) {
+    for (const plan of recurringPlans.filter((item) => item.cash_source_id && item.auto_start_date)) {
       if (currentUser?.id !== userId) {
         return;
       }
       const records = purchases.filter((item) => item.recurring_plan_id === plan.id);
-      for (const date of recurringDueDates(plan, today)) {
-        if (recurringEvents.some((event) => event.plan_id === plan.id && event.scheduled_date === date) ||
-            records.some((item) => recurringRecordCoversDue(item, date))) {
+      const pendingDates = recurringEvents.filter((event) => event.plan_id === plan.id && records.some((item) =>
+        item.id === event.purchase_id && item.cash_source_id && !(Number(item.nav) > 0)
+      )).map((event) => event.scheduled_date);
+      const dates = [...new Set([...recurringDueDates(plan, today), ...pendingDates])].sort();
+      for (const date of dates) {
+        let debitEvent = recurringEvents.find((event) => event.plan_id === plan.id && event.scheduled_date === date);
+        if (plan.paused && !debitEvent) {
+          continue;
+        }
+        if (!debitEvent && records.some((item) => recurringRecordCoversDue(item, date))) {
+          continue;
+        }
+        if (currentUser?.id !== userId) {
+          return;
+        }
+        let newPending = false;
+        if (!debitEvent) {
+          const { data, error } = await db.rpc("start_recurring_deduction", {
+            p_plan_id: plan.id,
+            p_scheduled_date: date
+          });
+          if (currentUser?.id !== userId) {
+            return;
+          }
+          if (error) {
+            const reason = /Insufficient recorded cash balance/i.test(error.message || "") ? "資金餘額不足" : error.message;
+            errors.push(`${plan.fund_name} ${compactDate(date)}：${reason}`);
+            break;
+          }
+          debitEvent = { plan_id: plan.id, scheduled_date: date, purchase_id: data || null };
+          recurringEvents.push(debitEvent);
+          if (data) {
+            started += 1;
+            newPending = true;
+          }
+        }
+        const pendingRecord = records.find((item) => item.id === debitEvent.purchase_id);
+        if (!debitEvent.purchase_id || (!newPending && (!pendingRecord || Number(pendingRecord.nav) > 0))) {
           continue;
         }
         const navPoint = firstPublishedNavForDebit(plan, date, today);
         if (!navPoint) {
           continue;
         }
-        if (currentUser?.id !== userId) {
-          return;
-        }
-        const { data, error } = await db.rpc("post_recurring_deduction", {
+        const { data, error } = await db.rpc("settle_recurring_deduction", {
           p_plan_id: plan.id,
           p_scheduled_date: date,
           p_nav_date: navPoint.date,
@@ -4122,17 +4200,13 @@ async function syncRecurringPlans(manual = false) {
           return;
         }
         if (error) {
-          const reason = /Insufficient recorded cash balance/i.test(error.message || "") ? "資金餘額不足" : error.message;
-          errors.push(`${plan.fund_name} ${compactDate(date)}：${reason}`);
-          break;
-        }
-        recurringEvents.push({ plan_id: plan.id, scheduled_date: date, purchase_id: data || null });
-        if (data) {
-          posted += 1;
+          errors.push(`${plan.fund_name} ${compactDate(date)} 淨值回填：${error.message}`);
+        } else if (data) {
+          settled += 1;
         }
       }
     }
-    if (posted) {
+    if (started || settled) {
       markPortfolioSnapshotsDirty();
       await loadPurchases();
       await rebuildPortfolioSnapshots();
@@ -4140,15 +4214,11 @@ async function syncRecurringPlans(manual = false) {
     await loadRecurringPlans({ sync: false });
     if (errors.length) {
       setMessage(els.recurringMessage, `自動扣款未完成：${errors.join("；")}`, true);
-    } else if (posted) {
-      setMessage(els.recurringMessage, `已自動估算 ${posted} 筆扣款；資金與日／週／月本金已更新。`);
+    } else if (started || settled) {
+      setMessage(els.recurringMessage, `已記帳 ${started} 筆扣款、回填 ${settled} 筆淨值；資金與本金快照已更新。`);
     } else if (manual) {
-      const pending = recurringPlans.filter((plan) => !plan.paused && plan.cash_source_id).reduce((sum, plan) =>
-        sum + recurringDueDates(plan, today).filter((date) =>
-          !recurringEvents.some((event) => event.plan_id === plan.id && event.scheduled_date === date) &&
-          !purchases.some((item) => item.recurring_plan_id === plan.id && recurringRecordCoversDue(item, date))
-        ).length, 0);
-      setMessage(els.recurringMessage, pending ? `已檢查；${pending} 期待淨值或待處理，尚未新增扣款。` : "已檢查，目前沒有待處理扣款。");
+      const waiting = purchases.filter((item) => item.cash_source_id && item.recurring_plan_id && !(Number(item.nav) > 0)).length;
+      setMessage(els.recurringMessage, waiting ? `已檢查；${waiting} 筆扣款正在等待公開淨值。` : "已檢查，目前沒有待處理扣款。");
     }
   })();
   recurringSyncPromise = request;

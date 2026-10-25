@@ -146,16 +146,23 @@ assert.equal(planWrites[0].auto_start_date, "2026-10-16");
 
 let rpcCalls = 0;
 let reloads = 0;
+let navAvailable = false;
 const syncContext = {
   currentUser: { id: "user-1" },
   recurringPlans: [{ ...plan, debit_day: 16, auto_start_date: "2026-10-16", cash_source_id: "cash-1" }],
   recurringEvents: [],
   recurringAutoSupported: true,
   purchases: [],
-  db: { rpc: async () => { rpcCalls += 1; return { data: "buy-1", error: null }; } },
+  db: { rpc: async (name) => {
+    rpcCalls += 1;
+    if (name === "settle_recurring_deduction") {
+      syncContext.purchases[0].nav = 202.25;
+    }
+    return { data: "buy-1", error: null };
+  } },
   loadMonthlyNavData: async () => true,
   recurringDueDates: () => ["2026-10-16"],
-  firstPublishedNavForDebit: () => ({ date: "2026-10-16", nav: 202.25 }),
+  firstPublishedNavForDebit: () => navAvailable ? { date: "2026-10-16", nav: 202.25 } : null,
   todayInputValue: () => "2026-10-16",
   compactDate: (value) => value,
   markPortfolioSnapshotsDirty: () => {},
@@ -168,8 +175,16 @@ const syncContext = {
 vm.createContext(syncContext);
 vm.runInContext("let recurringSyncPromise = null;\n" + extractFunction("syncRecurringPlans"), syncContext);
 await syncContext.syncRecurringPlans();
+assert.equal(rpcCalls, 1, "due date must move cash even before NAV publication");
+syncContext.purchases.push({ id: "buy-1", recurring_plan_id: plan.id, cash_source_id: "cash-1", nav: null });
+navAvailable = true;
 await syncContext.syncRecurringPlans();
-assert.equal(rpcCalls, 1, "the same scheduled date must not be posted twice on reload");
-assert.equal(reloads, 1);
+await syncContext.syncRecurringPlans();
+assert.equal(rpcCalls, 2, "the debit and later NAV reconciliation must each run once");
+assert.equal(reloads, 2);
+syncContext.recurringPlans[0].paused = true;
+syncContext.purchases[0].nav = null;
+await syncContext.syncRecurringPlans();
+assert.equal(rpcCalls, 3, "pausing future debits must not strand an existing pending NAV");
 
 console.log("Recurring plan tests passed: month-end dates, source selection, NAV availability, and idempotent posting");

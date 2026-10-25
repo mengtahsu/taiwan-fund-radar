@@ -2,6 +2,7 @@ import fs from "node:fs";
 
 const failures = [];
 const appSource = fs.readFileSync("app.js", "utf8");
+const recurringAutoSql = fs.readFileSync("supabase-recurring-auto-debits.sql", "utf8");
 
 function fail(message) {
   failures.push(message);
@@ -287,6 +288,7 @@ const manualPeriodSource = [
   extractNamedFunction(appSource, "dayKeyFromDate"),
   extractNamedFunction(appSource, "periodKeyFromDate"),
   extractNamedFunction(appSource, "cashDeductionsForSource"),
+  extractNamedFunction(appSource, "cashDeductionDate"),
   extractNamedFunction(appSource, "cashBalanceAt"),
   extractNamedFunction(appSource, "isCashSource"),
   extractNamedFunction(appSource, "manualProfitRowsForPurchase")
@@ -447,6 +449,12 @@ assert(appSource.includes("applyLatestNavToPeriodData"), "instant NAV refresh sh
 assert(appSource.includes("LOCAL_NAV_OVERRIDES_KEY"), "instant NAV refresh should persist local NAV overrides");
 assert(appSource.includes("applyLocalNavOverridesToFunds"), "fund load should reapply persisted NAV overrides");
 assert(appSource.includes("markPortfolioSnapshotsDirty();"), "instant NAV refresh should force portfolio period snapshots to recalculate");
+assert(appSource.includes('db.rpc("start_recurring_deduction"') && appSource.includes('db.rpc("settle_recurring_deduction"'),
+  "recurring debits should reserve cash before reconciling published NAV");
+assert(recurringAutoSql.includes("function public.start_recurring_deduction") &&
+  recurringAutoSql.includes("function public.settle_recurring_deduction") &&
+  recurringAutoSql.includes("primary key (user_id, plan_id, scheduled_date)"),
+  "database must atomically post and deduplicate recurring cash transfers");
 assert(appSource.indexOf("await loadMonthlyNavData();") < appSource.indexOf("const instantRefresh = await refreshOwnedFundNavFromFunction();"), "refresh flow should load monthly NAV history before applying instant NAV override");
 assert(appSource.includes("DAILY_PERIOD_DISPLAY_LIMIT = 6"), "daily profit should show at most 6 days");
 assert(appSource.includes("每天賺賠"), "portfolio stats should render daily profit");
@@ -456,7 +464,9 @@ assert(appSource.includes('purchaseSortMode === "date"'), "active purchases shou
 assert(appSource.includes('purchaseSortMode === "box"'), "active purchases should support box-position sorting");
 assert(appSource.includes("aPosition - bPosition"), "box-position sorting should put the lowest box position first");
 assert(appSource.includes("analysis.position !== null && analysis.position !== undefined"), "missing box positions must sort last instead of being coerced to zero");
-assert(appSource.indexOf("buildFundBoxStore(activePurchaseItems)") < appSource.indexOf("sortActivePurchases(activePurchaseItems)"), "fund boxes must be calculated before sorting by box position");
+assert(appSource.includes("buildFundBoxStore(activePurchaseItems.filter(") &&
+  appSource.indexOf("buildFundBoxStore(activePurchaseItems.filter(") < appSource.indexOf("sortActivePurchases(activePurchaseItems)"),
+  "only active purchases with usable NAV should build fund boxes before sorting");
 assert(appSource.includes('renderPurchases({ includeStats: false })'), "changing purchase sort should not recalculate portfolio period statistics");
 assert(styleSource.includes(".purchase-sort button.active"), "purchase sort should have a clear selected state");
 assert(styleSource.includes(".weekly-breakdown,\n.daily-breakdown"), "daily profit should share weekly/monthly block styling");
@@ -583,7 +593,7 @@ assert(appSource.includes("persistFundTrailingBox(entry)"), "new high-water mark
 assert(appSource.includes("最高淨值目前未寫入帳號"), "the UI should disclose when a trailing peak is not persisted");
 assert(trailingBoxSqlSource.includes("primary key (user_id, fund_id)"), "each user and fund should have only one saved trailing box");
 assert(trailingBoxSqlSource.includes("auth.uid() = user_id"), "trailing box peaks must be protected by per-user RLS");
-assert(appSource.includes('valuation.isSold ? "" : renderFundBoxTrigger(item)'), "sold purchases should not show fund boxes");
+assert(appSource.includes('valuation.isSold || isPending ? "" : renderFundBoxTrigger(item)'), "sold and pending purchases should not show fund boxes");
 assert(appSource.includes("fundBoxChart"), "fund box details should include a NAV chart");
 assert(appSource.includes("完整邏輯與算法"), "fund box modal should disclose the full algorithm");
 assert(appSource.includes("買點判斷"), "fund box modal should lead with a multi-month low entry reference");

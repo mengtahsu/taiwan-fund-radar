@@ -28,7 +28,7 @@ function extractFunction(name) {
 
 const names = [
   "monthKeyFromDate", "weekKeyFromDate", "dayKeyFromDate", "periodKeyFromDate",
-  "portfolioPeriodCalendar", "cashDeductionsForSource", "cashBalanceAt", "isCashSource",
+  "portfolioPeriodCalendar", "cashDeductionsForSource", "cashDeductionDate", "cashBalanceAt", "isCashSource",
   "manualProfitRowsForPurchase", "periodIndex",
   "periodsAreContinuous", "periodProfitRowsForPurchase", "monthlyProfitRowsForPurchase",
   "weeklyProfitRowsForPurchase", "dailyProfitRowsForPurchase", "annualProfitMapFromMonths",
@@ -179,6 +179,34 @@ assert.equal(transferred.weeks.get("2026-W43")?.invested, 300000);
 assert.equal(transferred.months.get("2026-10")?.invested, 300000);
 context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : { nav: 180, navDate: "10/24" };
 assert.equal(context.purchaseValuation(context.purchases[1]).currentValue, 20000, "published NAV beats stale fund card NAV");
+context.purchases[1].nav = null;
+context.monthlyNavIndex.calendar.day = [
+  { period: "2026-10-24", date: "2026-10-24" },
+  { period: "2026-10-25", date: "2026-10-25" }
+];
+context.monthlyNavMeta.items.ACJS06 = { days: [], weeks: [], months: [] };
+const awaitingNav = context.portfolioSummary();
+assert.equal(awaitingNav.invested, 300000, "pending NAV must not reduce total capital");
+assert.equal(awaitingNav.currentValue, 300000, "pending investment is valued at cost");
+assert.equal(awaitingNav.days.get("2026-10-24")?.invested, 300000);
+assert.equal(awaitingNav.days.get("2026-10-25")?.invested, 300000);
+assert.equal(awaitingNav.days.get("2026-10-25")?.details.find((row) => row.name === "資金")?.invested, 280000);
+assert.equal(awaitingNav.days.get("2026-10-25")?.details.find((row) => row.name === "富邦精選五虎基金")?.invested, 20000);
+context.purchases[1].nav = 200;
+context.purchases[1].buy_date = "2026-10-26";
+context.todayInputValue = () => "2026-10-26";
+context.monthlyNavIndex.calendar.day.push({ period: "2026-10-26", date: "2026-10-26" });
+context.monthlyNavIndex.calendar.week.push({ period: "2026-W44", date: "2026-10-26" });
+context.monthlyNavMeta.items.ACJS06 = {
+  days: [{ day: "2026-10-26", date: "2026-10-26", nav: 200 }],
+  weeks: [{ week: "2026-W44", date: "2026-10-26", nav: 200 }],
+  months: [{ month: "2026-10", date: "2026-10-26", nav: 200 }]
+};
+const reconciled = context.portfolioSummary();
+assert.equal(reconciled.days.get("2026-10-25")?.invested, 300000, "cash and pending fund must coexist on deduction day");
+assert.equal(reconciled.days.get("2026-10-26")?.invested, 300000, "NAV reconciliation must preserve total capital");
+assert.equal(reconciled.weeks.get("2026-W43")?.invested, 300000);
+assert.equal(reconciled.weeks.get("2026-W44")?.invested, 300000);
 context.purchases.pop();
 assert.equal(context.cashBalanceAt(context.purchases[0]), 300000, "deleting the buy releases cash");
 context.purchases = originalPurchases;
