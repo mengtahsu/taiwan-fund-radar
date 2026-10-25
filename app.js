@@ -1192,9 +1192,45 @@ function purchaseDateCompare(a, b) {
   return String(b.created_at || "").localeCompare(String(a.created_at || ""));
 }
 
+function groupActiveRecurringPurchases(items) {
+  const recurringByFund = new Map();
+  items.forEach((item) => {
+    if (!item.recurring_plan_id || !item.fund_id) return;
+    const key = String(item.fund_id || "");
+    const group = recurringByFund.get(key) || [];
+    group.push(item);
+    recurringByFund.set(key, group);
+  });
+  const seen = new Set();
+  return items.flatMap((item) => {
+    if (!item.recurring_plan_id || !item.fund_id) return [item];
+    const key = String(item.fund_id || "");
+    const group = recurringByFund.get(key);
+    if (group.length < 2) return [item];
+    if (seen.has(key)) return [];
+    seen.add(key);
+    const sorted = [...group].sort(purchaseDateCompare);
+    return [{ ...sorted[0], _recurringItems: sorted }];
+  });
+}
+
+function recurringGroupValuation(items) {
+  const invested = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const values = items.map((item) => purchaseValuation(item).currentValue);
+  const currentValue = values.some((value) => value === null)
+    ? null
+    : values.reduce((sum, value) => sum + value, 0);
+  return {
+    invested,
+    currentValue,
+    profitPercent: currentValue === null || invested <= 0 ? null : ((currentValue - invested) / invested) * 100,
+    pendingCount: items.filter((item) => !(Number(item.nav) > 0)).length
+  };
+}
+
 function purchaseProfitCompare(a, b) {
-  const aProfit = purchaseValuation(a).profitPercent;
-  const bProfit = purchaseValuation(b).profitPercent;
+  const aProfit = a._recurringItems ? recurringGroupValuation(a._recurringItems).profitPercent : purchaseValuation(a).profitPercent;
+  const bProfit = b._recurringItems ? recurringGroupValuation(b._recurringItems).profitPercent : purchaseValuation(b).profitPercent;
   if (aProfit === null && bProfit === null) {
     return purchaseDateCompare(a, b);
   }
@@ -1209,6 +1245,10 @@ function purchaseProfitCompare(a, b) {
 }
 
 function purchaseBoxSortValue(item) {
+  if (item._recurringItems) {
+    const positions = item._recurringItems.map(purchaseBoxSortValue).filter((value) => value !== null);
+    return positions.length ? Math.min(...positions) : null;
+  }
   const analysis = fundBoxStore.get(fundBoxKeyForPurchase(item))?.analysis;
   if (!analysis) {
     return null;
@@ -3595,13 +3635,56 @@ function renderPurchases(options = {}) {
       </article>
     `;
   };
+  const renderRecurringGroup = (groupItem) => {
+    const items = groupItem._recurringItems;
+    const valuation = recurringGroupValuation(items);
+    const firstDate = items.at(-1).buy_date;
+    const matchedFund = currentFundForPurchase(groupItem);
+    const profitClass = valuation.profitPercent === null || valuation.profitPercent >= 0 ? "up" : "down";
+    const detailRows = items.map((item) => {
+      const detail = purchaseValuation(item);
+      const isPending = !(Number(item.nav) > 0);
+      const currentDate = isPending ? item.scheduled_date || item.buy_date : detail.fund?.navDate;
+      const detailClass = detail.profitPercent === null || detail.profitPercent >= 0 ? "up" : "down";
+      return `
+        <div class="recurring-purchase-row">
+          <p>${escapeHtml(compactDate(item.buy_date))} / 本金 ${wholeMoneyNumber(item.amount)} / 淨值 ${isPending ? "待公布" : moneyNumber(item.nav)}</p>
+          <p>${currentDate ? `${escapeHtml(compactDate(currentDate))} / ` : ""}現值 ${detail.currentValue === null ? "-" : wholeMoneyNumber(detail.currentValue)} / 損益 <strong class="${detailClass}">${detail.profitPercent === null ? "-" : formatPercent(detail.profitPercent)}</strong></p>
+          ${isPending ? "" : renderFundBoxTrigger(item)}
+          ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
+          <div class="purchase-actions">
+            <button type="button" data-edit-purchase="${escapeHtml(item.id)}">編輯</button>
+            ${isPending ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">賣出</button>`}
+            <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+    return `
+      <article class="purchase-item recurring-group">
+        <div>
+          <div class="purchase-title">
+            <h4>${renderPurchaseFundName(groupItem, matchedFund)}</h4>
+            ${renderPurchaseScore(matchedFund)}
+          </div>
+          <span class="purchase-plan-tag">定期定額 · 累積 ${items.length} 筆${valuation.pendingCount ? ` · ${valuation.pendingCount} 筆待淨值` : ""}</span>
+          <p>自 ${escapeHtml(firstDate)} / 本金 ${wholeMoneyNumber(valuation.invested)}</p>
+          <p>現值 ${valuation.currentValue === null ? "-" : wholeMoneyNumber(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
+          <details class="recurring-group-details">
+            <summary>查看扣款明細</summary>
+            <div class="recurring-group-list">${detailRows}</div>
+          </details>
+        </div>
+      </article>
+    `;
+  };
   const activePurchaseItems = purchases.filter((item) => !item.sell_date);
   buildFundBoxStore(activePurchaseItems.filter((item) => !item.cash_source_id || Number(item.nav) > 0));
-  const activePurchases = sortActivePurchases(activePurchaseItems);
+  const activePurchases = sortActivePurchases(groupActiveRecurringPurchases(activePurchaseItems));
   const soldPurchases = sortSoldByDate(purchases.filter((item) => item.sell_date));
   updatePurchaseSortControl(activePurchases.length);
   els.purchaseList.innerHTML = `
-    ${activePurchases.length ? activePurchases.map(renderPurchaseItem).join("") : '<div class="empty">目前沒有持有中的基金。</div>'}
+    ${activePurchases.length ? activePurchases.map((item) => item._recurringItems ? renderRecurringGroup(item) : renderPurchaseItem(item)).join("") : '<div class="empty">目前沒有持有中的基金。</div>'}
     ${
       soldPurchases.length
         ? `

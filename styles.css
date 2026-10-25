@@ -1660,6 +1660,46 @@ textarea {
   opacity: 0.82;
 }
 
+.recurring-group {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.recurring-group-details {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.recurring-group-details summary {
+  width: max-content;
+  max-width: 100%;
+  cursor: pointer;
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.recurring-group-list {
+  margin-top: 4px;
+}
+
+.recurring-purchase-row {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.recurring-purchase-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.recurring-purchase-row .purchase-actions {
+  justify-content: flex-start;
+  margin-top: 2px;
+}
+
 .sold-purchases {
   display: grid;
   gap: 8px;
