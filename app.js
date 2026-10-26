@@ -5311,6 +5311,16 @@ function renderTwiiTrendChart() {
   }
   twiiTrendMeta.endIndex = Math.max(2, Math.min(rows.length, twiiTrendMeta.endIndex));
   const endRow = rows[twiiTrendMeta.endIndex - 1];
+  const yearSelect = document.querySelector("#twiiYearSelect");
+  if (yearSelect) {
+    const years = [...new Set(rows.map((row) => row.date.slice(0, 4)))].reverse();
+    if (yearSelect.dataset.years !== years.join(",")) {
+      yearSelect.innerHTML = years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}年</option>`).join("");
+      yearSelect.dataset.years = years.join(",");
+    }
+    yearSelect.value = endRow.date.slice(0, 4);
+    yearSelect.disabled = false;
+  }
   const startDate = shiftIsoDateMonths(endRow.date, twiiTrendMeta.activeMonths);
   const startIndex = Math.max(0, rows.findIndex((row, index) => index < twiiTrendMeta.endIndex && row.date >= startDate));
   const visibleRows = rows.slice(startIndex, twiiTrendMeta.endIndex);
@@ -5318,7 +5328,7 @@ function renderTwiiTrendChart() {
   const values = visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite));
   const seriesMinimum = Math.min(...values);
   const seriesMaximum = Math.max(...values);
-  const domainPadding = Math.max((seriesMaximum - seriesMinimum) * 0.08, 100);
+  const domainPadding = Math.max((seriesMaximum - seriesMinimum) * 0.08, seriesMaximum * 0.002, 1);
   const chartMinimum = seriesMinimum - domainPadding;
   const chartMaximum = seriesMaximum + domainPadding;
   const width = 680;
@@ -5359,14 +5369,30 @@ function renderTwiiTrendChart() {
 }
 
 function moveTwiiTrendWindow(nextEnd) {
-  const maximum = (twiiTrendMeta.items || []).length;
-  const minimum = Math.min(maximum, Math.max(2, Number(twiiTrendMeta.visibleCount) || 2));
+  const rows = twiiTrendMeta.items || [];
+  const maximum = rows.length;
+  if (maximum < 2) return;
+  const earliestEndDate = shiftIsoDateMonths(rows[0].date, -twiiTrendMeta.activeMonths);
+  const firstYearEnd = `${rows[0].date.slice(0, 4)}-12-31`;
+  const boundaryDate = earliestEndDate < firstYearEnd ? earliestEndDate : firstYearEnd;
+  const boundaryIndex = rows.findIndex((row) => row.date > boundaryDate);
+  const minimum = Math.max(2, boundaryIndex < 0 ? maximum : boundaryIndex);
   const clamped = Math.max(minimum, Math.min(maximum, Math.round(nextEnd)));
   if (clamped === twiiTrendMeta.endIndex) {
     return;
   }
   twiiTrendMeta.endIndex = clamped;
   renderTwiiTrendChart();
+}
+
+function selectTwiiTrendYear(year) {
+  const rows = twiiTrendMeta.items || [];
+  if (!/^\d{4}$/.test(String(year)) || !rows.some((row) => row.date.startsWith(`${year}-`))) return;
+  const endRow = rows[Math.min(rows.length, Number(twiiTrendMeta.endIndex) || rows.length) - 1];
+  const targetDate = `${year}${endRow.date.slice(4)}`;
+  let endIndex = rows.findIndex((row) => row.date > targetDate);
+  if (endIndex < 0) endIndex = rows.length;
+  moveTwiiTrendWindow(endIndex);
 }
 
 function initTwiiTrendInteraction() {
@@ -5407,7 +5433,7 @@ function initTwiiTrendInteraction() {
     const moves = { ArrowLeft: -5, ArrowRight: 5, PageUp: -22, PageDown: 22 };
     if (event.key === "Home") {
       event.preventDefault();
-      moveTwiiTrendWindow(Number(twiiTrendMeta.visibleCount) || 2);
+      moveTwiiTrendWindow(0);
     } else if (event.key === "End") {
       event.preventDefault();
       moveTwiiTrendWindow((twiiTrendMeta.items || []).length);
@@ -5426,6 +5452,9 @@ function initTwiiTrendInteraction() {
   els.twiiCapitalToggle?.addEventListener("change", () => {
     showTwiiCapital = els.twiiCapitalToggle.checked;
     renderTwiiTrendChart();
+  });
+  document.querySelector("#twiiYearSelect")?.addEventListener("change", (event) => {
+    selectTwiiTrendYear(event.target.value);
   });
 }
 

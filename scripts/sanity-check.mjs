@@ -370,8 +370,16 @@ if (latestMargin?.date && latestPairedMargin?.date) {
 }
 
 const twiiHistoryItems = Array.isArray(twiiHistoryPayload?.items) ? twiiHistoryPayload.items : [];
-assert(twiiHistoryItems.length >= 1400, `TWII history too short: ${twiiHistoryItems.length}`);
-assert(twiiHistoryItems[0]?.date <= "2020-01-15", `TWII history should begin in 2020: ${twiiHistoryItems[0]?.date}`);
+assert(twiiHistoryItems.length >= 10500, `TWII history too short: ${twiiHistoryItems.length}`);
+assert(twiiHistoryItems[0]?.date >= "1985-01-01" && twiiHistoryItems[0]?.date <= "1985-01-15", `TWII history should begin in 1985: ${twiiHistoryItems[0]?.date}`);
+assert(Number(twiiHistoryItems[0]?.ma20) > 0 && Number(twiiHistoryItems[0]?.ma60) > 0, "1985 TWII history needs pre-1985 moving-average warmup");
+for (let year = 1985; year < Number(twiiHistoryItems.at(-1)?.date?.slice(0, 4)); year += 1) {
+  const yearRows = twiiHistoryItems.filter((item) => item.date.startsWith(`${year}-`));
+  assert(yearRows.length >= 200, `TWII history is missing trading sessions in ${year}: ${yearRows.length}`);
+  if (year <= 2000) {
+    assert(yearRows.some((item) => new Date(`${item.date}T00:00:00Z`).getUTCDay() === 6), `TWII history should retain historical Saturday trading sessions in ${year}`);
+  }
+}
 assert(ageHours(twiiHistoryPayload?.updatedAt) <= 96, `twii_history.json too old: ${twiiHistoryPayload?.updatedAt}`);
 const latestTwiiHistory = twiiHistoryItems.at(-1);
 assert(Number(latestTwiiHistory?.close) > 0, "latest TWII history close invalid");

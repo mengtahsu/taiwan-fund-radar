@@ -67,7 +67,7 @@ WEEKLY_NAV_WEEKS = 52
 DAILY_NAV_DAYS = 190
 MARGIN_HISTORY_DAYS = 430
 MARGIN_FETCH_WORKERS = 8
-TWII_TREND_START_DATE = "2020-01-01"
+TWII_TREND_START_DATE = "1985-01-01"
 TWII_TREND_FETCH_DAYS = 2500
 FUNDRICH_CACHE_MAX_AGE_HOURS = 24 * 7
 FUNDRICH_REFRESH_PAGES = 20
@@ -852,7 +852,17 @@ def moving_average(values: list[float], window: int) -> list[float | None]:
 
 
 def build_twii_trend_payload(root: Path) -> dict[str, Any]:
-    data = fetch_yahoo_chart_range("^TWII", days=TWII_TREND_FETCH_DAYS)
+    archive = load_json_file(root / "data/twii_history_archive.json", {"items": []})
+    archive_items = archive.get("items", [])
+    if not archive_items or archive_items[0]["date"] > "1984-10-01":
+        raise ValueError("TWII archive is missing the pre-1985 moving-average history")
+    existing = load_json_file(root / "data/twii_history.json", {"items": []})
+    existing_items = existing.get("items", [])
+    fetch_days = TWII_TREND_FETCH_DAYS
+    archive_end = archive_items[-1]["date"]
+    if not existing_items or existing_items[0]["date"] > archive_end:
+        fetch_days = max(fetch_days, (datetime.now(timezone.utc) - datetime.fromisoformat(archive_end).replace(tzinfo=timezone.utc)).days + 30)
+    data = fetch_yahoo_chart_range("^TWII", days=fetch_days)
     result = (data.get("chart") or {}).get("result") or []
     if not result:
         raise ValueError("Yahoo TWII history returned no rows")
@@ -861,18 +871,17 @@ def build_twii_trend_payload(root: Path) -> dict[str, Any]:
     quote = ((result[0].get("indicators") or {}).get("quote") or [{}])[0]
     closes = quote.get("close") or []
     rows_by_date: dict[str, float] = {}
-    for timestamp, close in zip(timestamps, closes):
-        if close is None or float(close) <= 0:
-            continue
-        date = datetime.fromtimestamp(timestamp, timezone.utc).strftime("%Y-%m-%d")
-        rows_by_date[date] = round(float(close), 2)
-
-    existing = load_json_file(root / "data/twii_history.json", {"items": []})
-    for item in existing.get("items", []):
+    for item in [*existing_items, *archive_items]:
         date = str(item.get("date") or "")
         close = float(item.get("close") or 0)
-        if date and close > 0 and date not in rows_by_date:
+        if date and math.isfinite(close) and close > 0:
             rows_by_date[date] = round(close, 2)
+    for timestamp, close in zip(timestamps, closes):
+        if close is None or not math.isfinite(float(close)) or float(close) <= 0:
+            continue
+        date = datetime.fromtimestamp(timestamp, timezone.utc).strftime("%Y-%m-%d")
+        if date > archive_end:
+            rows_by_date[date] = round(float(close), 2)
 
     all_rows = sorted(rows_by_date.items())
     all_closes = [close for _, close in all_rows]
@@ -888,10 +897,16 @@ def build_twii_trend_payload(root: Path) -> dict[str, Any]:
         for index, (date, close) in enumerate(all_rows)
         if date >= TWII_TREND_START_DATE
     ]
-    if len(items) < 1000:
-        raise ValueError(f"Yahoo TWII history is incomplete: {len(items)} rows")
+    if not items or items[0]["date"] > "1985-01-15" or items[0]["ma60"] is None:
+        raise ValueError("TWII history must start in January 1985 with a complete 60-day average")
+    for year in range(1985, int(items[-1]["date"][:4])):
+        count = sum(item["date"].startswith(str(year)) for item in items)
+        if count < 200:
+            raise ValueError(f"TWII history is incomplete for {year}: {count} rows")
     return {
-        "source": "Yahoo Taiwan Weighted Index daily history",
+        "source": "TAIEX daily history: verified pre-1990 archive, TWSE 1990-2000, Yahoo Finance from 2001",
+        "archiveSource": archive.get("source"),
+        "archiveUrl": archive.get("sourceUrl"),
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "startDate": TWII_TREND_START_DATE,
         "windows": {"monthly": 20, "quarterly": 60},
