@@ -90,6 +90,15 @@ class TwiiHistoryTests(unittest.TestCase):
     def test_average_rounding_ties_are_stable(self):
         self.assertEqual(updater.moving_average([1, 1.01, 1.02], 2), [None, 1.01, 1.02])
 
+    def test_recent_authoritative_range_removes_cached_phantom_session(self):
+        phantom = {"date": "2025-12-28", "close": 9000}
+        self.write_existing(sorted([*self.existing, phantom], key=lambda row: row["date"]))
+        with patch.object(updater, "fetch_yahoo_chart_range", return_value=chart(self.existing[-70:])):
+            payload = updater.build_twii_trend_payload(self.root)
+        self.assertNotIn(phantom["date"], [row["date"] for row in payload["items"]])
+        expected = sum(Decimal(str(row["close"])) for row in self.existing[-60:]) / 60
+        self.assertEqual(payload["items"][-1]["ma60"], float(expected.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)))
+
 
 if __name__ == "__main__":
     unittest.main()

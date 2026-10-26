@@ -878,12 +878,19 @@ def build_twii_trend_payload(root: Path) -> dict[str, Any]:
         close = float(item.get("close") or 0)
         if date and math.isfinite(close) and close > 0:
             rows_by_date[date] = round(close, 2)
+    fresh_rows: dict[str, float] = {}
     for timestamp, close in zip(timestamps, closes):
         if close is None or not math.isfinite(float(close)) or float(close) <= 0:
             continue
         date = datetime.fromtimestamp(timestamp, timezone.utc).strftime("%Y-%m-%d")
         if date > archive_end:
-            rows_by_date[date] = round(float(close), 2)
+            fresh_rows[date] = round(float(close), 2)
+    if not fresh_rows:
+        raise ValueError("Yahoo TWII history returned no valid recent closes")
+    fresh_start, fresh_end = min(fresh_rows), max(fresh_rows)
+    # Replace the covered range so removed/non-trading dates cannot survive in cache.
+    rows_by_date = {date: close for date, close in rows_by_date.items() if not fresh_start <= date <= fresh_end}
+    rows_by_date.update(fresh_rows)
 
     all_rows = sorted(rows_by_date.items())
     all_closes = [close for _, close in all_rows]
