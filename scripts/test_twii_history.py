@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from unittest.mock import patch
 
@@ -56,8 +57,8 @@ class TwiiHistoryTests(unittest.TestCase):
         self.assertTrue(any(datetime.fromisoformat(row["date"]).weekday() == 5 for row in payload["items"][:100]))
         first_index = next(index for index, row in enumerate(self.archive) if row["date"] == "1985-01-01")
         for window in [20, 60]:
-            expected = round(sum(row["close"] for row in self.archive[first_index - window + 1:first_index + 1]) / window, 2)
-            self.assertEqual(payload["items"][0][f"ma{window}"], expected)
+            expected = sum(Decimal(str(row["close"])) for row in self.archive[first_index - window + 1:first_index + 1]) / window
+            self.assertEqual(payload["items"][0][f"ma{window}"], float(expected.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)))
         self.assertEqual(payload["items"][100]["close"], self.existing[100]["close"])
 
     def test_first_upgrade_fetches_the_gap_after_the_archive(self):
@@ -85,6 +86,9 @@ class TwiiHistoryTests(unittest.TestCase):
     def test_legacy_archive_rejects_conflicting_versions(self):
         with self.assertRaisesRegex(ValueError, "conflicting"):
             backfill.parse_archive("[new Date('1985/01/04'),829.9],[new Date('1985/01/04'),800]")
+
+    def test_average_rounding_ties_are_stable(self):
+        self.assertEqual(updater.moving_average([1, 1.01, 1.02], 2), [None, 1.01, 1.02])
 
 
 if __name__ == "__main__":

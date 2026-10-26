@@ -842,12 +842,14 @@ def update_margin_once(root: Path, output_path: str = "data/margin.json") -> Non
 
 def moving_average(values: list[float], window: int) -> list[float | None]:
     results: list[float | None] = []
-    rolling_sum = 0.0
-    for index, value in enumerate(values):
+    # Integer hundredths avoid platform-dependent float sums at rounding ties.
+    hundredths = [int(round(value * 100)) for value in values]
+    rolling_sum = 0
+    for index, value in enumerate(hundredths):
         rolling_sum += value
         if index >= window:
-            rolling_sum -= values[index - window]
-        results.append(round(rolling_sum / window, 2) if index + 1 >= window else None)
+            rolling_sum -= hundredths[index - window]
+        results.append(((2 * rolling_sum + window) // (2 * window)) / 100 if index + 1 >= window else None)
     return results
 
 
