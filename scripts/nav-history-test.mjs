@@ -62,7 +62,7 @@ try {
   };
   vm.createContext(context);
   vm.runInContext(source.slice(start, end), context);
-  const calendarStart = source.indexOf("function cashAdjustmentCarryDates(");
+  const calendarStart = source.indexOf("function monthKeyFromDate(");
   const calendarEnd = source.indexOf("function manualProfitRowsForPurchase(", calendarStart);
   assert(calendarStart >= 0 && calendarEnd > calendarStart);
   vm.runInContext(source.slice(calendarStart, calendarEnd), context);

@@ -113,6 +113,49 @@ context.monthlyNavIndex = null;
 
 const originalPurchases = context.purchases;
 const originalFundLookup = context.currentFundForPurchase;
+const cashBeforeNavRefresh = {
+  id: "cash-no-nav", fund_id: "manual:cash", fund_name: "資金",
+  buy_date: "2026-09-01", amount: 300000, nav: null
+};
+context.purchases = [purchase, cashBeforeNavRefresh];
+context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : originalFundLookup(item);
+const cashWithoutNav = context.portfolioSummary();
+assert.equal(cashWithoutNav.days.get("2026-10-13")?.invested, 500000, "cash without a NAV belongs in daily capital");
+assert.equal(cashWithoutNav.weeks.get("2026-W42")?.invested, 500000, "cash without a NAV belongs in weekly capital");
+assert.equal(cashWithoutNav.months.get("2026-10")?.invested, 500000, "cash without a NAV belongs in monthly capital");
+assert.equal(cashWithoutNav.days.get("2026-10-13")?.details.find((row) => row.name === "資金")?.value, 300000);
+assert.equal(cashWithoutNav.days.get("2026-10-13")?.profit, summary.days.get("2026-10-13")?.profit, "cash is not an investment gain or loss");
+context.purchases = originalPurchases;
+context.currentFundForPurchase = originalFundLookup;
+
+const originalCalendarIndex = context.monthlyNavIndex;
+context.purchases = [purchase, { ...cashBeforeNavRefresh, nav: 100 }];
+context.monthlyNavIndex = {
+  updatedAt: context.monthlyNavMeta.updatedAt,
+  calendar: {
+    day: [{ period: "2026-09-30", date: "2026-09-30" }],
+    week: [{ period: "2026-W40", date: "2026-09-30" }],
+    month: [{ period: "2026-09", date: "2026-09-30" }]
+  }
+};
+const cashAfterNavRefresh = context.portfolioSummary();
+assert.equal(cashAfterNavRefresh.days.get("2026-10-13")?.invested, 500000, "live NAV dates must carry cash beyond an older index calendar");
+assert.equal(cashAfterNavRefresh.weeks.get("2026-W42")?.invested, 500000);
+assert.equal(cashAfterNavRefresh.months.get("2026-10")?.invested, 500000);
+assert.equal(context.portfolioPeriodCalendar("month").find((row) => row.period === "2026-10")?.date, "2026-10-13");
+for (const type of ["day", "week", "month"]) {
+  const calendar = context.portfolioPeriodCalendar(type);
+  assert.equal(new Set(calendar.map((row) => row.period)).size, calendar.length, "merged dates must not duplicate a period");
+}
+const cashSnapshots = context.snapshotRowsFromSummary(cashAfterNavRefresh);
+for (const [type, key] of [["day", "2026-10-13"], ["week", "2026-W42"], ["month", "2026-10"]]) {
+  assert.equal(cashSnapshots.find((row) => row.period_type === type && row.period_key === key)?.invested, 500000, "saved snapshots must retain cash");
+}
+context.monthlyNavIndex.calendar.month.push({ period: "2026-10", date: "2026-10-08" });
+assert.equal(context.portfolioPeriodCalendar("month").find((row) => row.period === "2026-10")?.date, "2026-10-13", "single-fund refresh should advance an existing period's date");
+context.purchases = originalPurchases;
+context.monthlyNavIndex = originalCalendarIndex;
+
 context.purchases = [
   {
     id: "cash-1008",
@@ -135,7 +178,7 @@ context.purchases = [
 ];
 context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : originalFundLookup(item);
 const cashReplacement = context.portfolioSummary();
-assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v4$/);
+assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v5$/);
 const replacementDay = cashReplacement.days.get("2026-10-14");
 assert.equal(replacementDay?.invested, 1014000);
 assert.equal(replacementDay?.details.find((detail) => detail.name === "資金1014")?.invested, 1014000);
@@ -147,7 +190,7 @@ context.currentFundForPurchase = originalFundLookup;
 const originalNavMeta = context.monthlyNavMeta;
 const originalNavIndex = context.monthlyNavIndex;
 context.purchases = [
-  { id: "cash-balance", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-30", amount: 300000, nav: 100 },
+  { id: "cash-balance", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-30", amount: 300000, nav: null },
   { id: "held-fund", fund_id: "ACJS06", fund_name: "富邦精選五虎基金", buy_date: "2026-10-31", amount: 50000, nav: 200 }
 ];
 context.cashAdjustments = [
@@ -202,7 +245,7 @@ context.monthlyNavIndex = originalNavIndex;
 context.currentFundForPurchase = originalFundLookup;
 
 context.purchases = [
-  { id: "cash-30", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-20", amount: 300000, nav: 100 },
+  { id: "cash-30", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-20", amount: 300000, nav: null },
   { id: "auto-20", fund_id: "ACJS06", fund_name: "富邦精選五虎基金", buy_date: "2026-10-25", amount: 20000, nav: 200,
     cash_source_id: "cash-30", scheduled_date: "2026-10-25", recurring_plan_id: "plan-1" }
 ];

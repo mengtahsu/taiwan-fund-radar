@@ -1404,23 +1404,21 @@ function portfolioPeriodCalendar(periodType) {
     adjustmentDates.forEach((date) => byDate.set(date, { period: date, date }));
     return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
   };
-  if (monthlyNavIndex?.updatedAt === monthlyNavMeta.updatedAt && Array.isArray(monthlyNavIndex.calendar?.[periodType])) {
-    return withAdjustmentDates(monthlyNavIndex.calendar[periodType]);
-  }
   const sourceKey = periodType === "day" ? "days" : periodType === "week" ? "weeks" : "months";
   const rowsByPeriod = new Map();
+  const addDate = (row) => {
+    const date = String(row?.date || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    const period = periodKeyFromDate(date, periodType);
+    const existing = rowsByPeriod.get(period);
+    if (!existing || date > existing.date) rowsByPeriod.set(period, { period, date });
+  };
+  if (monthlyNavIndex?.updatedAt === monthlyNavMeta.updatedAt && Array.isArray(monthlyNavIndex.calendar?.[periodType])) {
+    monthlyNavIndex.calendar[periodType].forEach(addDate);
+  }
+  // Single-fund refreshes can be newer than the published history index.
   Object.values(monthlyNavMeta.items || {}).forEach((navItem) => {
-    (navItem?.[sourceKey] || []).forEach((row) => {
-      const date = String(row?.date || "").slice(0, 10);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        return;
-      }
-      const period = periodKeyFromDate(date, periodType);
-      const existing = rowsByPeriod.get(period);
-      if (!existing || date > existing.date) {
-        rowsByPeriod.set(period, { period, date });
-      }
-    });
+    (navItem?.[sourceKey] || []).forEach(addDate);
   });
   return withAdjustmentDates([...rowsByPeriod.values()].sort((a, b) => a.date.localeCompare(b.date)));
 }
@@ -1449,7 +1447,8 @@ function isCashSource(item) {
 
 function manualProfitRowsForPurchase(item, periodType, calendarRows) {
   const amount = Number(item.amount) || 0;
-  const buyNav = Number(item.nav) || 0;
+  const isCash = isCashSource(item);
+  const buyNav = Number(item.nav) || (isCash ? 100 : 0);
   const buyDate = String(item.buy_date || "").slice(0, 10);
   if (amount <= 0 || buyNav <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(buyDate)) {
     return { rows: [], missing: true };
@@ -1457,7 +1456,6 @@ function manualProfitRowsForPurchase(item, periodType, calendarRows) {
 
   const sellDate = String(item.sell_date || "").slice(0, 10);
   const isSold = /^\d{4}-\d{2}-\d{2}$/.test(sellDate);
-  const isCash = isCashSource(item);
   const rowsByPeriod = new Map();
   const transferDates = isCash ? [
     ...cashDeductionsForSource(item).map(cashDeductionDate),
@@ -2184,7 +2182,7 @@ function portfolioPurchaseFingerprint() {
 function portfolioSnapshotSource() {
   const dataSource = monthlyNavMeta.updatedAt || monthlyNavIndex?.updatedAt || sourceMeta.updatedAt || "no-source-time";
   const manualVersion = purchases.some((item) => String(item.fund_id || "").startsWith("manual:"))
-    ? "|manual-buy:v4"
+    ? "|manual-buy:v5"
     : "";
   return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}`;
 }
