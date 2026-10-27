@@ -140,6 +140,13 @@ let marginMeta = {
   activeWindow: 66
 };
 const TWII_TREND_MONTHS = [2, 6, 12];
+const TWII_CRISIS_EVENTS = [
+  { date: "1990-02-12", name: "台股泡沫", milestone: "台股當時高點" },
+  { date: "1997-07-02", name: "亞洲金融風暴", milestone: "泰銖改採浮動匯率" },
+  { date: "2000-03-10", name: "網路泡沫", milestone: "Nasdaq 泡沫高點" },
+  { date: "2008-09-15", name: "金融海嘯", milestone: "雷曼破產" },
+  { date: "2020-03-11", name: "疫情股災", milestone: "WHO 宣布全球大流行" }
+];
 let twiiTrendMeta = {
   source: "台股均線資料未載入",
   updatedAt: null,
@@ -5288,6 +5295,24 @@ function twiiMonthLabels(rows, width, height, padding) {
   return labels.join("");
 }
 
+function twiiVisibleCrisisMarkers(rows, width, padding) {
+  if (rows.length < 2) return [];
+  return TWII_CRISIS_EVENTS
+    .filter((event) => event.date >= rows[0].date && event.date <= rows.at(-1).date)
+    .map((event) => {
+      const nextIndex = rows.findIndex((row) => row.date >= event.date);
+      let position = nextIndex;
+      // Keep non-trading-day milestones between the surrounding trading sessions.
+      if (nextIndex > 0 && rows[nextIndex].date !== event.date) {
+        const before = Date.parse(rows[nextIndex - 1].date);
+        const after = Date.parse(rows[nextIndex].date);
+        position = nextIndex - 1 + (Date.parse(event.date) - before) / (after - before);
+      }
+      const x = padding.left + position / (rows.length - 1) * (width - padding.left - padding.right);
+      return { ...event, x };
+    });
+}
+
 function renderTwiiTrendChart() {
   if (!els.twiiTrendChart) {
     return;
@@ -5334,6 +5359,8 @@ function renderTwiiTrendChart() {
   const width = 680;
   const height = 250;
   const padding = { top: 18, right: 18, bottom: 42, left: 18 };
+  const crisisMarkers = twiiVisibleCrisisMarkers(visibleRows, width, padding);
+  if (crisisMarkers.length) padding.top = 46;
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
   const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
@@ -5347,14 +5374,16 @@ function renderTwiiTrendChart() {
   const capitalVisible = showTwiiCapital && latestCapital !== null;
 
   els.twiiTrendChart.innerHTML = `
-    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${capitalVisible ? "與每日在場本金" : ""}">
+    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${capitalVisible ? "與每日在場本金" : ""}${crisisMarkers.length ? `；紅色三角：${crisisMarkers.map((event) => `${event.date} ${event.name}`).join("、")}` : ""}">
       ${twiiMonthLabels(visibleRows, width, height, padding)}
+      ${crisisMarkers.map((event) => `<path class="twii-crisis-marker" d="M${(event.x - 10).toFixed(1)} 14 H${(event.x + 10).toFixed(1)} L${event.x.toFixed(1)} 32 Z"><title>${escapeHtml(`${event.date} ${event.name}（${event.milestone}）`)}</title></path>`).join("")}
       <path class="twii-trend-line twii-ma60-line" d="${ma60Path}"></path>
       <path class="twii-trend-line twii-ma20-line" d="${ma20Path}"></path>
       <path class="twii-trend-line twii-close-line" d="${closePath}"></path>
       ${capitalPath ? `<path class="twii-trend-line twii-capital-line" d="${capitalPath}"></path>` : ""}
       ${capitalPath ? `<text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top + 15}" text-anchor="end">本${compactTwdWan(capitalMaximum)}</text>` : ""}
     </svg>
+    ${crisisMarkers.length ? `<div class="twii-crisis-notes">${crisisMarkers.map((event) => `<span>${escapeHtml(`${event.date.replaceAll("-", "/")} ${event.name}（${event.milestone}）`)}</span>`).join("")}</div>` : ""}
     <div class="twii-trend-legend">
       <span><i class="twii-close-dot"></i>指數 ${formatMarketPrice(latest.close)}</span>
       <span><i class="twii-ma20-dot"></i>月線 ${formatMarketPrice(latest.ma20)}</span>

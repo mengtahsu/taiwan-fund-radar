@@ -518,6 +518,24 @@ assert(appSource.includes("ratioSeries"), "margin chart should plot margin-to-TW
 assert(appSource.includes("融資／台股＝融資餘額÷台股指數"), "margin chart should explain the margin-to-TWII ratio");
 assert(appSource.includes("三者皆以起點 0% 比較"), "margin chart should explain its shared percentage baseline");
 assert(appSource.includes("TWII_TREND_MONTHS = [2, 6, 12]"), "TWII trend should support 2, 6, and 12-month windows");
+const crisisEventSource = appSource.match(/const TWII_CRISIS_EVENTS = \[[\s\S]*?\n\];/)?.[0];
+const crisisMarkerSource = extractNamedFunction(appSource, "twiiVisibleCrisisMarkers");
+assert(crisisEventSource && crisisMarkerSource, "TWII crisis marker implementation should exist");
+if (crisisEventSource && crisisMarkerSource) {
+  const crisis = Function(`${crisisEventSource}\n${crisisMarkerSource}\nreturn { events: TWII_CRISIS_EVENTS, markers: twiiVisibleCrisisMarkers };`)();
+  const padding = { left: 18, right: 18 };
+  assert(crisis.events.length === 5, "TWII should mark the five agreed major crises");
+  for (const event of crisis.events) {
+    const marker = crisis.markers([{ date: event.date }, { date: "2026-10-27" }], 680, padding);
+    assert(marker.length >= 1 && marker[0].x === 18, `crisis marker should align with its date: ${event.date}`);
+  }
+  assert(crisis.markers([{ date: "2026-01-01" }, { date: "2026-10-27" }], 680, padding).length === 0, "off-screen crises must not appear at chart edges");
+  assert(crisis.markers([], 680, padding).length === 0, "empty windows should have no crisis markers");
+  const weekendMarker = crisis.markers([{ date: "2008-09-12" }, { date: "2008-09-16" }], 680, padding)[0];
+  assert(weekendMarker?.x === 501, "non-trading event dates should interpolate between sessions");
+  const endMarker = crisis.markers([{ date: "2008-09-12" }, { date: "2008-09-15" }], 680, padding)[0];
+  assert(endMarker?.x === 662, "events at the visible end should align with the last session");
+}
 assert(appSource.includes("shiftIsoDateMonths"), "TWII range selection should use calendar months instead of estimated trading days");
 assert(appSource.includes("renderTwiiTrendChart"), "app.js should render the TWII moving-average chart");
 assert(appSource.includes('fetch("data/twii_history.json"'), "app.js should load TWII history data");
