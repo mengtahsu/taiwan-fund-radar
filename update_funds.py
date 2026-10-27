@@ -1710,12 +1710,19 @@ def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
     selected_ids = {str(fund.get("fundId") or "") for fund in always_refresh}
     offset = int(cache.get("nextTopOffset") or 0) % len(high_performance_funds)
     wrapped = high_performance_funds[offset:] + high_performance_funds[:offset]
-    missing_recent_candidates = [
-        fund
-        for fund in high_performance_funds
-        if str(fund.get("fundId") or "") not in selected_ids
-        and (fund.get("return2w") is None or fund.get("return1m") is None)
-    ]
+    screened_funds = [
+        fund for fund in score_ranked_funds
+        if number(fund.get("risk", 5), "risk") <= 5
+        and number(fund.get("return3y", 0), "return3y") >= 20
+    ][:50]
+    # Fill gaps in the displayed default ranking before the broader rotation pool.
+    missing_recent_candidates = []
+    missing_ids = set(selected_ids)
+    for fund in [*screened_funds, *high_performance_funds]:
+        fund_id = str(fund.get("fundId") or "")
+        if fund_id not in missing_ids and (fund.get("return2w") is None or fund.get("return1m") is None):
+            missing_recent_candidates.append(fund)
+            missing_ids.add(fund_id)
     rotating_limit = max(0, limit - len(always_refresh))
     prioritized_missing = missing_recent_candidates[:rotating_limit]
     selected_ids.update(str(fund.get("fundId") or "") for fund in prioritized_missing)
