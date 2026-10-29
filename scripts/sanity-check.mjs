@@ -156,8 +156,38 @@ function navAgeDays(fund, sourceValue) {
 }
 
 function growthScoreForFund(fund) {
+  const periods = [
+    { key: "return1m", months: 1, weight: 0.4 },
+    { key: "return3m", months: 3, weight: 0.3 },
+    { key: "return6m", months: 6, weight: 0.2 },
+    { key: "return1y", months: 12, weight: 0.1 }
+  ].filter((period) => Number.isFinite(Number(fund[period.key])) && Number(fund[period.key]) > -100);
+  let expectedReturn = 0;
+  let downProbability = 0;
+  if (Number(fund.nav) > 0 && Number(fund.volatility) >= 0 && periods.length >= 2) {
+    const weightTotal = periods.reduce((sum, period) => sum + period.weight, 0);
+    const monthlyLogReturn = periods.reduce((sum, period) => (
+      sum + (Math.log1p(Number(fund[period.key]) / 100) / period.months) * period.weight
+    ), 0) / weightTotal;
+    const monthlyVolatility = (Number(fund.volatility) / 100) / Math.sqrt(12);
+    const normalCdf = (value) => {
+      const sign = value < 0 ? -1 : 1;
+      const absolute = Math.abs(value) / Math.sqrt(2);
+      const t = 1 / (1 + 0.3275911 * absolute);
+      const polynomial = 1 - (
+        ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t
+      ) * Math.exp(-absolute * absolute);
+      return 0.5 * (1 + sign * polynomial);
+    };
+    expectedReturn = (Math.exp(monthlyLogReturn) - 1) * 100;
+    downProbability = monthlyVolatility > 0
+      ? normalCdf(-monthlyLogReturn / monthlyVolatility) * 100
+      : (monthlyLogReturn < 0 ? 100 : 0);
+  }
   const performanceScore = (
     numeric(fund.return1m) * 2
+    + expectedReturn * 2
+    - downProbability
     + numeric(fund.return3m) * 2
     + numeric(fund.return6m) * 0.4
     + numeric(fund.return1y) * 0.1
@@ -426,7 +456,7 @@ assert(appSource.includes("PERIOD_DISPLAY_LIMIT = 6"), "monthly and weekly profi
 assert(appSource.includes("每年賺賠"), "portfolio stats should render annual profit");
 assert(appSource.includes('pushRows("year", summary.years)'), "annual profit should be persisted as snapshots");
 assert(portfolioSnapshotSqlSource.includes("'year', 'month', 'week', 'day'"), "snapshot constraint should allow year, month, week, and day rows");
-assert(appSource.includes('return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}`'), "portfolio snapshot version should include purchase records and manual-cash logic version");
+assert(appSource.includes('return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}|daily-nav:v2`'), "portfolio snapshot version should invalidate snapshots after the daily NAV fix");
 assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_funds.py should parse MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");

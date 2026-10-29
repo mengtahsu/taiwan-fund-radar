@@ -1655,9 +1655,52 @@ def clamp(value: float, minimum: float, maximum: float) -> float:
     return min(max(value, minimum), maximum)
 
 
+def normal_cdf_for_score(value: float) -> float:
+    sign = -1 if value < 0 else 1
+    absolute = abs(value) / math.sqrt(2)
+    t = 1 / (1 + 0.3275911 * absolute)
+    polynomial = 1 - (
+        ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t
+    ) * math.exp(-absolute * absolute)
+    return 0.5 * (1 + sign * polynomial)
+
+
+def one_month_forecast_score(fund: dict[str, Any]) -> tuple[float, float] | None:
+    nav = optional_number(fund.get("nav"))
+    volatility = optional_number(fund.get("volatility"))
+    periods = [
+        ("return1m", 1, 0.4),
+        ("return3m", 3, 0.3),
+        ("return6m", 6, 0.2),
+        ("return1y", 12, 0.1),
+    ]
+    available = [
+        (optional_number(fund.get(key)), months, weight)
+        for key, months, weight in periods
+        if optional_number(fund.get(key)) is not None and optional_number(fund.get(key)) > -100
+    ]
+    if nav is None or nav <= 0 or volatility is None or volatility < 0 or len(available) < 2:
+        return None
+
+    weight_total = sum(weight for _, _, weight in available)
+    monthly_log_return = sum(math.log1p(value / 100) / months * weight for value, months, weight in available) / weight_total
+    monthly_volatility = (volatility / 100) / math.sqrt(12)
+    expected_return = (math.exp(monthly_log_return) - 1) * 100
+    down_probability = (
+        normal_cdf_for_score(-monthly_log_return / monthly_volatility) * 100
+        if monthly_volatility > 0
+        else (100 if monthly_log_return < 0 else 0)
+    )
+    return expected_return, down_probability
+
+
 def growth_score_for_nav_refresh(fund: dict[str, Any]) -> int:
+    forecast = one_month_forecast_score(fund)
+    forecast_return, down_probability = forecast if forecast is not None else (0, 0)
     performance_score = (
         number(fund.get("return1m") or 0, "return1m") * 2
+        + forecast_return * 2
+        - down_probability
         + number(fund.get("return3m") or 0, "return3m") * 2
         + number(fund.get("return6m") or 0, "return6m") * 0.4
         + number(fund.get("return1y") or 0, "return1y") * 0.1
