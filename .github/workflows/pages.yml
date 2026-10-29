@@ -83,7 +83,7 @@ jobs:
             data/fundrich_cache.json
             data/margin.json
             data/twii_history.json
-          key: update-caches-${{ github.run_id }}
+          key: update-caches-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             update-caches-
 
@@ -146,7 +146,7 @@ jobs:
             data/fundrich_cache.json
             data/margin.json
             data/twii_history.json
-          key: update-caches-${{ github.run_id }}
+          key: update-caches-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Run sanity checks
         if: steps.update_gate.outputs.should_update == 'true'

@@ -1757,7 +1757,15 @@ def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
         and number(fund.get("return3y", 0), "return3y") >= 20
     ][:50]
     always_pool = screened_funds or score_ranked_funds
-    always_refresh = always_pool[: min(always_refresh_top, limit, len(always_pool))]
+    taiwan_now = datetime.now(timezone(timedelta(hours=8)))
+    slot_start = (taiwan_now - timedelta(hours=(taiwan_now.hour - 4) % 8)).replace(minute=0, second=0, microsecond=0)
+    cache_items = cache.get("items") or {}
+    # Recovery attempts in the same 04/12/20 slot should fill gaps instead of
+    # requesting the same already-checked leaders again.
+    always_refresh = [
+        fund for fund in always_pool[: min(always_refresh_top, limit, len(always_pool))]
+        if parse_iso_datetime((cache_items.get(str(fund.get("fundId") or "")) or {}).get("fetchedAt")) < slot_start
+    ]
     selected_ids = {str(fund.get("fundId") or "") for fund in always_refresh}
     offset = int(cache.get("nextTopOffset") or 0) % len(high_performance_funds)
     wrapped = high_performance_funds[offset:] + high_performance_funds[:offset]

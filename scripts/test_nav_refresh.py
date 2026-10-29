@@ -37,6 +37,18 @@ class NavRefreshTests(unittest.TestCase):
         with patch.object(updater, "has_recent_nav_date", return_value=True):
             self.assertEqual(updater.nav_refresh_candidates([{"fundId": "TEST"}], {}, 0), [])
 
+    def test_recovery_uses_budget_for_missing_returns_instead_of_refetching_leaders(self):
+        funds = [
+            {"fundId": f"SCREEN{i}", "return3m": 100 - i, "return3y": 25, "risk": 4,
+             **({"return1m": 0, "return2w": 0} if i < 20 else {})}
+            for i in range(50)
+        ]
+        now = updater.datetime.now(updater.timezone.utc).isoformat()
+        cache = {"items": {f"SCREEN{i}": {"fetchedAt": now} for i in range(20)}}
+        with patch.object(updater, "has_recent_nav_date", return_value=True):
+            selected = updater.nav_refresh_candidates(funds, cache, 30)
+        self.assertEqual({fund["fundId"] for fund in selected}, {f"SCREEN{i}" for i in range(20, 50)})
+
 
 if __name__ == "__main__":
     unittest.main()
