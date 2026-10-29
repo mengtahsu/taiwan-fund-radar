@@ -75,7 +75,7 @@ jobs:
 
       - name: Restore update caches
         if: steps.update_gate.outputs.should_update == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             data/nav_cache.json
@@ -136,13 +136,25 @@ jobs:
         if: steps.update_gate.outputs.should_update == 'true'
         run: node scripts/build-nav-history.mjs
 
+      - name: Preserve downloaded data before quality checks
+        if: steps.update_gate.outputs.should_update == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data/nav_cache.json
+            data/monthly_nav.json
+            data/fundrich_cache.json
+            data/margin.json
+            data/twii_history.json
+          key: update-caches-${{ github.run_id }}
+
       - name: Run sanity checks
         if: steps.update_gate.outputs.should_update == 'true'
         run: |
           set +e
           python3 scripts/test_twii_history.py || exit $?
           python3 scripts/test_nav_refresh.py || exit $?
-          sanity_output=$(python3 scripts/test_distributions.py 2>&1 && node scripts/fund-box-test.mjs 2>&1 && node scripts/portfolio-period-test.mjs 2>&1 && node scripts/recurring-plan-test.mjs 2>&1 && node scripts/recurring-group-test.mjs 2>&1 && node scripts/recurring-amount-history-test.mjs 2>&1 && node scripts/record-choice-test.mjs 2>&1 && node scripts/nav-history-test.mjs 2>&1 && node scripts/sanity-check.mjs 2>&1)
+          sanity_output=$(python3 scripts/test_distributions.py 2>&1 && node scripts/fund-box-test.mjs 2>&1 && node scripts/portfolio-period-test.mjs 2>&1 && node scripts/recurring-plan-test.mjs 2>&1 && node scripts/recurring-group-test.mjs 2>&1 && node scripts/recurring-amount-history-test.mjs 2>&1 && node scripts/record-choice-test.mjs 2>&1 && node scripts/nav-history-test.mjs 2>&1 && node scripts/nav-refresh-history-test.mjs 2>&1 && node scripts/sanity-check.mjs 2>&1)
           sanity_status=$?
           echo "$sanity_output"
           {

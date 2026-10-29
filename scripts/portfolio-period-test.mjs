@@ -33,7 +33,7 @@ const names = [
   "periodsAreContinuous", "periodProfitRowsForPurchase", "monthlyProfitRowsForPurchase",
   "weeklyProfitRowsForPurchase", "dailyProfitRowsForPurchase", "annualProfitMapFromMonths",
   "monthlyNavForPurchase", "purchaseValuation", "portfolioSummary",
-  "portfolioPurchaseFingerprint", "portfolioSnapshotSource", "snapshotRowsFromSummary",
+  "portfolioPurchaseFingerprint", "portfolioNavFingerprint", "portfolioSnapshotSource", "snapshotRowsFromSummary",
   "recentPeriodMapFromSummaryMap", "setPortfolioDailyCapital",
   "savePortfolioPeriodSnapshots", "rebuildPortfolioSnapshots"
 ];
@@ -178,7 +178,7 @@ context.purchases = [
 ];
 context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : originalFundLookup(item);
 const cashReplacement = context.portfolioSummary();
-assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v5\|daily-nav:v2$/);
+assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v5\|daily-nav:v3\|nav:[a-z0-9]+$/);
 const replacementDay = cashReplacement.days.get("2026-10-14");
 assert.equal(replacementDay?.invested, 1014000);
 assert.equal(replacementDay?.details.find((detail) => detail.name === "資金1014")?.invested, 1014000);

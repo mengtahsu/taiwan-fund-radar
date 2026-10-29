@@ -415,13 +415,23 @@ function persistLatestNavItems(items) {
     if (!fundId || !Number.isFinite(nav) || nav <= 0 || !navDate) {
       return;
     }
-    records[fundId] = {
+    const previous = records[fundId];
+    const incoming = {
       fundId,
       nav,
       navDate,
       navFullDate: item.navFullDate || "",
       navSource: item.navSource || "MoneyDJ mobile",
       fetchedAt: new Date().toISOString()
+    };
+    const latest = String(previous?.navFullDate || "") > incoming.navFullDate ? previous : incoming;
+    records[fundId] = {
+      ...latest,
+      fetchedAt: incoming.fetchedAt,
+      history: navHistoryRows({
+        ...incoming,
+        history: [...navHistoryRows(previous), ...navHistoryRows(item)]
+      }).slice(-190)
     };
   });
   saveLocalNavOverrides(records);
@@ -455,20 +465,23 @@ function applyLocalNavOverridesToFunds() {
   const records = loadLocalNavOverrides();
   const fundById = new Map(funds.map((fund) => [String(fund.fundId || ""), fund]));
   let applied = 0;
+  let periodUpdated = false;
   Object.entries(records).forEach(([fundId, record]) => {
     const fund = fundById.get(fundId);
     const nav = Number(record?.nav);
-    if (!fund || !Number.isFinite(nav) || nav <= 0 || !record?.navDate || !shouldApplyNavOverride(fund, record)) {
+    if (!fund || !isOverrideFresh(record)) {
       return;
     }
-    fund.nav = nav;
-    fund.navDate = String(record.navDate);
-    fund.navSource = record.navSource || "MoneyDJ mobile";
-    applyLatestNavToPeriodData(record, fund);
-    applied += 1;
+    periodUpdated = applyLatestNavToPeriodData(record, fund) || periodUpdated;
+    if (Number.isFinite(nav) && nav > 0 && record.navDate && shouldApplyNavOverride(fund, record)) {
+      fund.nav = nav;
+      fund.navDate = String(record.navDate);
+      fund.navSource = record.navSource || "MoneyDJ mobile";
+      applied += 1;
+    }
   });
   saveLocalNavOverrides(records);
-  if (applied > 0) {
+  if (periodUpdated) {
     markPortfolioSnapshotsDirty();
   }
   return applied;
@@ -1320,6 +1333,9 @@ function updatePurchaseSortControl(activeCount) {
 function upsertPeriodNav(rows, keyName, keyValue, date, nav) {
   const list = Array.isArray(rows) ? [...rows] : [];
   const existingIndex = list.findIndex((row) => row?.[keyName] === keyValue);
+  if (existingIndex >= 0 && list[existingIndex].date > date) {
+    return list;
+  }
   const nextRow = {
     ...(existingIndex >= 0 ? list[existingIndex] : {}),
     [keyName]: keyValue,
@@ -1334,11 +1350,25 @@ function upsertPeriodNav(rows, keyName, keyValue, date, nav) {
   return list.sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
 }
 
+function navHistoryRows(item) {
+  const rows = new Map();
+  [...(Array.isArray(item?.history) ? item.history : []), { date: item?.navFullDate, nav: item?.nav }]
+    .forEach((row) => {
+      const date = String(row?.date || "");
+      const nav = Number(row?.nav);
+      const parsed = new Date(`${date}T00:00:00Z`);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(parsed.getTime()) &&
+          parsed.toISOString().slice(0, 10) === date && Number.isFinite(nav) && nav > 0) {
+        rows.set(date, { date, nav });
+      }
+    });
+  return [...rows.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
 function applyLatestNavToPeriodData(item, fund) {
   const fundId = String(item?.fundId || "");
-  const nav = Number(item?.nav);
-  const navFullDate = String(item?.navFullDate || "");
-  if (!fundId || !Number.isFinite(nav) || nav <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(navFullDate)) {
+  const rows = navHistoryRows(item);
+  if (!fundId || !rows.length) {
     return false;
   }
   monthlyNavMeta.items = monthlyNavMeta.items || {};
@@ -1349,15 +1379,18 @@ function applyLatestNavToPeriodData(item, fund) {
     weeks: [],
     days: []
   };
-  const monthKey = monthKeyFromDate(navFullDate);
-  const weekKey = weekKeyFromDate(navFullDate);
   existing.fundId = fundId;
   existing.name = existing.name || fund?.name || fundId;
-  existing.months = upsertPeriodNav(existing.months, "month", monthKey, navFullDate, nav);
-  existing.weeks = upsertPeriodNav(existing.weeks, "week", weekKey, navFullDate, nav);
-  existing.days = upsertPeriodNav(existing.days, "day", navFullDate, navFullDate, nav);
+  let changed = false;
+  rows.forEach(({ date, nav }) => {
+    const previous = (existing.days || []).find((row) => row.date === date);
+    changed = changed || !previous || Number(previous.nav) !== nav;
+    existing.months = upsertPeriodNav(existing.months, "month", monthKeyFromDate(date), date, nav);
+    existing.weeks = upsertPeriodNav(existing.weeks, "week", weekKeyFromDate(date), date, nav);
+    existing.days = upsertPeriodNav(existing.days, "day", date, date, nav);
+  });
   monthlyNavMeta.items[fundId] = existing;
-  return true;
+  return changed;
 }
 
 function monthKeyFromDate(value) {
@@ -1667,6 +1700,8 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
   }
 
   let previousNav = buyNav;
+  let previousNavDate = buyDate;
+  let previousDate = buyDate;
   let previousPeriod = periodFromDate(buyDate);
   let hasGap = false;
   const rowsByPeriod = new Map();
@@ -1695,6 +1730,8 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
         }
       }
       const profit = units * (point.nav - previousNav);
+      const missingDailyNav = periodType === "day" &&
+        ((point.navDate || point.date) < point.date || previousNavDate < previousDate);
       const periodValue = isSold && point.period === sellPeriod ? 0 : units * point.nav;
       const row = rowsByPeriod.get(point.period) || {
         period: point.period,
@@ -1707,6 +1744,7 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
         navDate: point.navDate || point.date,
         valued: 1
       };
+      row.missing = missingDailyNav;
       row.profit += profit;
       row.value = periodValue;
       row.endNav = point.nav;
@@ -1720,6 +1758,8 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
       }
       rowsByPeriod.set(point.period, row);
       previousNav = point.nav;
+      previousNavDate = point.navDate || point.date;
+      previousDate = point.date;
       previousPeriod = point.period;
     });
 
@@ -2196,6 +2236,7 @@ function portfolioSummary(options = {}) {
       day.value += row.value;
       day.profit += row.profit;
       day.valued += row.valued;
+      day.missing += row.missing ? 1 : 0;
       day.details.push({
         name: item.fund_name,
         invested: row.invested,
@@ -2205,7 +2246,7 @@ function portfolioSummary(options = {}) {
         endNav: row.endNav,
         date: row.date,
         navDate: row.navDate,
-        missing: false
+        missing: Boolean(row.missing)
       });
       summary.days.set(row.period, day);
     });
@@ -2233,12 +2274,26 @@ function portfolioPurchaseFingerprint() {
   return (hash >>> 0).toString(36);
 }
 
+function portfolioNavFingerprint() {
+  const ids = [...new Set(purchases.map((item) => moneyDjFundId(item.fund_id)).filter(Boolean))].sort();
+  let hash = 2166136261;
+  ids.forEach((id) => {
+    const rows = monthlyNavMeta.items?.[id]?.days || [];
+    const source = `${id}:${rows.map((row) => `${row.date}:${row.nav}`).join(",")};`;
+    for (let index = 0; index < source.length; index += 1) {
+      hash ^= source.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+  });
+  return (hash >>> 0).toString(36);
+}
+
 function portfolioSnapshotSource() {
   const dataSource = monthlyNavMeta.updatedAt || monthlyNavIndex?.updatedAt || sourceMeta.updatedAt || "no-source-time";
   const manualVersion = purchases.some((item) => String(item.fund_id || "").startsWith("manual:"))
     ? "|manual-buy:v5"
     : "";
-  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}|daily-nav:v2`;
+  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}|daily-nav:v3|nav:${portfolioNavFingerprint()}`;
 }
 
 function resetPortfolioSnapshots() {
@@ -2562,6 +2617,7 @@ function renderPeriodRow(item, periodType) {
         </span>
         ${periodDetailButton(detailKey, profitLabel, profitClass)}
       </p>
+      ${periodType === "day" && item.missing ? `<small>缺 ${item.missing} 筆當日淨值</small>` : ""}
     </div>
   `;
 }
@@ -4054,12 +4110,13 @@ function applyLatestNavItems(items) {
     if (!fund || !Number.isFinite(nav) || nav <= 0 || !navDate) {
       return;
     }
-    if (fund.nav !== nav || fund.navDate !== navDate) {
-      updated += 1;
+    if ((navDateComparableValue(item.navFullDate || navDate) ?? -Infinity) >=
+        (navDateComparableValue(fund.navDate) ?? -Infinity)) {
+      if (fund.nav !== nav || fund.navDate !== navDate) updated += 1;
+      fund.nav = nav;
+      fund.navDate = navDate;
+      fund.navSource = item.navSource || "MoneyDJ mobile";
     }
-    fund.nav = nav;
-    fund.navDate = navDate;
-    fund.navSource = item.navSource || "MoneyDJ mobile";
     periodUpdated = applyLatestNavToPeriodData(item, fund) || periodUpdated;
   });
   if (periodUpdated) {
@@ -4090,7 +4147,7 @@ async function refreshOwnedFundNavFromFunction() {
         "apikey": SUPABASE_KEY,
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ fundIds })
+      body: JSON.stringify({ fundIds, includeHistory: true })
     });
     if (!response.ok) {
       return { updated: 0, unavailable: true };
@@ -4101,7 +4158,8 @@ async function refreshOwnedFundNavFromFunction() {
       updated,
       unavailable: false,
       fetched: Array.isArray(payload.items) ? payload.items.length : 0,
-      failed: Array.isArray(payload.errors) ? payload.errors.length : 0
+      failed: Array.isArray(payload.errors) ? payload.errors.length : 0,
+      historyFailed: Array.isArray(payload.items) ? payload.items.filter((item) => item.historyError).length : 0
     };
   } catch (_error) {
     return { updated: 0, unavailable: true };
@@ -4289,7 +4347,8 @@ async function refreshPurchaseValues() {
       : `，即時檢查 ${instantRefresh.fetched || 0} 檔`;
     const requestText = requestedCount ? `，已排入 ${requestedCount} 檔後端更新` : "";
     const changeText = changedCount ? `，${changedCount} 筆有新淨值` : "，目前沒有新淨值";
-    setMessage(els.purchaseRefreshStatus, `資料 ${dataTime}${changeText}${instantText}${requestText}`);
+    const historyText = instantRefresh.historyFailed ? `，${instantRefresh.historyFailed} 檔歷史淨值未補齊，請稍後重試` : "";
+    setMessage(els.purchaseRefreshStatus, `資料 ${dataTime}${changeText}${instantText}${requestText}${historyText}`);
   } catch (error) {
     setMessage(els.purchaseRefreshStatus, `更新失敗：${error.message}`, true);
   } finally {

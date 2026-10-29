@@ -28,6 +28,7 @@ import tempfile
 import time
 import unicodedata
 import uuid
+from functools import lru_cache
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
@@ -352,6 +353,7 @@ def fetch_yahoo_chart_range(symbol: str, days: int = 120) -> dict[str, Any]:
     return fetch_json(url)
 
 
+@lru_cache(maxsize=256)
 def fetch_moneydj_bcd_nav(fund_id: str) -> list[tuple[datetime, float]]:
     fund_key = fund_id.split("-", 1)[0]
     query = urlencode(
@@ -1749,19 +1751,24 @@ def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
     if not high_performance_funds or limit <= 0:
         return []
 
-    always_refresh = score_ranked_funds[: min(always_refresh_top, limit, len(score_ranked_funds))]
-    selected_ids = {str(fund.get("fundId") or "") for fund in always_refresh}
-    offset = int(cache.get("nextTopOffset") or 0) % len(high_performance_funds)
-    wrapped = high_performance_funds[offset:] + high_performance_funds[:offset]
     screened_funds = [
         fund for fund in score_ranked_funds
         if number(fund.get("risk", 5), "risk") <= 5
         and number(fund.get("return3y", 0), "return3y") >= 20
     ][:50]
+    always_pool = screened_funds or score_ranked_funds
+    always_refresh = always_pool[: min(always_refresh_top, limit, len(always_pool))]
+    selected_ids = {str(fund.get("fundId") or "") for fund in always_refresh}
+    offset = int(cache.get("nextTopOffset") or 0) % len(high_performance_funds)
+    wrapped = high_performance_funds[offset:] + high_performance_funds[:offset]
     # Fill gaps in the displayed default ranking before the broader rotation pool.
     missing_recent_candidates = []
     missing_ids = set(selected_ids)
-    for fund in [*screened_funds, *high_performance_funds]:
+    for fund in [
+        *(fund for fund in screened_funds if fund.get("return1m") is None),
+        *screened_funds,
+        *high_performance_funds,
+    ]:
         fund_id = str(fund.get("fundId") or "")
         if fund_id not in missing_ids and (fund.get("return2w") is None or fund.get("return1m") is None):
             missing_recent_candidates.append(fund)

@@ -30,7 +30,7 @@ class NavRefreshTests(unittest.TestCase):
         self.assertEqual(len(ids), 50)
         self.assertEqual(len(set(ids)), 50)
         self.assertTrue(set(requested).issubset(ids))
-        self.assertTrue({fund["fundId"] for fund in broader[:20]}.issubset(ids))
+        self.assertTrue({fund["fundId"] for fund in screened[:20]}.issubset(ids))
         self.assertEqual(sum(f"SCREEN{i}" in ids for i in range(38, 50)), 10)
 
     def test_zero_budget_never_fetches(self):

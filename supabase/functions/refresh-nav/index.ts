@@ -10,6 +10,8 @@ type NavItem = {
   navDate: string;
   navFullDate: string;
   navSource: string;
+  history?: { date: string; nav: number }[];
+  historyError?: string;
 };
 
 function uniqueFundIds(value: unknown): string[] {
@@ -63,6 +65,39 @@ async function fetchLatestNav(fundId: string): Promise<NavItem> {
   return item;
 }
 
+function parseNavHistory(text: string): { date: string; nav: number }[] {
+  const [rawDates, rawNavs] = text.split("<!--", 1)[0].trim().split(/\s+/);
+  if (!rawDates || !rawNavs) throw new Error("historical NAV series missing");
+  const dates = rawDates.split(",");
+  const navs = rawNavs.split(",");
+  if (dates.length !== navs.length) throw new Error("historical NAV series length mismatch");
+  const rows = new Map<string, { date: string; nav: number }>();
+  dates.forEach((rawDate, index) => {
+    if (!/^\d{8}$/.test(rawDate)) return;
+    const date = `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6)}`;
+    const nav = Number(navs[index]);
+    const parsed = new Date(`${date}T00:00:00Z`);
+    if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date ||
+        !Number.isFinite(nav) || nav <= 0) return;
+    rows.set(date, { date, nav });
+  });
+  if (!rows.size) throw new Error("historical NAV series invalid");
+  return [...rows.values()].sort((a, b) => a.date.localeCompare(b.date)).slice(-190);
+}
+
+async function fetchNavHistory(fundId: string): Promise<{ date: string; nav: number }[]> {
+  const response = await fetch(
+    `https://fund.megabank.com.tw/w/bcd/tBCDNavList.djbcd?a=${encodeURIComponent(fundId)}&b=1&c=0&d=0`,
+    { headers: {
+      "User-Agent": "Mozilla/5.0 TaiwanFundRadar/1.0",
+      "Accept": "text/plain,*/*",
+      "Referer": `https://fund.megabank.com.tw/w/wr/wr02_${fundId}.djhtm`,
+    } },
+  );
+  if (!response.ok) throw new Error(`historical NAV ${response.status}`);
+  return parseNavHistory(await response.text());
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -82,7 +117,15 @@ Deno.serve(async (request) => {
 
     for (const fundId of fundIds) {
       try {
-        items.push(await fetchLatestNav(fundId));
+        const item = await fetchLatestNav(fundId);
+        if (body.includeHistory === true) {
+          try {
+            item.history = await fetchNavHistory(fundId);
+          } catch (error) {
+            item.historyError = error instanceof Error ? error.message : String(error);
+          }
+        }
+        items.push(item);
       } catch (error) {
         errors.push({ fundId, error: error instanceof Error ? error.message : String(error) });
       }
