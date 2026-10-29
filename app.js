@@ -157,6 +157,9 @@ let twiiTrendMeta = {
 };
 let twiiTrendDrag = null;
 let showTwiiCapital = true;
+let twiiCompareFundId = localStorage.getItem("twiiCompareFundId") || "";
+let twiiCompareFund = null;
+let twiiCompareLoadToken = 0;
 let monthlyNavMeta = {
   source: "月底淨值未載入",
   updatedAt: null,
@@ -263,6 +266,7 @@ const els = {
   twiiTrendChart: document.querySelector("#twiiTrendChart"),
   twiiTrendStatus: document.querySelector("#twiiTrendStatus"),
   twiiCapitalToggle: document.querySelector("#twiiCapitalToggle"),
+  twiiCompareFund: document.querySelector("#twiiCompareFund"),
   reset: document.querySelector("#resetBtn"),
   authStatus: document.querySelector("#authStatus"),
   authForm: document.querySelector("#authForm"),
@@ -1584,7 +1588,7 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
   const periodFromDate = periodType === "day" ? dayKeyFromDate : periodType === "week" ? weekKeyFromDate : monthKeyFromDate;
   const sellPeriod = isSold ? periodFromDate(sellDate) : "";
   const sourceRows = periodType === "day" ? navItem?.days || [] : periodType === "week" ? navItem?.weeks || [] : navItem?.months || [];
-  const points = sourceRows
+  let points = sourceRows
     .filter((row) => row?.date && Number(row.nav) > 0)
     .filter((row) => row.date >= buyDate && (!isSold || row.date < sellDate))
     .map((row) => ({
@@ -1613,6 +1617,53 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
       date: sellDate,
       nav: sellNav
     });
+  }
+
+  if (periodType === "day") {
+    const pointsByDate = new Map(points.map((point) => [point.date, point]));
+    const navByDate = new Map();
+    [navItem?.days, navItem?.weeks, navItem?.months].forEach((historyRows) => {
+      (historyRows || []).forEach((row) => {
+        const date = String(row?.date || "").slice(0, 10);
+        const nav = Number(row?.nav);
+        if (date >= buyDate && /^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(nav) && nav > 0) {
+          const existing = navByDate.get(date);
+          if (!existing || date >= existing.date) navByDate.set(date, { date, nav });
+        }
+      });
+    });
+    const navHistory = [...navByDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+    const dates = [...new Set([
+      ...(calendarRows || []).map((row) => String(row?.date || "").slice(0, 10)),
+      ...points.map((point) => point.date),
+      buyDate,
+      ...(isSold && hasSellNav ? [sellDate] : [])
+    ])]
+      .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= buyDate &&
+        (!isSold || date < sellDate || (date === sellDate && hasSellNav)))
+      .sort();
+    let historyIndex = 0;
+    let carriedNav = buyNav;
+    let carriedNavDate = buyDate;
+    const carriedPoints = dates.map((date) => {
+      while (historyIndex < navHistory.length && navHistory[historyIndex].date <= date) {
+        carriedNav = navHistory[historyIndex].nav;
+        carriedNavDate = navHistory[historyIndex].date;
+        historyIndex += 1;
+      }
+      const exactPoint = pointsByDate.get(date);
+      if (exactPoint) {
+        carriedNav = exactPoint.nav;
+        carriedNavDate = exactPoint.date;
+      }
+      return {
+        period: dayKeyFromDate(date),
+        date,
+        nav: carriedNav,
+        navDate: carriedNavDate
+      };
+    });
+    points = carriedPoints;
   }
 
   let previousNav = buyNav;
@@ -1653,11 +1704,13 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
         value: periodValue,
         startNav: previousNav,
         endNav: point.nav,
+        navDate: point.navDate || point.date,
         valued: 1
       };
       row.profit += profit;
       row.value = periodValue;
       row.endNav = point.nav;
+      row.navDate = point.navDate || point.date;
       if (isSold && point.period === sellPeriod) {
         row.invested = 0;
         row.value = 0;
@@ -2151,6 +2204,7 @@ function portfolioSummary(options = {}) {
         startNav: row.startNav,
         endNav: row.endNav,
         date: row.date,
+        navDate: row.navDate,
         missing: false
       });
       summary.days.set(row.period, day);
@@ -2184,7 +2238,7 @@ function portfolioSnapshotSource() {
   const manualVersion = purchases.some((item) => String(item.fund_id || "").startsWith("manual:"))
     ? "|manual-buy:v5"
     : "";
-  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}`;
+  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}|daily-nav:v2`;
 }
 
 function resetPortfolioSnapshots() {
@@ -2428,10 +2482,13 @@ function renderPeriodDetailsContent(details) {
       const profitClass = hasProfit ? (profit >= 0 ? "up" : "down") : "";
       const navText =
         detail.startNav && detail.endNav ? `${moneyNumber(detail.startNav)} -> ${moneyNumber(detail.endNav)}` : "缺淨值";
+      const navDateText = detail.navDate && detail.navDate !== detail.date
+        ? ` / 淨值截至 ${escapeHtml(detail.navDate)}`
+        : "";
       return `
         <div class="period-detail-row">
           <span>${escapeHtml(detail.name || "未命名基金")}</span>
-          <small>本${compactTwdWan(detail.invested)} / 現${detail.value === null ? "缺" : compactTwdWan(detail.value)} / ${navText}${detail.date ? ` / ${escapeHtml(detail.date)}` : ""}</small>
+          <small>本${compactTwdWan(detail.invested)} / 現${detail.value === null ? "缺" : compactTwdWan(detail.value)} / ${navText}${detail.date ? ` / ${escapeHtml(detail.date)}` : ""}${navDateText}</small>
           <strong class="${profitClass}">${hasProfit ? twd(profit) : "缺資料"}</strong>
         </div>
       `;
@@ -3974,6 +4031,11 @@ async function fetchLatestFundValues() {
   funds = parsed.funds;
   applyLocalNavOverridesToFunds();
   fundDataLoaded = true;
+  if (twiiCompareFund && !twiiCompareFund.unavailable) {
+    const selectedFund = funds.find((item) => moneyDjFundId(item.fundId || item.ticker) === twiiCompareFundId);
+    if (selectedFund) twiiCompareFund.name = selectedFund.name;
+  }
+  renderTwiiCompareOptions();
 }
 
 function applyLatestNavItems(items) {
@@ -4099,6 +4161,10 @@ async function loadMonthlyNavIndex(force = false) {
         throw new Error("淨值索引格式不正確。");
       }
       monthlyNavIndex = payload;
+      renderTwiiCompareOptions();
+      if (twiiCompareFundId && !twiiCompareFund) {
+        void selectTwiiCompareFund(twiiCompareFundId);
+      }
       renderTwiiTrendChart();
       return payload;
     } catch (_error) {
@@ -5224,6 +5290,95 @@ function twiiTrendPath(rows, key, width, height, padding, minimum, maximum) {
     .join(" ");
 }
 
+function twiiFundComparisonRows(fund, activeMonths) {
+  const key = activeMonths === 2 ? "days" : activeMonths === 6 ? "weeks" : "months";
+  return (fund?.[key] || [])
+    .map((row) => ({ date: String(row.date || "").slice(0, 10), nav: Number(row.nav) }))
+    .filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(row.date) && Number.isFinite(row.nav) && row.nav > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function twiiFundComparisonValues(rows, fundRows) {
+  if (rows.length < 2 || !fundRows.length) return null;
+  const startDate = rows[0].date;
+  const endDate = rows.at(-1).date;
+  const baseIndex = fundRows.findIndex((row) => row.date >= startDate && row.date <= endDate);
+  if (baseIndex < 0) return null;
+  const base = fundRows[baseIndex];
+  const startTwiiRow = [...rows].reverse().find((row) => row.date <= base.date);
+  const startTwii = Number(startTwiiRow?.close);
+  if (!base || !Number.isFinite(startTwii) || startTwii <= 0) return null;
+  const points = fundRows.slice(baseIndex)
+    .filter((row) => row.date <= endDate)
+    .map((row) => ({ date: row.date, value: startTwii * row.nav / base.nav }));
+  const lastFundRow = [...fundRows].reverse().find((row) => row.date <= endDate);
+  const matchedTwii = [...rows].reverse().find((row) => row.date <= (lastFundRow?.date || endDate));
+  if (!lastFundRow || !matchedTwii) return null;
+  return {
+    points,
+    fundReturn: (lastFundRow.nav / base.nav - 1) * 100,
+    twiiReturn: (Number(matchedTwii.close) / startTwii - 1) * 100,
+    startDate: base.date,
+    fundDate: lastFundRow.date
+  };
+}
+
+function twiiFundComparisonPath(points, rows, width, height, padding, minimum, maximum) {
+  if (!points?.length || rows.length < 2) return "";
+  const firstDate = Date.parse(`${rows[0].date}T00:00:00Z`);
+  const lastDate = Date.parse(`${rows.at(-1).date}T00:00:00Z`);
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  return points.map((point, index) => {
+    const date = Date.parse(`${point.date}T00:00:00Z`);
+    const x = padding.left + (date - firstDate) / Math.max(1, lastDate - firstDate) * plotWidth;
+    const y = padding.top + (1 - (point.value - minimum) / (maximum - minimum || 1)) * plotHeight;
+    return `${index ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`;
+  }).join(" ");
+}
+
+function renderTwiiCompareOptions() {
+  const select = els.twiiCompareFund;
+  if (!select) return;
+  const available = new Set(monthlyNavIndex?.ids || []);
+  const labels = new Map(funds.map((fund) => [moneyDjFundId(fund.fundId || fund.ticker), fund.name]));
+  const ids = [...available].sort((a, b) => String(labels.get(a) || a).localeCompare(String(labels.get(b) || b), "zh-Hant"));
+  select.innerHTML = `<option value="">不比較基金</option>${ids.map((id) =>
+    `<option value="${escapeHtml(id)}">${escapeHtml(labels.get(id) || id)}</option>`
+  ).join("")}`;
+  select.value = ids.includes(twiiCompareFundId) ? twiiCompareFundId : "";
+  select.disabled = ids.length === 0;
+}
+
+async function selectTwiiCompareFund(fundId) {
+  const token = ++twiiCompareLoadToken;
+  twiiCompareFundId = fundId;
+  localStorage.setItem("twiiCompareFundId", fundId);
+  twiiCompareFund = null;
+  renderTwiiTrendChart();
+  if (!fundId) return;
+  const index = await loadMonthlyNavIndex();
+  if (token !== twiiCompareLoadToken) return;
+  if (!index?.ids?.includes(fundId)) {
+    twiiCompareFund = { fundId, name: "無歷史淨值", unavailable: true };
+    renderTwiiTrendChart();
+    return;
+  }
+  try {
+    const response = await fetch(`data/nav_history/${encodeURIComponent(fundId)}.json?v=${encodeURIComponent(index.updatedAt)}`);
+    if (!response.ok) throw new Error("歷史淨值讀取失敗");
+    const payload = await response.json();
+    if (String(payload.fundId || "") !== fundId) throw new Error("基金代碼不相符");
+    if (token !== twiiCompareLoadToken) return;
+    const fund = funds.find((item) => moneyDjFundId(item.fundId || item.ticker) === fundId);
+    twiiCompareFund = { ...payload, name: fund?.name || payload.name || fundId };
+  } catch (_error) {
+    if (token !== twiiCompareLoadToken) return;
+    twiiCompareFund = { fundId, name: "歷史淨值讀取失敗", unavailable: true };
+  }
+  renderTwiiTrendChart();
+}
+
 function dailyCapitalValuesForRows(rows) {
   const sourceMatches = portfolioDailyCapital.sourceUpdatedAt === portfolioSnapshotSource();
   if (!currentUser || !portfolioDailyCapital.loaded || !sourceMatches) {
@@ -5348,7 +5503,14 @@ function renderTwiiTrendChart() {
   const startIndex = Math.max(0, rows.findIndex((row, index) => index < twiiTrendMeta.endIndex && row.date >= startDate));
   const visibleRows = rows.slice(startIndex, twiiTrendMeta.endIndex);
   twiiTrendMeta.visibleCount = visibleRows.length;
-  const values = visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite));
+  const compareRows = twiiCompareFund && !twiiCompareFund.unavailable
+    ? twiiFundComparisonRows(twiiCompareFund, twiiTrendMeta.activeMonths)
+    : [];
+  const comparison = twiiFundComparisonValues(visibleRows, compareRows);
+  const values = [
+    ...visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite)),
+    ...(comparison?.points || []).map((point) => point.value)
+  ];
   const seriesMinimum = Math.min(...values);
   const seriesMaximum = Math.max(...values);
   const domainPadding = Math.max((seriesMaximum - seriesMinimum) * 0.08, seriesMaximum * 0.002, 1);
@@ -5362,6 +5524,7 @@ function renderTwiiTrendChart() {
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
   const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
+  const fundPath = twiiFundComparisonPath(comparison?.points, visibleRows, width, height, padding, chartMinimum, chartMaximum);
   const capitalValues = showTwiiCapital ? dailyCapitalValuesForRows(visibleRows) : [];
   const numericCapitalValues = capitalValues.filter(Number.isFinite);
   const capitalMaximum = numericCapitalValues.length ? Math.max(...numericCapitalValues) : 0;
@@ -5372,9 +5535,10 @@ function renderTwiiTrendChart() {
   const capitalVisible = showTwiiCapital && latestCapital !== null;
 
   els.twiiTrendChart.innerHTML = `
-    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${capitalVisible ? "與每日在場本金" : ""}${crisisMarkers.length ? `；紅色三角：${crisisMarkers.map((event) => `${event.date} ${event.name}`).join("、")}` : ""}">
+    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${comparison ? `與${escapeHtml(twiiCompareFund.name)}同期績效` : ""}${capitalVisible ? "與每日在場本金" : ""}${crisisMarkers.length ? `；紅色三角：${crisisMarkers.map((event) => `${event.date} ${event.name}`).join("、")}` : ""}">
       ${twiiMonthLabels(visibleRows, width, height, padding)}
       ${crisisMarkers.map((event) => `<path class="twii-crisis-marker" d="M${(event.x - 10).toFixed(1)} 14 H${(event.x + 10).toFixed(1)} L${event.x.toFixed(1)} 32 Z"><title>${escapeHtml(`${event.date} ${event.name}（${event.milestone}）`)}</title></path>`).join("")}
+      ${fundPath ? `<path class="twii-trend-line twii-fund-line" d="${fundPath}"></path>` : ""}
       <path class="twii-trend-line twii-ma60-line" d="${ma60Path}"></path>
       <path class="twii-trend-line twii-ma20-line" d="${ma20Path}"></path>
       <path class="twii-trend-line twii-close-line" d="${closePath}"></path>
@@ -5386,12 +5550,19 @@ function renderTwiiTrendChart() {
       <span><i class="twii-close-dot"></i>指數 ${formatMarketPrice(latest.close)}</span>
       <span><i class="twii-ma20-dot"></i>月線 ${formatMarketPrice(latest.ma20)}</span>
       <span><i class="twii-ma60-dot"></i>季線 ${formatMarketPrice(latest.ma60)}</span>
+      ${comparison ? `<span><i class="twii-fund-dot"></i>${escapeHtml(twiiCompareFund.name)} ${formatPercent(comparison.fundReturn)}</span>` : ""}
+      ${comparison ? `<span><i class="twii-close-dot"></i>台股同期 ${formatPercent(comparison.twiiReturn)}</span>` : ""}
       ${capitalVisible ? `<span><i class="twii-capital-dot"></i>本金 ${compactTwdWan(latestCapital)}</span>` : ""}
     </div>
   `;
   if (els.twiiTrendStatus) {
     const capitalNote = capitalVisible ? "；本金使用獨立比例" : "";
-    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}`;
+    const compareNote = comparison
+      ? `；基金與台股同期 ${comparison.startDate.replaceAll("-", "/")} 至 ${comparison.fundDate.replaceAll("-", "/")}，基金淨值未計配息`
+      : twiiCompareFundId
+        ? (twiiCompareFund?.unavailable ? "；基金歷史淨值暫時無法讀取" : twiiCompareFund ? "；所選基金在此期間沒有足夠淨值" : "；基金淨值載入中")
+        : "";
+    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${compareNote}`;
   }
 }
 
@@ -5479,6 +5650,9 @@ function initTwiiTrendInteraction() {
   els.twiiCapitalToggle?.addEventListener("change", () => {
     showTwiiCapital = els.twiiCapitalToggle.checked;
     renderTwiiTrendChart();
+  });
+  els.twiiCompareFund?.addEventListener("change", (event) => {
+    void selectTwiiCompareFund(event.target.value);
   });
   document.querySelector("#twiiYearSelect")?.addEventListener("change", (event) => {
     selectTwiiTrendYear(event.target.value);

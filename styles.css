@@ -334,6 +334,25 @@ body.portfolio-view .margin-section {
   font-size: 12px;
 }
 
+.twii-fund-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 190px);
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.twii-fund-control select {
+  width: 190px;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 7px;
+  font-size: 12px;
+}
+
 .twii-capital-toggle {
   display: inline-flex;
   align-items: center;
@@ -415,6 +434,12 @@ body.portfolio-view .margin-section {
   stroke: #4776a8;
 }
 
+.twii-fund-line {
+  stroke: #c45d48;
+  stroke-width: 3.5;
+  stroke-dasharray: 7 4;
+}
+
 .twii-capital-line {
   stroke: var(--accent);
   stroke-width: 4;
@@ -478,6 +503,10 @@ body.portfolio-view .margin-section {
 
 .twii-ma60-dot {
   background: #4776a8;
+}
+
+.twii-fund-dot {
+  background: #c45d48;
 }
 
 .twii-capital-dot {
@@ -2617,6 +2646,26 @@ footer a {
 }
 
 @media (max-width: 560px) {
+  .twii-trend-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .twii-trend-controls {
+    width: 100%;
+    justify-items: start;
+  }
+
+  .twii-fund-control {
+    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr);
+    text-align: left;
+  }
+
+  .twii-fund-control select {
+    width: 100%;
+  }
+
   .hero h2 {
     font-size: 40px;
   }

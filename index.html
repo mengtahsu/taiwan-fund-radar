@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20261027-3">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20261030-2">
   </head>
   <body>
     <header class="topbar">
@@ -90,6 +90,12 @@
                   <span>本金線</span>
                 </label>
               </div>
+              <label class="twii-fund-control">
+                <span>基金對台股</span>
+                <select id="twiiCompareFund" aria-label="選擇基金與台股比較">
+                  <option value="">不比較基金</option>
+                </select>
+              </label>
             </div>
           </div>
           <div id="twiiTrendChart" class="twii-trend-chart" tabindex="0" aria-label="台股指數月線季線歷史走勢，可左右滑動"></div>
@@ -331,6 +337,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="fund-box.js?v=tw-funds-20260924-1"></script>
-    <script src="app.js?v=tw-funds-20261027-3"></script>
+    <script src="app.js?v=tw-funds-20261030-2"></script>
   </body>
 </html>
