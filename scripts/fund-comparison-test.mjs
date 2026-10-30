@@ -94,6 +94,8 @@ const app = {
   monthlyNavIndex: { ids: ["ZZZ999"] },
   monthlyNavMeta: { items: {} },
   twiiCompareFundId: "", twiiCompareFund: null, twiiCompareLoadToken: 0,
+  twiiCompareBaselineRows: null, twiiCompareInitialWindow: null,
+  twiiTrendMeta: { items: history.map(row => ({ date: row.date, close: row.nav })), activeMonths: 2, endIndex: null },
   twiiCompareHistoryCache: new Map(), twiiCompareCacheUserId: null,
   els: { twiiCompareFund: select },
   moneyDjFundId: value => String(value || "").split("-", 1)[0],
@@ -113,7 +115,7 @@ const app = {
 vm.createContext(app);
 vm.runInContext([
   "ownedTwiiCompareFunds", "renderTwiiCompareOptions", "selectTwiiCompareFund", "navHistoryRows",
-  "twiiFundComparisonRows", "twiiFundComparisonValues", "twiiFundComparisonPath", "twiiTrendPath"
+  "twiiFundComparisonRows", "twiiFundComparisonBaseline", "twiiFundComparisonValues", "twiiFundComparisonPath", "twiiTrendPath", "shiftIsoDateMonths"
 ].map(extract).join("\n"), app);
 app.renderTwiiCompareOptions();
 assert.match(select.innerHTML, /Official A/);
@@ -127,9 +129,12 @@ await app.selectTwiiCompareFund("AAA100");
 assert.deepEqual(clientCalls, [{ mode: "comparison", fundId: "AAA100" }]);
 assert.equal(app.twiiCompareFund.history.length, 300);
 assert.equal(app.twiiCompareFund.name, "Official A");
+assert.equal(app.twiiCompareInitialWindow.endDate, history.at(-1).date, "capture the chart's initial window when the fund is selected");
+const capturedWindow = app.twiiCompareInitialWindow;
 assert.equal(Object.keys(app.monthlyNavMeta.items).length, 0, "long chart data must not enlarge portfolio accounting history");
 await app.selectTwiiCompareFund("AAA100");
 assert.equal(clientCalls.length, 1);
+assert.equal(app.twiiCompareInitialWindow, capturedWindow, "refreshing the same selected fund must preserve its initial window");
 const slow = app.selectTwiiCompareFund("CCC300");
 await new Promise(resolve => setImmediate(resolve));
 await app.selectTwiiCompareFund("AAA100");
@@ -139,6 +144,7 @@ assert.equal(app.twiiCompareFund.fundId, "AAA100", "a slow old response cannot r
 app.purchases = [];
 app.renderTwiiCompareOptions();
 assert.equal(app.twiiCompareFund, null, "selling the last lot removes its comparison");
+assert.equal(app.twiiCompareBaselineRows, null);
 assert.equal(select.disabled, true);
 app.currentUser = null;
 app.renderTwiiCompareOptions();
@@ -166,15 +172,25 @@ const common = app.twiiFundComparisonValues(rows, navs.slice(1));
 assert.equal(common.startDate, "1985-01-07", "fund and index must use the same starting day");
 const fullIndex = [...rows, { date: "1985-01-09", close: 130 }, { date: "1985-01-10", close: 140 }];
 const divergentNavs = [...navs, { date: "1985-01-09", nav: 15 }, { date: "1985-01-10", nav: 18 }];
-const full = app.twiiFundComparisonValues(fullIndex, divergentNavs, fullIndex);
-const earlier = app.twiiFundComparisonValues(fullIndex.slice(0, 4), divergentNavs, fullIndex);
-const later = app.twiiFundComparisonValues(fullIndex.slice(2), divergentNavs, fullIndex);
-assert.equal(later.startDate, "1985-01-04", "panning must retain the first shared historical date");
+app.twiiCompareInitialWindow = { startDate: "1985-01-07", endDate: "1985-01-09" };
+app.twiiCompareBaselineRows = null;
+const baseline = app.twiiFundComparisonBaseline(fullIndex, divergentNavs, fullIndex.slice(1, 4));
+assert.equal(baseline[0].date, "1985-01-07", "use the initial viewport, not the oldest historical date");
+assert.equal(app.twiiFundComparisonBaseline(fullIndex, divergentNavs, fullIndex.slice(2)), baseline, "panning must preserve the captured baseline");
+assert.equal(app.twiiFundComparisonBaseline(fullIndex, divergentNavs, fullIndex), baseline, "expanding the window must preserve the captured baseline");
+const full = app.twiiFundComparisonValues(fullIndex, divergentNavs, baseline);
+const earlier = app.twiiFundComparisonValues(fullIndex.slice(0, 4), divergentNavs, baseline);
+const later = app.twiiFundComparisonValues(fullIndex.slice(2), divergentNavs, baseline);
+assert.equal(later.startDate, "1985-01-07", "panning must retain the initial viewport's first shared date");
 assert.deepEqual(Array.from(later.points), Array.from(full.points.slice(2)), "the same date's plotted value must not change after panning");
 assert.deepEqual(Array.from(earlier.points), Array.from(full.points.slice(0, 4)), "resizing the window must not change historical values");
 assert.equal(later.fundReturn, full.fundReturn, "a shorter window with the same end date retains cumulative returns");
 assert.equal(later.twiiReturn, full.twiiReturn);
 assert.equal(later.points[1].value, 150, "do not rebase the fund to the visible starting index");
+assert.equal(earlier.points[0].date, "1985-01-04", "history before the fixed viewport baseline remains comparable");
+app.twiiCompareBaselineRows = null;
+app.twiiCompareInitialWindow = { startDate: "1984-01-01", endDate: "1984-12-31" };
+assert.equal(app.twiiFundComparisonBaseline(fullIndex, divergentNavs.slice(1), fullIndex)[0].date, "1985-01-07", "if the fund did not exist in the initial window, anchor its first available view");
 const lateFund = app.twiiFundComparisonValues(fullIndex.slice(2), divergentNavs.slice(1), fullIndex);
 assert.equal(lateFund.startDate, "1985-01-07", "later-starting funds retain their own first shared historical date");
 assert.equal(app.twiiFundComparisonValues(rows.slice(0, 2), divergentNavs.slice(3), fullIndex), null, "no line is fabricated before the fixed baseline");

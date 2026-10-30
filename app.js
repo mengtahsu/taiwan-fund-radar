@@ -160,6 +160,8 @@ let showTwiiCapital = true;
 let twiiCompareFundId = localStorage.getItem("twiiCompareFundId") || "";
 let twiiCompareFund = null;
 let twiiCompareLoadToken = 0;
+let twiiCompareBaselineRows = null;
+let twiiCompareInitialWindow = null;
 const twiiCompareHistoryCache = new Map();
 let twiiCompareCacheUserId = null;
 let monthlyNavMeta = {
@@ -5364,10 +5366,20 @@ function twiiFundComparisonRows(fund) {
   return Array.isArray(fund?.history) ? fund.history : [];
 }
 
-function twiiFundComparisonValues(rows, fundRows, historyRows = rows) {
+function twiiFundComparisonBaseline(rows, fundRows, visibleRows) {
+  if (twiiCompareBaselineRows) return twiiCompareBaselineRows;
+  const dates = new Set(fundRows.map((row) => row.date));
+  const initial = twiiCompareInitialWindow;
+  const first = (initial && rows.find((row) => row.date >= initial.startDate && row.date <= initial.endDate && dates.has(row.date)))
+    || visibleRows.find((row) => dates.has(row.date));
+  if (first) twiiCompareBaselineRows = [first];
+  return twiiCompareBaselineRows || [];
+}
+
+function twiiFundComparisonValues(rows, fundRows, baselineRows = rows) {
   if (rows.length < 2 || !fundRows.length) return null;
   const byDate = new Map(fundRows.map((row) => [row.date, row]));
-  const first = historyRows.find((row) => byDate.has(row.date) && Number(row.close) > 0);
+  const first = baselineRows.find((row) => byDate.has(row.date) && Number(row.close) > 0);
   if (!first) return null;
   const matched = rows.filter((row) => byDate.has(row.date));
   if (matched.length < 2) return null;
@@ -5417,6 +5429,8 @@ function renderTwiiCompareOptions() {
     twiiCompareLoadToken += 1;
     twiiCompareFundId = "";
     twiiCompareFund = null;
+    twiiCompareBaselineRows = null;
+    twiiCompareInitialWindow = null;
   }
   if (twiiCompareCacheUserId !== userId) {
     twiiCompareHistoryCache.clear();
@@ -5439,7 +5453,16 @@ async function selectTwiiCompareFund(fundId) {
   const token = ++twiiCompareLoadToken;
   const userId = currentUser?.id;
   const owned = ownedTwiiCompareFunds();
-  twiiCompareFundId = owned.has(fundId) ? fundId : "";
+  const nextFundId = owned.has(fundId) ? fundId : "";
+  if (nextFundId !== twiiCompareFundId || !nextFundId) {
+    twiiCompareBaselineRows = null;
+    const rows = twiiTrendMeta.items || [];
+    const end = rows[Math.min(rows.length, twiiTrendMeta.endIndex || rows.length) - 1];
+    twiiCompareInitialWindow = end ? {
+      startDate: shiftIsoDateMonths(end.date, twiiTrendMeta.activeMonths), endDate: end.date
+    } : null;
+  }
+  twiiCompareFundId = nextFundId;
   localStorage.setItem("twiiCompareFundId", twiiCompareFundId);
   twiiCompareFund = null;
   renderTwiiTrendChart();
@@ -5601,7 +5624,8 @@ function renderTwiiTrendChart() {
   const compareRows = twiiCompareFund && !twiiCompareFund.unavailable
     ? twiiFundComparisonRows(twiiCompareFund)
     : [];
-  const comparison = twiiFundComparisonValues(visibleRows, compareRows, rows);
+  const comparisonBase = compareRows.length ? twiiFundComparisonBaseline(rows, compareRows, visibleRows) : [];
+  const comparison = twiiFundComparisonValues(visibleRows, compareRows, comparisonBase);
   const values = [
     ...visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite)),
     ...(comparison?.points || []).map((point) => point.value)
