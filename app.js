@@ -5364,12 +5364,13 @@ function twiiFundComparisonRows(fund) {
   return Array.isArray(fund?.history) ? fund.history : [];
 }
 
-function twiiFundComparisonValues(rows, fundRows) {
+function twiiFundComparisonValues(rows, fundRows, historyRows = rows) {
   if (rows.length < 2 || !fundRows.length) return null;
   const byDate = new Map(fundRows.map((row) => [row.date, row]));
+  const first = historyRows.find((row) => byDate.has(row.date) && Number(row.close) > 0);
+  if (!first) return null;
   const matched = rows.filter((row) => byDate.has(row.date));
   if (matched.length < 2) return null;
-  const first = matched[0];
   const last = matched.at(-1);
   const base = byDate.get(first.date);
   const startTwii = Number(first.close);
@@ -5600,7 +5601,7 @@ function renderTwiiTrendChart() {
   const compareRows = twiiCompareFund && !twiiCompareFund.unavailable
     ? twiiFundComparisonRows(twiiCompareFund)
     : [];
-  const comparison = twiiFundComparisonValues(visibleRows, compareRows);
+  const comparison = twiiFundComparisonValues(visibleRows, compareRows, rows);
   const values = [
     ...visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite)),
     ...(comparison?.points || []).map((point) => point.value)
@@ -5645,14 +5646,14 @@ function renderTwiiTrendChart() {
       <span><i class="twii-ma20-dot"></i>月線 ${formatMarketPrice(latest.ma20)}</span>
       <span><i class="twii-ma60-dot"></i>季線 ${formatMarketPrice(latest.ma60)}</span>
       ${comparison ? `<span><i class="twii-fund-dot"></i>${escapeHtml(twiiCompareFund.name)} ${formatPercent(comparison.fundReturn)}</span>` : ""}
-      ${comparison ? `<span><i class="twii-close-dot"></i>台股同期 ${formatPercent(comparison.twiiReturn)}</span>` : ""}
+      ${comparison ? `<span><i class="twii-close-dot"></i>台股累計 ${formatPercent(comparison.twiiReturn)}</span>` : ""}
       ${capitalVisible ? `<span><i class="twii-capital-dot"></i>本金 ${compactTwdWan(latestCapital)}</span>` : ""}
     </div>
   `;
   if (els.twiiTrendStatus) {
     const capitalNote = capitalVisible ? "；本金使用獨立比例" : "";
     const compareNote = comparison
-      ? `；基金與台股同期 ${comparison.startDate.replaceAll("-", "/")} 至 ${comparison.fundDate.replaceAll("-", "/")}，基金淨值未計配息`
+      ? `；固定基準 ${comparison.startDate.replaceAll("-", "/")}，累計至 ${comparison.fundDate.replaceAll("-", "/")}，基金淨值未計配息`
       : twiiCompareFundId
         ? (twiiCompareFund?.unavailable ? "；基金歷史淨值暫時無法讀取" : twiiCompareFund ? "；所選基金在此期間沒有足夠淨值" : "；基金淨值載入中")
         : "";
