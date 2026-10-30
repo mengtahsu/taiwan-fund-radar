@@ -45,7 +45,8 @@ assert.throws(() => edge.parseNavHistory("20260230 100"));
 
 const source = fs.readFileSync("app.js", "utf8");
 function extractFunction(name) {
-  const start = source.indexOf(`function ${name}(`);
+  const asyncStart = source.indexOf(`async function ${name}(`);
+  const start = asyncStart >= 0 ? asyncStart : source.indexOf(`function ${name}(`);
   assert(start >= 0, `missing ${name}`);
   let params = 0;
   let body = -1;
@@ -84,7 +85,7 @@ vm.createContext(app);
 vm.runInContext([
   "sourceDateForNavAge", "parseShortNavDate", "navDateComparableValue", "isOverrideFresh",
   "loadLocalNavOverrides", "saveLocalNavOverrides", "persistLatestNavItems", "shouldApplyNavOverride",
-  "applyLocalNavOverridesToFunds", "applyLatestNavItems", "navHistoryRows", "upsertPeriodNav", "applyLatestNavToPeriodData",
+  "applyLocalNavOverridesToFunds", "applyLatestNavItems", "refreshOwnedFundNavFromFunction", "navHistoryRows", "upsertPeriodNav", "applyLatestNavToPeriodData",
   "monthKeyFromDate", "weekKeyFromDate", "dayKeyFromDate", "periodIndex", "periodsAreContinuous",
   "periodProfitRowsForPurchase", "dailyProfitRowsForPurchase", "portfolioPurchaseFingerprint",
   "portfolioNavFingerprint", "portfolioSnapshotSource"
@@ -118,5 +119,18 @@ const dirtyAfterReload = dirtyCount;
 app.applyLocalNavOverridesToFunds();
 assert.equal(app.portfolioSnapshotSource(), afterReload);
 assert.equal(dirtyCount, dirtyAfterReload, "replaying identical history should reuse snapshots");
+
+let requestedBody;
+app.db = { auth: { getSession: async () => ({ data: { session: { access_token: "test-token" } } }) } };
+app.SUPABASE_KEY = "test-key";
+app.NAV_REFRESH_FUNCTION_URL = "https://example.test/refresh-nav";
+app.purchases.push({ fund_id: "BBB200", sell_date: "2026-10-20" });
+app.fetch = async (_url, options) => {
+  requestedBody = JSON.parse(options.body);
+  return { ok: true, json: async () => payload };
+};
+await app.refreshOwnedFundNavFromFunction();
+assert.deepEqual(requestedBody.fundIds, ["AAA100"], "manual refresh should only request currently held funds");
+assert.equal(requestedBody.includeHistory, true);
 
 console.log("NAV refresh history tests passed: exact daily backfill, reload persistence, snapshot invalidation, and source failure");

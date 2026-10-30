@@ -1581,7 +1581,7 @@ def load_nav_cache(root: Path) -> dict[str, Any]:
         try:
             payload = json.loads(cache_path.read_text(encoding="utf-8"))
             if isinstance(payload.get("items"), dict):
-                items.update(payload["items"])
+                items.update({key: value for key, value in payload["items"].items() if isinstance(value, dict)})
             next_top_offset = int(payload.get("nextTopOffset") or 0)
         except (OSError, json.JSONDecodeError):
             pass
@@ -1592,10 +1592,10 @@ def load_nav_cache(root: Path) -> dict[str, Any]:
             payload = json.loads(funds_path.read_text(encoding="utf-8"))
             for fund in payload.get("funds", []):
                 fund_id = str(fund.get("fundId") or "")
-                if not fund_id or fund_id in items or fund.get("return2w") is None:
+                if not fund_id or fund_id in items or (fund.get("return2w") is None and fund.get("return1m") is None):
                     continue
                 items[fund_id] = {
-                    "return2w": fund["return2w"],
+                    "return2w": fund.get("return2w"),
                     "return2wStartDate": fund.get("return2wStartDate"),
                     "return2wEndDate": fund.get("return2wEndDate"),
                     "return1m": fund.get("return1m"),
@@ -1634,13 +1634,14 @@ def apply_nav_cache(funds: list[dict[str, Any]], cache: dict[str, Any]) -> None:
             continue
         if parse_iso_datetime(cached.get("fetchedAt")) < fresh_after:
             continue
-        if cached.get("nav") is not None:
-            fund["nav"] = round(number(cached["nav"], "nav"), 4)
-        if cached.get("navDate"):
+        cached_age = nav_date_age_days(cached.get("navDate"))
+        fund_age = nav_date_age_days(fund.get("navDate"))
+        if cached_age is not None and (fund_age is None or cached_age <= fund_age):
+            if cached.get("nav") is not None:
+                fund["nav"] = round(number(cached["nav"], "nav"), 4)
             fund["navDate"] = str(cached["navDate"])
-        if cached.get("return2w") is None:
-            continue
-        fund["return2w"] = cached["return2w"]
+        if cached.get("return2w") is not None:
+            fund["return2w"] = cached["return2w"]
         if cached.get("return2wStartDate"):
             fund["return2wStartDate"] = cached["return2wStartDate"]
         if cached.get("return2wEndDate"):
@@ -1722,9 +1723,12 @@ def nav_date_age_days(nav_date: Any) -> int | None:
     if not match:
         return None
     now = datetime.now(timezone.utc)
-    date = datetime(now.year, int(match.group(1)), int(match.group(2)), tzinfo=timezone.utc)
-    if date - now > timedelta(days=31):
-        date = date.replace(year=now.year - 1)
+    try:
+        date = datetime(now.year, int(match.group(1)), int(match.group(2)), tzinfo=timezone.utc)
+        if date - now > timedelta(days=31):
+            date = date.replace(year=now.year - 1)
+    except ValueError:
+        return None
     return max(0, (now.date() - date.date()).days)
 
 
@@ -1733,7 +1737,14 @@ def has_recent_nav_date(fund: dict[str, Any], max_age_days: int = 14) -> bool:
     return age_days is not None and age_days <= max_age_days
 
 
-def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
+def nav_refresh_attempt_time(item: dict[str, Any] | None) -> datetime:
+    item = item or {}
+    return max(parse_iso_datetime(item.get("fetchedAt")), parse_iso_datetime(item.get("attemptedAt")))
+
+
+def nav_refresh_candidates(
+    funds: list[dict[str, Any]], cache: dict[str, Any], limit: int, requested_ids: list[str] | None = None
+) -> list[dict[str, Any]]:
     top_limit = int(os.environ.get("RECENT_NAV_TOP_LIMIT", RECENT_NAV_TOP_LIMIT))
     always_refresh_top = int(os.environ.get("RECENT_NAV_ALWAYS_REFRESH_TOP", RECENT_NAV_ALWAYS_REFRESH_TOP))
     default_funds = [fund for fund in funds if is_buyable_default_fund(fund) and has_recent_nav_date(fund)]
@@ -1746,17 +1757,23 @@ def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
         ),
         reverse=True,
     )
-    high_performance_funds = score_ranked_funds[:top_limit]
-
-    if not high_performance_funds or limit <= 0:
-        return []
-
-    screened_funds = [
+    screened_ranked_funds = [
         fund for fund in score_ranked_funds
         if number(fund.get("risk", 5), "risk") <= 5
         and number(fund.get("return3y", 0), "return3y") >= 20
-    ][:50]
+    ]
+    screened_funds = screened_ranked_funds[:50]
+    high_performance_funds = (screened_ranked_funds or score_ranked_funds)[:top_limit]
+    if limit <= 0:
+        return []
     always_pool = screened_funds or score_ranked_funds
+    leader_count = min(always_refresh_top, len(always_pool))
+    rotation_per_slot = math.ceil(max(0, len(high_performance_funds) - leader_count) / 6)
+    if limit < leader_count + rotation_per_slot:
+        raise ValueError(
+            f"NAV budget {limit} cannot refresh {leader_count} leaders each slot and cover "
+            f"{len(high_performance_funds)} candidates within 48 hours; need at least {leader_count + rotation_per_slot}"
+        )
     taiwan_now = datetime.now(timezone(timedelta(hours=8)))
     slot_start = (taiwan_now - timedelta(hours=(taiwan_now.hour - 4) % 8)).replace(minute=0, second=0, microsecond=0)
     cache_items = cache.get("items") or {}
@@ -1764,34 +1781,51 @@ def nav_refresh_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
     # requesting the same already-checked leaders again.
     always_refresh = [
         fund for fund in always_pool[: min(always_refresh_top, limit, len(always_pool))]
-        if parse_iso_datetime((cache_items.get(str(fund.get("fundId") or "")) or {}).get("fetchedAt")) < slot_start
+        if nav_refresh_attempt_time(cache_items.get(str(fund.get("fundId") or ""))) < slot_start
     ]
-    selected_ids = {str(fund.get("fundId") or "") for fund in always_refresh}
-    offset = int(cache.get("nextTopOffset") or 0) % len(high_performance_funds)
-    wrapped = high_performance_funds[offset:] + high_performance_funds[:offset]
-    # Fill gaps in the displayed default ranking before the broader rotation pool.
-    missing_recent_candidates = []
-    missing_ids = set(selected_ids)
-    for fund in [
-        *(fund for fund in screened_funds if fund.get("return1m") is None),
-        *screened_funds,
-        *high_performance_funds,
-    ]:
+    by_id = {str(fund.get("fundId") or ""): fund for fund in funds}
+    age_key = lambda fund: nav_refresh_attempt_time(cache_items.get(str(fund.get("fundId") or "")))
+    requested = sorted([by_id[id] for id in requested_ids or [] if id in by_id], key=age_key)
+    missing_ids = {str(fund.get("fundId") or "") for fund in screened_funds if fund.get("return1m") is None}
+    oldest_first = sorted(
+        [fund for fund in high_performance_funds if age_key(fund) < slot_start],
+        key=lambda fund: (age_key(fund), 0 if str(fund.get("fundId") or "") in missing_ids else 1),
+    )
+    # Budget requests before choosing rotation entries. A positional cursor can
+    # skip entries when a later priority pass truncates the selected list.
+    candidates = []
+    selected_ids: set[str] = set()
+    for fund in always_refresh:
         fund_id = str(fund.get("fundId") or "")
-        if fund_id not in missing_ids and (fund.get("return2w") is None or fund.get("return1m") is None):
-            missing_recent_candidates.append(fund)
-            missing_ids.add(fund_id)
-    rotating_limit = max(0, limit - len(always_refresh))
-    prioritized_missing = missing_recent_candidates[:rotating_limit]
-    selected_ids.update(str(fund.get("fundId") or "") for fund in prioritized_missing)
-    remaining_limit = max(0, rotating_limit - len(prioritized_missing))
-    rotating_candidates = [fund for fund in wrapped if str(fund.get("fundId") or "") not in selected_ids]
-    candidates = always_refresh + prioritized_missing + rotating_candidates[: min(remaining_limit, len(rotating_candidates))]
-    cache["nextTopOffset"] = (offset + remaining_limit) % len(high_performance_funds)
+        if fund_id and fund_id not in selected_ids:
+            candidates.append(fund)
+            selected_ids.add(fund_id)
+    rotation_reserve = min(
+        max(0, limit - len(candidates)),
+        rotation_per_slot,
+    )
+    request_budget = max(0, limit - len(candidates) - rotation_reserve)
+    for fund in requested:
+        fund_id = str(fund.get("fundId") or "")
+        if request_budget > 0 and fund_id and fund_id not in selected_ids:
+            candidates.append(fund)
+            selected_ids.add(fund_id)
+            request_budget -= 1
+    for fund in [*oldest_first, *requested]:
+        if len(candidates) >= limit:
+            break
+        fund_id = str(fund.get("fundId") or "")
+        if fund_id and fund_id not in selected_ids:
+            candidates.append(fund)
+            selected_ids.add(fund_id)
+            if len(candidates) >= limit:
+                break
     return candidates
 
 
-def monthly_nav_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], limit: int) -> list[dict[str, Any]]:
+def monthly_nav_candidates(
+    funds: list[dict[str, Any]], cache: dict[str, Any], limit: int, requested_ids: list[str] | None = None
+) -> list[dict[str, Any]]:
     if limit <= 0:
         return []
     default_funds = [fund for fund in funds if is_buyable_default_fund(fund) and str(fund.get("fundId") or "")]
@@ -1806,15 +1840,22 @@ def monthly_nav_candidates(funds: list[dict[str, Any]], cache: dict[str, Any], l
     )
     if not ranked_funds:
         return []
-    offset = int(cache.get("nextAllOffset") or 0) % len(ranked_funds)
-    wrapped = ranked_funds[offset:] + ranked_funds[:offset]
-    candidates = wrapped[: min(limit, len(wrapped))]
-    cache["nextAllOffset"] = (offset + len(candidates)) % len(ranked_funds)
-    return candidates
+    by_id = {str(fund.get("fundId") or ""): fund for fund in funds}
+    items = cache.get("items") or {}
+    age_key = lambda fund: nav_refresh_attempt_time(items.get(str(fund.get("fundId") or "")))
+    requested = sorted([by_id[id] for id in requested_ids or [] if id in by_id], key=age_key)
+    oldest_first = sorted(ranked_funds, key=age_key)
+    selected: dict[str, dict[str, Any]] = {}
+    for fund in [*requested, *oldest_first]:
+        selected.setdefault(str(fund.get("fundId") or ""), fund)
+        if len(selected) >= limit:
+            break
+    return list(selected.values())
 
 
-def requested_nav_fund_ids() -> list[str]:
-    url = f"{SUPABASE_URL}/rest/v1/fund_nav_requests?select=fund_id&order=requested_at.desc&limit=200"
+@lru_cache(maxsize=1)
+def requested_nav_requests() -> list[dict[str, Any]]:
+    url = f"{SUPABASE_URL}/rest/v1/fund_nav_requests?select=fund_id,requested_at&order=requested_at.desc&limit=200"
     request = Request(
         url,
         headers={
@@ -1831,23 +1872,21 @@ def requested_nav_fund_ids() -> list[str]:
         return []
     if not isinstance(rows, list):
         return []
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def requested_nav_fund_ids(cache: dict[str, Any] | None = None) -> list[str]:
     ids = []
-    for row in rows:
+    items = (cache or {}).get("items") or {}
+    fresh_after = datetime.now(timezone.utc) - timedelta(hours=24)
+    for row in requested_nav_requests():
         fund_id = str((row or {}).get("fund_id") or "").strip()
-        if fund_id and not fund_id.startswith("manual:") and fund_id not in ids:
+        cached = items.get(fund_id) or {}
+        fetched_at = parse_iso_datetime(cached.get("fetchedAt"))
+        pending = not cache or fetched_at < fresh_after or parse_iso_datetime(row.get("requested_at")) > fetched_at
+        if pending and fund_id and not fund_id.startswith("manual:") and fund_id not in ids:
             ids.append(fund_id)
     return ids
-
-
-def prioritize_requested_nav_candidates(funds: list[dict[str, Any]], candidates: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
-    requested_ids = requested_nav_fund_ids()
-    if not requested_ids or limit <= 0:
-        return candidates
-    by_id = {str(fund.get("fundId") or ""): fund for fund in funds if str(fund.get("fundId") or "")}
-    prioritized = [by_id[fund_id] for fund_id in requested_ids if fund_id in by_id]
-    selected = {str(fund.get("fundId") or "") for fund in prioritized}
-    prioritized.extend(fund for fund in candidates if str(fund.get("fundId") or "") not in selected)
-    return prioritized[:limit]
 
 
 def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
@@ -1856,8 +1895,7 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
     apply_nav_cache(funds, cache)
 
     refresh_limit = int(os.environ.get("RECENT_NAV_REFRESH_LIMIT", RECENT_NAV_REFRESH_LIMIT))
-    candidates = nav_refresh_candidates(funds, cache, max(0, refresh_limit))
-    candidates = prioritize_requested_nav_candidates(funds, candidates, max(0, refresh_limit))
+    candidates = nav_refresh_candidates(funds, cache, max(0, refresh_limit), requested_nav_fund_ids(cache))
     if not candidates:
         return
 
@@ -1881,6 +1919,7 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
             if mobile_latest and mobile_latest[0] > latest_date:
                 latest_date, latest_nav = mobile_latest
                 latest_source = "MoneyDJ mobile"
+                series = [*series, mobile_latest]
             returns = {
                 "return2w": period_return_from_series(series, RECENT_RETURN_DAYS),
                 "return1m": period_return_from_series(series, MONTH_RETURN_DAYS),
@@ -1903,6 +1942,10 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
             fund_id, recent_data, error = future.result()
             if error or recent_data.get("nav") is None:
                 errors += 1
+                cache_items.setdefault(fund_id, {}).update({
+                    "attemptedAt": datetime.now(timezone.utc).isoformat(),
+                    "lastError": error or "missing NAV",
+                })
                 continue
             fund = by_id.get(fund_id)
             if fund is not None:
@@ -1961,7 +2004,7 @@ def load_monthly_nav_cache(root: Path) -> dict[str, Any]:
         try:
             payload = json.loads(cache_path.read_text(encoding="utf-8"))
             if isinstance(payload.get("items"), dict):
-                items.update(payload["items"])
+                items.update({key: value for key, value in payload["items"].items() if isinstance(value, dict)})
             next_top_offset = int(payload.get("nextTopOffset") or 0)
             next_all_offset = int(payload.get("nextAllOffset") or 0)
         except (OSError, json.JSONDecodeError, ValueError):
@@ -1978,8 +2021,7 @@ def load_monthly_nav_cache(root: Path) -> dict[str, Any]:
 def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
     cache = load_monthly_nav_cache(root)
     refresh_limit = int(os.environ.get("MONTHLY_NAV_REFRESH_LIMIT", MONTHLY_NAV_REFRESH_LIMIT))
-    candidates = monthly_nav_candidates(funds, cache, max(0, refresh_limit))
-    candidates = prioritize_requested_nav_candidates(funds, candidates, max(0, refresh_limit))
+    candidates = monthly_nav_candidates(funds, cache, max(0, refresh_limit), requested_nav_fund_ids(cache))
     if not candidates:
         atomic_write_json(root / "data/monthly_nav.json", cache)
         return
@@ -2032,6 +2074,10 @@ def update_monthly_nav_history(root: Path, funds: list[dict[str, Any]]) -> None:
             fund_id, item, error = future.result()
             if error or item is None:
                 errors += 1
+                cache_items.setdefault(fund_id, {}).update({
+                    "attemptedAt": datetime.now(timezone.utc).isoformat(),
+                    "lastError": error or "missing historical NAV",
+                })
                 continue
             cache_items[fund_id] = item
 

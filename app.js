@@ -4131,6 +4131,7 @@ async function refreshOwnedFundNavFromFunction() {
   }
   const fundIds = [...new Set(
     purchases
+      .filter((item) => !item.sell_date)
       .map((item) => String(item.fund_id || "").trim())
       .filter((fundId) => fundId && !fundId.startsWith("manual:"))
   )];
