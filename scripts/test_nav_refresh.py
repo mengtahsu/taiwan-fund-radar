@@ -5,6 +5,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
+from unittest.mock import MagicMock
 
 
 spec = importlib.util.spec_from_file_location("update_funds", Path(__file__).resolve().parents[1] / "update_funds.py")
@@ -252,6 +253,78 @@ class NavRefreshTests(unittest.TestCase):
         self.assertEqual(fund["return1m"], 20)
         self.assertEqual(fund["return1mEndDate"], "2026-10-29")
         self.assertEqual(len(series), 2, "shared historical source data must not be mutated")
+
+    def test_bulk_one_month_return_survives_normalization_including_zero_and_negative(self):
+        risk = ["", "", "國內股票", "100", "台幣", "", "100", "20", "1", "", "RR4"]
+        for raw, expected in [("12.34", 12.34), ("-9.55", -9.55), ("0", 0)]:
+            returns = ["10/29", "測試基金", "測試投信", "國內股票", "", "", "10", raw, "5", "10", "20", "80", "100", "", ""]
+            fund = updater.normalize_moneydj_domestic_fund("TEST", returns, risk)
+            output = updater.normalize_payload({"funds": [fund]}, "test")["funds"][0]
+            self.assertEqual(output["return1m"], expected)
+            self.assertTrue(output["return1mEndDate"].endswith("-10-29"))
+
+    def test_numeric_zero_is_not_missing_for_forecast_ranking(self):
+        self.assertEqual(updater.optional_number(0), 0)
+        self.assertIsNone(updater.optional_number(float("nan")))
+        fund = {"nav": 100, "volatility": 20, "return1m": 0, "return3m": 0, "return6m": 0, "return1y": 0}
+        forecast = updater.one_month_forecast_score(fund)
+        self.assertIsNotNone(forecast)
+        self.assertEqual(forecast[0], 0)
+        self.assertAlmostEqual(forecast[1], 50, places=5)
+        fund["volatility"] = 0
+        self.assertEqual(updater.one_month_forecast_score(fund), (0, 0))
+
+    def test_same_day_cache_cannot_replace_official_bulk_return(self):
+        now = datetime.now(timezone.utc).isoformat()
+        cache = {"items": {"TEST": {"fetchedAt": now, "return1m": 99, "return1mEndDate": "2026-10-29"}}}
+        fund = {"fundId": "TEST", "return1m": 12.34, "return1mEndDate": "2026-10-29"}
+        updater.apply_nav_cache([fund], cache)
+        self.assertEqual(fund["return1m"], 12.34)
+        fund["return1mEndDate"] = "2026-10-28"
+        updater.apply_nav_cache([fund], cache)
+        self.assertEqual(fund["return1m"], 99)
+
+    def test_same_day_single_fund_return_does_not_replace_official_bulk_return(self):
+        fund = {"fundId": "TEST", "nav": 120, "navDate": "10/29", "return1m": 15.25, "return1mEndDate": "2026-10-29"}
+        cache = {"items": {}}
+        series = [(datetime(2026, 9, 29), 100), (datetime(2026, 10, 29), 120)]
+        with patch.object(updater, "load_nav_cache", return_value=cache), \
+             patch.object(updater, "requested_nav_fund_ids", return_value=[]), \
+             patch.object(updater, "nav_refresh_candidates", return_value=[fund]), \
+             patch.object(updater, "fetch_moneydj_bcd_nav", return_value=series), \
+             patch.object(updater, "fetch_moneydj_mobile_latest_nav", return_value=(datetime(2026, 10, 29), 120)), \
+             patch.object(updater, "atomic_write_json"):
+            updater.enrich_recent_fund_returns([fund])
+        self.assertEqual(fund["return1m"], 15.25)
+        self.assertEqual(cache["items"]["TEST"]["return1m"], 15.25)
+
+    def test_watch_mode_fetches_new_data_next_cycle_but_reuses_within_each_cycle(self):
+        observations = []
+        calls = []
+
+        class StopWatch(RuntimeError):
+            pass
+
+        def response(_request, **_kwargs):
+            calls.append(_request.full_url)
+            nav = 110 if len(calls) == 1 else 120
+            result = MagicMock()
+            result.__enter__.return_value.read.return_value = f"20261028,20261029 100,{nav}".encode()
+            return result
+
+        def update(_root):
+            observations.append(updater.fetch_moneydj_bcd_nav("TEST")[-1][1])
+            self.assertEqual(updater.fetch_moneydj_bcd_nav("TEST")[-1][1], observations[-1])
+
+        with patch.object(updater, "urlopen", side_effect=response), \
+             patch.object(updater, "update_combined_tw_funds_once", side_effect=update), \
+             patch.object(updater, "update_markets_once"), \
+             patch.object(updater.time, "sleep", side_effect=[None, StopWatch()]):
+            with self.assertRaises(StopWatch):
+                updater.watch(None, Path("."), "combined-tw-funds")
+        updater.fetch_moneydj_bcd_nav.cache_clear()
+        self.assertEqual(observations, [110, 120])
+        self.assertEqual(len(calls), 2)
 
 
 if __name__ == "__main__":

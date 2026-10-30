@@ -1095,11 +1095,12 @@ def strip_html(value: str) -> str:
 
 
 def optional_number(value: Any) -> float | None:
-    text = str(value or "").replace(",", "").strip()
+    text = ("" if value is None else str(value)).replace(",", "").strip()
     if text in {"", "-", "--", "N/A"}:
         return None
     try:
-        return float(text)
+        result = float(text)
+        return result if math.isfinite(result) else None
     except ValueError:
         return None
 
@@ -1416,6 +1417,7 @@ def normalize_moneydj_domestic_fund(
         "risk": risk,
         "return3y": round(return3y_annualized, 2),
         "return3yCumulative": round(three_year or 0.0, 2),
+        **({"return1m": round(one_month, 2), "return1mEndDate": nav_date_as_iso(return_row[0])} if one_month is not None else {}),
         "return3m": round(three_month or 0.0, 2),
         "return1y": round(one_year or 0.0, 2),
         "return6m": round(six_month or 0.0, 2),
@@ -1634,6 +1636,7 @@ def apply_nav_cache(funds: list[dict[str, Any]], cache: dict[str, Any]) -> None:
             continue
         if parse_iso_datetime(cached.get("fetchedAt")) < fresh_after:
             continue
+        source_month_end = nav_date_as_iso(fund.get("return1mEndDate") or fund.get("navDate"))
         cached_age = nav_date_age_days(cached.get("navDate"))
         fund_age = nav_date_age_days(fund.get("navDate"))
         if cached_age is not None and (fund_age is None or cached_age <= fund_age):
@@ -1646,12 +1649,13 @@ def apply_nav_cache(funds: list[dict[str, Any]], cache: dict[str, Any]) -> None:
             fund["return2wStartDate"] = cached["return2wStartDate"]
         if cached.get("return2wEndDate"):
             fund["return2wEndDate"] = cached["return2wEndDate"]
-        if cached.get("return1m") is not None:
+        cached_month_end = nav_date_as_iso(cached.get("return1mEndDate") or cached.get("navDate"))
+        if cached.get("return1m") is not None and (fund.get("return1m") is None or cached_month_end > source_month_end):
             fund["return1m"] = cached["return1m"]
-        if cached.get("return1mStartDate"):
-            fund["return1mStartDate"] = cached["return1mStartDate"]
-        if cached.get("return1mEndDate"):
-            fund["return1mEndDate"] = cached["return1mEndDate"]
+            if cached.get("return1mStartDate"):
+                fund["return1mStartDate"] = cached["return1mStartDate"]
+            if cached.get("return1mEndDate"):
+                fund["return1mEndDate"] = cached["return1mEndDate"]
 
 
 def clamp(value: float, minimum: float, maximum: float) -> float:
@@ -1718,18 +1722,31 @@ def is_buyable_default_fund(fund: dict[str, Any]) -> bool:
     return str(fund.get("type") or "") != "ETF"
 
 
-def nav_date_age_days(nav_date: Any) -> int | None:
-    match = re.match(r"^(\d{1,2})/(\d{1,2})$", str(nav_date or "").strip())
+def nav_date_as_iso(nav_date: Any) -> str:
+    value = str(nav_date or "").strip()
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        try:
+            return datetime.strptime(value, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            return ""
+    match = re.fullmatch(r"(\d{1,2})/(\d{1,2})", value)
     if not match:
-        return None
+        return ""
     now = datetime.now(timezone.utc)
     try:
         date = datetime(now.year, int(match.group(1)), int(match.group(2)), tzinfo=timezone.utc)
         if date - now > timedelta(days=31):
             date = date.replace(year=now.year - 1)
     except ValueError:
+        return ""
+    return date.date().isoformat()
+
+
+def nav_date_age_days(nav_date: Any) -> int | None:
+    date = nav_date_as_iso(nav_date)
+    if not date:
         return None
-    return max(0, (now.date() - date.date()).days)
+    return max(0, (datetime.now(timezone.utc).date() - datetime.strptime(date, "%Y-%m-%d").date()).days)
 
 
 def has_recent_nav_date(fund: dict[str, Any], max_age_days: int = 14) -> bool:
@@ -1972,6 +1989,11 @@ def enrich_recent_fund_returns(funds: list[dict[str, Any]]) -> None:
                 )
             if recent_data.get("return1m"):
                 month_return, month_start_date, month_end_date = recent_data["return1m"]
+                source_end_date = nav_date_as_iso(fund.get("return1mEndDate")) if fund is not None else ""
+                if fund is not None and fund.get("return1m") is not None and source_end_date >= month_end_date:
+                    month_return = fund["return1m"]
+                    month_start_date = fund.get("return1mStartDate") or ""
+                    month_end_date = source_end_date
                 if fund is not None:
                     fund["return1m"] = month_return
                     fund["return1mStartDate"] = month_start_date
@@ -2684,6 +2706,8 @@ def watch(config: dict[str, Any] | None, root: Path, provider: str) -> None:
 
     while True:
         try:
+            fetch_moneydj_bcd_nav.cache_clear()
+            requested_nav_requests.cache_clear()
             if provider == "yahoo-tw-etf":
                 update_yahoo_etfs_once(root)
             elif provider == "yuanta-funds":
