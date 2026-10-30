@@ -334,6 +334,13 @@ body.portfolio-view .margin-section {
   font-size: 12px;
 }
 
+.twii-rebase {
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .twii-fund-control {
   display: grid;
   grid-template-columns: auto minmax(0, 190px);

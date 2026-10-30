@@ -271,6 +271,7 @@ const els = {
   twiiTrendStatus: document.querySelector("#twiiTrendStatus"),
   twiiCapitalToggle: document.querySelector("#twiiCapitalToggle"),
   twiiCompareFund: document.querySelector("#twiiCompareFund"),
+  twiiRebase: document.querySelector("#twiiRebase"),
   reset: document.querySelector("#resetBtn"),
   authStatus: document.querySelector("#authStatus"),
   authForm: document.querySelector("#authForm"),
@@ -5376,6 +5377,22 @@ function twiiFundComparisonBaseline(rows, fundRows, visibleRows) {
   return twiiCompareBaselineRows || [];
 }
 
+function resetTwiiCompareBaseline() {
+  if (!twiiCompareFund || twiiCompareFund.unavailable) return false;
+  const rows = (twiiTrendMeta.items || [])
+    .filter((row) => row.date && Number(row.close) > 0)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const end = Math.min(rows.length, twiiTrendMeta.endIndex || rows.length);
+  const visible = rows.slice(Math.max(0, end - twiiTrendMeta.visibleCount), end);
+  const dates = new Set(twiiFundComparisonRows(twiiCompareFund).map((row) => row.date));
+  const first = visible.find((row) => dates.has(row.date));
+  if (!first) return false;
+  twiiCompareBaselineRows = [first];
+  twiiCompareInitialWindow = { startDate: visible[0].date, endDate: visible.at(-1).date };
+  renderTwiiTrendChart();
+  return true;
+}
+
 function twiiFundComparisonValues(rows, fundRows, baselineRows = rows) {
   if (rows.length < 2 || !fundRows.length) return null;
   const byDate = new Map(fundRows.map((row) => [row.date, row]));
@@ -5592,6 +5609,7 @@ function renderTwiiTrendChart() {
     .filter((item) => item.date && Number(item.close) > 0)
     .sort((a, b) => String(a.date).localeCompare(String(b.date)));
   if (rows.length < 2) {
+    if (els.twiiRebase) els.twiiRebase.disabled = true;
     els.twiiTrendChart.innerHTML = '<div class="market-empty">台股均線資料不足</div>';
     if (els.twiiTrendStatus) {
       els.twiiTrendStatus.textContent = twiiTrendMeta.source;
@@ -5626,6 +5644,7 @@ function renderTwiiTrendChart() {
     : [];
   const comparisonBase = compareRows.length ? twiiFundComparisonBaseline(rows, compareRows, visibleRows) : [];
   const comparison = twiiFundComparisonValues(visibleRows, compareRows, comparisonBase);
+  if (els.twiiRebase) els.twiiRebase.disabled = !comparison;
   const values = [
     ...visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite)),
     ...(comparison?.points || []).map((point) => point.value)
@@ -5775,6 +5794,7 @@ function initTwiiTrendInteraction() {
   els.twiiCompareFund?.addEventListener("change", (event) => {
     void selectTwiiCompareFund(event.target.value);
   });
+  els.twiiRebase?.addEventListener("click", resetTwiiCompareBaseline);
   document.querySelector("#twiiYearSelect")?.addEventListener("change", (event) => {
     selectTwiiTrendYear(event.target.value);
   });

@@ -115,7 +115,7 @@ const app = {
 vm.createContext(app);
 vm.runInContext([
   "ownedTwiiCompareFunds", "renderTwiiCompareOptions", "selectTwiiCompareFund", "navHistoryRows",
-  "twiiFundComparisonRows", "twiiFundComparisonBaseline", "twiiFundComparisonValues", "twiiFundComparisonPath", "twiiTrendPath", "shiftIsoDateMonths"
+  "twiiFundComparisonRows", "twiiFundComparisonBaseline", "resetTwiiCompareBaseline", "twiiFundComparisonValues", "twiiFundComparisonPath", "twiiTrendPath", "shiftIsoDateMonths"
 ].map(extract).join("\n"), app);
 app.renderTwiiCompareOptions();
 assert.match(select.innerHTML, /Official A/);
@@ -194,4 +194,19 @@ assert.equal(app.twiiFundComparisonBaseline(fullIndex, divergentNavs.slice(1), f
 const lateFund = app.twiiFundComparisonValues(fullIndex.slice(2), divergentNavs.slice(1), fullIndex);
 assert.equal(lateFund.startDate, "1985-01-07", "later-starting funds retain their own first shared historical date");
 assert.equal(app.twiiFundComparisonValues(rows.slice(0, 2), divergentNavs.slice(3), fullIndex), null, "no line is fabricated before the fixed baseline");
-console.log("Fund comparison tests passed: 1985 history, held-only authorization, on-demand cache, account/race safety, matched dates, and fixed baseline across chart windows");
+app.twiiCompareFund = { history: divergentNavs };
+app.twiiTrendMeta = { items: fullIndex, endIndex: 5, visibleCount: 3 };
+const callsBeforeRebase = clientCalls.length;
+assert.equal(app.resetTwiiCompareBaseline(), true);
+assert.equal(app.twiiCompareBaselineRows[0].date, "1985-01-08", "the command resets the baseline to the visible left edge");
+assert.equal(app.twiiFundComparisonValues(fullIndex.slice(2), divergentNavs, app.twiiCompareBaselineRows).points[0].value, 120, "both lines meet at the new baseline");
+const rebased = app.twiiCompareBaselineRows;
+app.twiiTrendMeta.endIndex = 4;
+assert.equal(app.twiiFundComparisonBaseline(fullIndex, divergentNavs, fullIndex.slice(1, 4)), rebased, "panning after a manual reset must retain the new baseline");
+assert.equal(clientCalls.length, callsBeforeRebase, "manual rebasing must not fetch history again");
+app.twiiCompareFund = { unavailable: true };
+assert.equal(app.resetTwiiCompareBaseline(), false);
+assert.equal(app.twiiCompareBaselineRows, rebased);
+app.twiiCompareFund = { history: [{ date: "1994-01-01", nav: 100 }] };
+assert.equal(app.resetTwiiCompareBaseline(), false, "no shared data must leave the existing baseline unchanged");
+console.log("Fund comparison tests passed: 1985 history, held-only authorization, on-demand cache, account/race safety, matched dates, fixed windows, and manual baseline reset");
