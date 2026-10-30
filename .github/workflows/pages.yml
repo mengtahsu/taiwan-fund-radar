@@ -112,6 +112,31 @@ jobs:
           )
           PY
 
+      - name: Restore last published fund snapshot as a fallback
+        if: steps.update_gate.outputs.should_update == 'true'
+        run: |
+          python3 - <<'PY'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+          from urllib.request import urlopen
+
+          path = Path("data/funds.json")
+          try:
+              existing = json.loads(path.read_text(encoding="utf-8"))
+              with urlopen("https://mengtahsu.github.io/taiwan-fund-radar/data/funds.json", timeout=20) as response:
+                  published = json.load(response)
+              def timestamp(payload):
+                  return datetime.fromisoformat(str(payload["updatedAt"]).replace("Z", "+00:00")).timestamp()
+              if isinstance(published.get("funds"), list) and published["funds"] and timestamp(published) > timestamp(existing):
+                  temporary = path.with_suffix(".published.tmp")
+                  temporary.write_text(json.dumps(published, ensure_ascii=False) + "\n", encoding="utf-8")
+                  temporary.replace(path)
+                  print(f"Restored published funds dated {published['updatedAt']}; all sanity checks still apply")
+          except Exception as error:
+              print(f"Published fallback unavailable; retaining local snapshot: {error}")
+          PY
+
       - name: Update fund data
         if: steps.update_gate.outputs.should_update == 'true' && env.FUND_SOURCE_URL != ''
         run: python3 update_funds.py --config config/source.json --once
