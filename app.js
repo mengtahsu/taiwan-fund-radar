@@ -5447,7 +5447,8 @@ async function selectTwiiCompareFund(fundId) {
     let cached = twiiCompareHistoryCache.get(fundId);
     if (!cached || cached.expiresAt <= Date.now()) {
       const { data } = await db.auth.getSession();
-      if (token !== twiiCompareLoadToken || data.session?.user?.id !== userId) return;
+      if (token !== twiiCompareLoadToken || currentUser?.id !== userId) return;
+      if (data.session?.user?.id !== userId || !data.session.access_token) throw new Error("登入已過期");
       const response = await fetch(NAV_REFRESH_FUNCTION_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY, Authorization: `Bearer ${data.session.access_token}` },

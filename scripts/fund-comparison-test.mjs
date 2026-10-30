@@ -143,6 +143,12 @@ assert.equal(select.disabled, true);
 app.currentUser = null;
 app.renderTwiiCompareOptions();
 assert.equal(app.twiiCompareHistoryCache.size, 0, "logout clears cached personal selections");
+app.currentUser = { id: "user-a" };
+app.purchases = [{ fund_id: "AAA100", fund_name: "Held A" }];
+app.db.auth.getSession = async () => ({ data: { session: null } });
+app.renderTwiiCompareOptions();
+await app.selectTwiiCompareFund("AAA100");
+assert.equal(app.twiiCompareFund.unavailable, true, "an expired session must show an error instead of loading forever");
 
 const rows = [
   { date: "1985-01-04", close: 100 }, { date: "1985-01-07", close: 110 }, { date: "1985-01-08", close: 120 }
