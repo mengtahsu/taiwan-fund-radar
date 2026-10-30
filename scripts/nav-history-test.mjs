@@ -47,6 +47,7 @@ try {
     moneyDjFundId: (value) => String(value || "").match(/[A-Z]{2,}\d{2,}/)?.[0] || "",
     currentFundForPurchase: (item) => ({ fundId: item.fund_id }),
     renderTwiiTrendChart: () => {},
+    renderTwiiCompareOptions: () => {},
     renderPurchases: () => {},
     fetch: async (url) => {
       const relative = url.split("?")[0];

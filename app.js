@@ -160,6 +160,8 @@ let showTwiiCapital = true;
 let twiiCompareFundId = localStorage.getItem("twiiCompareFundId") || "";
 let twiiCompareFund = null;
 let twiiCompareLoadToken = 0;
+const twiiCompareHistoryCache = new Map();
+let twiiCompareCacheUserId = null;
 let monthlyNavMeta = {
   source: "月底淨值未載入",
   updatedAt: null,
@@ -3927,6 +3929,7 @@ async function loadPurchases(options = {}) {
     recurringPlans = [];
     fundTrailingBoxes = new Map();
     resetPortfolioSnapshots();
+    renderTwiiCompareOptions();
     renderTwiiTrendChart();
     renderRecurringPlans();
     if (options.render !== false) {
@@ -3962,6 +3965,7 @@ async function loadPurchases(options = {}) {
   if (error) {
     await trailingBoxesPromise;
     purchases = [];
+    renderTwiiCompareOptions();
     renderTwiiTrendChart();
     if (options.render !== false) {
       renderPurchases();
@@ -3981,6 +3985,8 @@ async function loadPurchases(options = {}) {
     if (result.error) {
       purchases = [];
       cashAdjustments = [];
+      renderTwiiCompareOptions();
+      renderTwiiTrendChart();
       setMessage(els.purchaseMessage, `資金調整紀錄讀取失敗：${result.error.message}`, true);
       if (options.render !== false) {
         els.portfolioStats.innerHTML = "";
@@ -3993,6 +3999,7 @@ async function loadPurchases(options = {}) {
   }
   cashAdjustments = adjustments;
   purchases = data || [];
+  renderTwiiCompareOptions();
   renderRecurringFundOptions();
   renderRecurringCashSources();
   renderRecurringPlans();
@@ -4221,9 +4228,6 @@ async function loadMonthlyNavIndex(force = false) {
       }
       monthlyNavIndex = payload;
       renderTwiiCompareOptions();
-      if (twiiCompareFundId && !twiiCompareFund) {
-        void selectTwiiCompareFund(twiiCompareFundId);
-      }
       renderTwiiTrendChart();
       return payload;
     } catch (_error) {
@@ -5078,7 +5082,13 @@ async function initAuth() {
     if (event === "INITIAL_SESSION" && (session?.user?.id || null) === (currentUser?.id || null)) {
       return;
     }
+    const changedUser = (currentUser?.id || null) !== (session?.user?.id || null);
     currentUser = session?.user || null;
+    if (changedUser) {
+      purchases = [];
+      renderTwiiCompareOptions();
+      renderTwiiTrendChart();
+    }
     recurringPlans = [];
     recurringEvents = [];
     recurringSyncPromise = null;
@@ -5350,88 +5360,111 @@ function twiiTrendPath(rows, key, width, height, padding, minimum, maximum) {
     .join(" ");
 }
 
-function twiiFundComparisonRows(fund, activeMonths) {
-  const key = activeMonths === 2 ? "days" : activeMonths === 6 ? "weeks" : "months";
-  return (fund?.[key] || [])
-    .map((row) => ({ date: String(row.date || "").slice(0, 10), nav: Number(row.nav) }))
-    .filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(row.date) && Number.isFinite(row.nav) && row.nav > 0)
-    .sort((a, b) => a.date.localeCompare(b.date));
+function twiiFundComparisonRows(fund) {
+  return Array.isArray(fund?.history) ? fund.history : [];
 }
 
 function twiiFundComparisonValues(rows, fundRows) {
   if (rows.length < 2 || !fundRows.length) return null;
-  const startDate = rows[0].date;
-  const endDate = rows.at(-1).date;
-  const baseIndex = fundRows.findIndex((row) => row.date >= startDate && row.date <= endDate);
-  if (baseIndex < 0) return null;
-  const base = fundRows[baseIndex];
-  const startTwiiRow = [...rows].reverse().find((row) => row.date <= base.date);
-  const startTwii = Number(startTwiiRow?.close);
-  if (!base || !Number.isFinite(startTwii) || startTwii <= 0) return null;
-  const points = fundRows.slice(baseIndex)
-    .filter((row) => row.date <= endDate)
-    .map((row) => ({ date: row.date, value: startTwii * row.nav / base.nav }));
-  const lastFundRow = [...fundRows].reverse().find((row) => row.date <= endDate);
-  const matchedTwii = [...rows].reverse().find((row) => row.date <= (lastFundRow?.date || endDate));
-  if (!lastFundRow || !matchedTwii) return null;
+  const byDate = new Map(fundRows.map((row) => [row.date, row]));
+  const matched = rows.filter((row) => byDate.has(row.date));
+  if (matched.length < 2) return null;
+  const first = matched[0];
+  const last = matched.at(-1);
+  const base = byDate.get(first.date);
+  const startTwii = Number(first.close);
+  if (!Number.isFinite(startTwii) || startTwii <= 0) return null;
+  const points = matched.map((row) => ({ date: row.date, value: startTwii * byDate.get(row.date).nav / base.nav }));
   return {
     points,
-    fundReturn: (lastFundRow.nav / base.nav - 1) * 100,
-    twiiReturn: (Number(matchedTwii.close) / startTwii - 1) * 100,
+    fundReturn: (byDate.get(last.date).nav / base.nav - 1) * 100,
+    twiiReturn: (Number(last.close) / startTwii - 1) * 100,
     startDate: base.date,
-    fundDate: lastFundRow.date
+    fundDate: last.date
   };
 }
 
 function twiiFundComparisonPath(points, rows, width, height, padding, minimum, maximum) {
   if (!points?.length || rows.length < 2) return "";
-  const firstDate = Date.parse(`${rows[0].date}T00:00:00Z`);
-  const lastDate = Date.parse(`${rows.at(-1).date}T00:00:00Z`);
+  const positions = new Map(rows.map((row, index) => [row.date, index]));
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
   return points.map((point, index) => {
-    const date = Date.parse(`${point.date}T00:00:00Z`);
-    const x = padding.left + (date - firstDate) / Math.max(1, lastDate - firstDate) * plotWidth;
+    const x = padding.left + positions.get(point.date) / (rows.length - 1) * plotWidth;
     const y = padding.top + (1 - (point.value - minimum) / (maximum - minimum || 1)) * plotHeight;
     return `${index ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`;
   }).join(" ");
 }
 
+function ownedTwiiCompareFunds() {
+  if (!currentUser) return new Map();
+  const labels = new Map(funds.map((fund) => [moneyDjFundId(fund.fundId || fund.ticker), fund.name]));
+  const owned = new Map();
+  purchases.filter((item) => !item.sell_date && !String(item.fund_id || "").startsWith("manual:")).forEach((item) => {
+    const id = moneyDjFundId(item.fund_id);
+    if (id) owned.set(id, labels.get(id) || item.fund_name || id);
+  });
+  return owned;
+}
+
 function renderTwiiCompareOptions() {
   const select = els.twiiCompareFund;
   if (!select) return;
-  const available = new Set(monthlyNavIndex?.ids || []);
-  const labels = new Map(funds.map((fund) => [moneyDjFundId(fund.fundId || fund.ticker), fund.name]));
-  const ids = [...available].sort((a, b) => String(labels.get(a) || a).localeCompare(String(labels.get(b) || b), "zh-Hant"));
-  select.innerHTML = `<option value="">不比較基金</option>${ids.map((id) =>
+  const userId = currentUser?.id || null;
+  const labels = ownedTwiiCompareFunds();
+  if (twiiCompareCacheUserId !== userId || !labels.has(twiiCompareFundId)) {
+    twiiCompareLoadToken += 1;
+    twiiCompareFundId = "";
+    twiiCompareFund = null;
+  }
+  if (twiiCompareCacheUserId !== userId) {
+    twiiCompareHistoryCache.clear();
+    twiiCompareCacheUserId = userId;
+  }
+  const ids = [...labels.keys()].sort((a, b) => labels.get(a).localeCompare(labels.get(b), "zh-Hant"));
+  const placeholder = !currentUser ? "登入後選擇持有基金" : ids.length ? "不比較基金" : "目前沒有持有基金";
+  select.innerHTML = `<option value="">${placeholder}</option>${ids.map((id) =>
     `<option value="${escapeHtml(id)}">${escapeHtml(labels.get(id) || id)}</option>`
   ).join("")}`;
-  select.value = ids.includes(twiiCompareFundId) ? twiiCompareFundId : "";
+  const preferred = localStorage.getItem("twiiCompareFundId") || "";
+  if (!twiiCompareFundId && labels.has(preferred)) {
+    void selectTwiiCompareFund(preferred);
+  }
+  select.value = twiiCompareFundId;
   select.disabled = ids.length === 0;
 }
 
 async function selectTwiiCompareFund(fundId) {
   const token = ++twiiCompareLoadToken;
-  twiiCompareFundId = fundId;
-  localStorage.setItem("twiiCompareFundId", fundId);
+  const userId = currentUser?.id;
+  const owned = ownedTwiiCompareFunds();
+  twiiCompareFundId = owned.has(fundId) ? fundId : "";
+  localStorage.setItem("twiiCompareFundId", twiiCompareFundId);
   twiiCompareFund = null;
   renderTwiiTrendChart();
-  if (!fundId) return;
-  const index = await loadMonthlyNavIndex();
-  if (token !== twiiCompareLoadToken) return;
-  if (!index?.ids?.includes(fundId)) {
-    twiiCompareFund = { fundId, name: "無歷史淨值", unavailable: true };
-    renderTwiiTrendChart();
-    return;
-  }
+  if (!twiiCompareFundId || !db) return;
   try {
-    const response = await fetch(`data/nav_history/${encodeURIComponent(fundId)}.json?v=${encodeURIComponent(index.updatedAt)}`);
-    if (!response.ok) throw new Error("歷史淨值讀取失敗");
-    const payload = await response.json();
-    if (String(payload.fundId || "") !== fundId) throw new Error("基金代碼不相符");
-    if (token !== twiiCompareLoadToken) return;
-    const fund = funds.find((item) => moneyDjFundId(item.fundId || item.ticker) === fundId);
-    twiiCompareFund = { ...payload, name: fund?.name || payload.name || fundId };
+    let cached = twiiCompareHistoryCache.get(fundId);
+    if (!cached || cached.expiresAt <= Date.now()) {
+      const { data } = await db.auth.getSession();
+      if (token !== twiiCompareLoadToken || data.session?.user?.id !== userId) return;
+      const response = await fetch(NAV_REFRESH_FUNCTION_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY, Authorization: `Bearer ${data.session.access_token}` },
+        body: JSON.stringify({ mode: "comparison", fundId })
+      });
+      if (!response.ok) throw new Error("歷史淨值讀取失敗");
+      const payload = await response.json();
+      if (String(payload.fundId || "") !== fundId || !Array.isArray(payload.history)) throw new Error("基金歷史資料不相符");
+      const history = navHistoryRows({ history: payload.history }).filter((row) => row.date >= "1985-01-01");
+      if (history.length < 2) throw new Error("基金歷史資料不足");
+      if (token !== twiiCompareLoadToken || currentUser?.id !== userId || !ownedTwiiCompareFunds().has(fundId)) return;
+      cached = { payload: { ...payload, history }, expiresAt: Date.now() + 8 * 3600000 };
+      twiiCompareHistoryCache.set(fundId, cached);
+      while (twiiCompareHistoryCache.size > 20) twiiCompareHistoryCache.delete(twiiCompareHistoryCache.keys().next().value);
+    }
+    if (token !== twiiCompareLoadToken || currentUser?.id !== userId || !ownedTwiiCompareFunds().has(fundId)) return;
+    twiiCompareFund = { ...cached.payload, name: owned.get(fundId) };
   } catch (_error) {
     if (token !== twiiCompareLoadToken) return;
     twiiCompareFund = { fundId, name: "歷史淨值讀取失敗", unavailable: true };
@@ -5564,7 +5597,7 @@ function renderTwiiTrendChart() {
   const visibleRows = rows.slice(startIndex, twiiTrendMeta.endIndex);
   twiiTrendMeta.visibleCount = visibleRows.length;
   const compareRows = twiiCompareFund && !twiiCompareFund.unavailable
-    ? twiiFundComparisonRows(twiiCompareFund, twiiTrendMeta.activeMonths)
+    ? twiiFundComparisonRows(twiiCompareFund)
     : [];
   const comparison = twiiFundComparisonValues(visibleRows, compareRows);
   const values = [
@@ -5622,7 +5655,9 @@ function renderTwiiTrendChart() {
       : twiiCompareFundId
         ? (twiiCompareFund?.unavailable ? "；基金歷史淨值暫時無法讀取" : twiiCompareFund ? "；所選基金在此期間沒有足夠淨值" : "；基金淨值載入中")
         : "";
-    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${compareNote}`;
+    const coverageNote = twiiCompareFund?.history?.length
+      ? `；基金可用歷史自 ${twiiCompareFund.history[0].date.replaceAll("-", "/")}` : "";
+    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${compareNote}${coverageNote}`;
   }
 }
 
