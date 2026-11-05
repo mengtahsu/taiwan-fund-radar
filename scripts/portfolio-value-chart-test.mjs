@@ -85,13 +85,16 @@ assert.match(html, /估算現值 300/);
 assert.match(app.els.twiiTrendStatus.textContent, /共同比例/);
 assert.match(app.els.twiiTrendStatus.textContent, /部分日期淨值不全/);
 const padding = { top: 34, right: 18, bottom: 42, left: 18 };
-const capital = app.twiiCapitalPath(app.twiiTrendMeta.items, [100, 100], 680, 250, padding, 99, 101);
-const value = app.twiiCapitalPath(app.twiiTrendMeta.items, [200, 300], 680, 250, padding, 99, 101, false);
+const expandedMaximum = 99 + (101 - 99) * 424 / 174;
+const capital = app.twiiCapitalPath(app.twiiTrendMeta.items, [100, 100], 680, 500, padding, 99, expandedMaximum);
+const value = app.twiiCapitalPath(app.twiiTrendMeta.items, [200, 300], 680, 500, padding, 99, expandedMaximum, false);
 assert(html.includes(`class="twii-trend-line twii-capital-line" d="${capital}"`));
 assert(html.includes(`class="twii-trend-line twii-value-line" d="${value}"`), "capital, value, and index must share the same ratio domain");
-assert.match(html, /共同比例 99.0%～101.0%/);
+assert.match(html, /共同比例 99.0%～103.9%/);
+assert.match(html, /viewBox="0 0 680 500"/);
+assert.match(fs.readFileSync("styles.css", "utf8"), /\.twii-trend-svg\s*\{[^}]*height: 440px/);
 assert.match(html, /clip-path="url\(#twiiOverlayClip\)"/);
-assert.match(html, /<rect x="18" y="34" width="644" height="174">/);
+assert.match(html, /<rect x="18" y="34" width="644" height="424">/);
 assert.match(app.els.twiiTrendStatus.textContent, /超出指數範圍的比較線已裁切/);
 assert.match(value, /L/);
 assert.match(capital, /H/);
@@ -117,6 +120,24 @@ const gap = app.twiiCapitalPath(dates.map(date => ({ date })), [100, null, 300, 
 assert.equal((gap.match(/M/g) || []).length, 2, "missing values must break the line, not invent a collapse to zero");
 
 const indexRows = dates.map((date, index) => ({ date, close: [100, 110, 90, 120][index], ma20: 100, ma60: 100 }));
+app.twiiTrendMeta = { items: indexRows, endIndex: 4, activeMonths: 2 };
+app.twiiPortfolioBaselineRow = indexRows[0];
+app.setPortfolioDailyCapital(indexRows.map(row => ({ date: row.date, invested: 1000000, value: 1300000 })), "fresh-source");
+app.renderTwiiTrendChart();
+const tallerHtml = app.els.twiiTrendChart.innerHTML;
+const originalIndexPath = app.twiiTrendPath(indexRows, "close", 680, 250, padding, 87.6, 122.4);
+const oldCoordinates = [...originalIndexPath.matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
+const newCoordinates = [...chartPath(tallerHtml, "close").matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
+assert.equal(newCoordinates.length, oldCoordinates.length);
+newCoordinates.forEach((point, index) => {
+  assert.equal(point[1], oldCoordinates[index][1], "horizontal geometry must not change");
+  assert(Math.abs(Number(point[2]) - Number(oldCoordinates[index][2]) - 250) < 0.11,
+    "added height must shift the index down, not stretch or flatten its percentage scale");
+});
+const valueCoordinates = [...chartPath(tallerHtml, "value").matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
+assert(valueCoordinates.every(point => Number(point[2]) >= 34 && Number(point[2]) <= 458),
+  "a 130% portfolio value previously above the 122.4% ceiling must now fit in the added headroom");
+assert.doesNotMatch(app.els.twiiTrendStatus.textContent, /已裁切/);
 app.twiiPortfolioBaselineRow = null;
 app.twiiPortfolioInitialWindow = null;
 app.setPortfolioDailyCapital(indexRows.map(row => ({ date: row.date, invested: 1000000, value: row.close * 10000 })), "fresh-source");

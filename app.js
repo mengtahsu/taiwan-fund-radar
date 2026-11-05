@@ -5692,14 +5692,19 @@ function renderTwiiTrendChart() {
   const seriesMaximum = Math.max(...values);
   const domainPadding = Math.max((seriesMaximum - seriesMinimum) * 0.08, seriesMaximum * 0.002, 1);
   const chartMinimum = seriesMinimum - domainPadding;
-  const chartMaximum = seriesMaximum + domainPadding;
   const width = 680;
-  const height = 250;
+  const originalHeight = 250;
+  const height = originalHeight * 2;
   const padding = { top: 34, right: 18, bottom: 42, left: 18 };
   const ratioBase = comparisonBase[0] || portfolio.base;
   const showRatio = ratioBase && (comparison || capitalPoints.some(Number.isFinite) || estimatedPoints.some(Number.isFinite));
   const crisisMarkers = twiiVisibleCrisisMarkers(visibleRows, width, padding);
   if (crisisMarkers.length) padding.top = 46;
+  // Add headroom without changing the existing distance per index point/percent.
+  const originalMaximum = seriesMaximum + domainPadding;
+  const originalPlotHeight = originalHeight - padding.top - padding.bottom;
+  const chartMaximum = chartMinimum + (originalMaximum - chartMinimum)
+    * (height - padding.top - padding.bottom) / originalPlotHeight;
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
   const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
