@@ -587,6 +587,8 @@ assert(!appSource.includes("!sourceMatches || portfolioSnapshotsDirty"), "fresh 
 assert(appSource.includes("twiiCapitalPath"), "TWII trend should overlay the daily invested-capital series");
 assert(appSource.includes("twii-capital-line"), "TWII trend should render the invested-capital line");
 assert(appSource.includes('dailyCapitalValuesForRows(visibleRows, "value")'), "TWII trend should align historical estimated values, not today's value across history");
+assert(appSource.includes("base.close * amount / invested"), "portfolio principal and value must use the same baseline principal and index scale");
+assert(!appSource.includes("capitalScaleMaximum"), "portfolio overlays must not use a separate vertical scale");
 assert(appSource.includes("twii-value-line"), "TWII trend should render the estimated-value line");
 assert(styleSource.includes(".twii-value-line {\n  stroke: #dc2626;"), "estimated value must use the requested red line");
 assert(appSource.includes("showTwiiCapital = true"), "TWII capital line should be visible by default");

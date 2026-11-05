@@ -28,13 +28,15 @@ const app = {
   document: { querySelectorAll: () => [], querySelector: () => null },
   twiiTrendMeta: { items: [], activeMonths: 2, endIndex: null },
   twiiCompareFund: null, twiiCompareFundId: "", showTwiiCapital: true,
+  twiiPortfolioBaselineRow: null, twiiPortfolioInitialWindow: null,
+  twiiCompareBaselineRows: null, twiiCompareInitialWindow: null,
   twiiVisibleCrisisMarkers: () => [], twiiMonthLabels: () => "",
-  formatMarketPrice: String, compactTwdWan: String, escapeHtml: String
+  formatMarketPrice: String, compactTwdWan: String, escapeHtml: String, formatPercent: String
 };
 vm.createContext(app);
 vm.runInContext([
-  "setPortfolioDailyCapital", "dailyCapitalValuesForRows", "twiiCapitalPath", "shiftIsoDateMonths",
-  "twiiFundComparisonValues", "twiiFundComparisonPath", "twiiTrendPath", "renderTwiiTrendChart",
+  "setPortfolioDailyCapital", "dailyCapitalValuesForRows", "twiiPortfolioComparison", "twiiCapitalPath", "shiftIsoDateMonths", "resetTwiiCompareBaseline", "twiiFundComparisonRows",
+  "twiiFundComparisonBaseline", "twiiFundComparisonValues", "twiiFundComparisonPath", "twiiTrendPath", "renderTwiiTrendChart",
   "fetchPortfolioDailyCapitalRows"
 ].map(extract).join("\n"), app);
 
@@ -80,28 +82,71 @@ const html = app.els.twiiTrendChart.innerHTML;
 assert.match(html, /twii-capital-line/);
 assert.match(html, /twii-value-line/);
 assert.match(html, /估算現值 300/);
-assert.match(app.els.twiiTrendStatus.textContent, /本金／現值共用金額刻度/);
+assert.match(app.els.twiiTrendStatus.textContent, /共同比例/);
 assert.match(app.els.twiiTrendStatus.textContent, /部分日期淨值不全/);
-const padding = { top: 18, right: 18, bottom: 42, left: 18 };
-const capital = app.twiiCapitalPath(app.twiiTrendMeta.items, [100, 100], 680, 250, padding, 324);
-const value = app.twiiCapitalPath(app.twiiTrendMeta.items, [200, 300], 680, 250, padding, 324, false);
+const padding = { top: 34, right: 18, bottom: 42, left: 18 };
+const capital = app.twiiCapitalPath(app.twiiTrendMeta.items, [100, 100], 680, 250, padding, 84, 316);
+const value = app.twiiCapitalPath(app.twiiTrendMeta.items, [200, 300], 680, 250, padding, 84, 316, false);
 assert(html.includes(`class="twii-trend-line twii-capital-line" d="${capital}"`));
-assert(html.includes(`class="twii-trend-line twii-value-line" d="${value}"`), "capital and estimated value must share one money scale");
+assert(html.includes(`class="twii-trend-line twii-value-line" d="${value}"`), "capital, value, and index must share the same ratio domain");
+assert.match(html, /共同比例 84.0%～316.0%/);
 assert.match(value, /L/);
 assert.match(capital, /H/);
 app.showTwiiCapital = false;
 app.renderTwiiTrendChart();
-assert.doesNotMatch(app.els.twiiTrendChart.innerHTML, /twii-capital-line|twii-value-line|估算現值|本金 100|金額 300/);
-assert.doesNotMatch(app.els.twiiTrendStatus.textContent, /金額刻度|部分日期淨值不全/);
+assert.doesNotMatch(app.els.twiiTrendChart.innerHTML, /twii-capital-line|twii-value-line|估算現值|本金 100|共同比例/);
+assert.doesNotMatch(app.els.twiiTrendStatus.textContent, /共同比例|部分日期淨值不全/);
 app.showTwiiCapital = true;
 app.setPortfolioDailyCapital([{ date: dates[0], invested: 0, value: 0 }, { date: dates[1], invested: 0, value: 0 }], "fresh-source");
 app.renderTwiiTrendChart();
-assert.match(app.els.twiiTrendChart.innerHTML, /twii-value-line/);
+assert.doesNotMatch(app.els.twiiTrendChart.innerHTML, /class="twii-trend-line twii-value-line"/);
 assert.match(app.els.twiiTrendChart.innerHTML, /估算現值 0/);
+assert.match(app.els.twiiTrendStatus.textContent, /基準日無可用本金/);
 app.setPortfolioDailyCapital([{ date: dates[0], invested: 100 }, { date: dates[1], invested: 100, value: null }], "fresh-source");
 app.renderTwiiTrendChart();
 assert.doesNotMatch(app.els.twiiTrendChart.innerHTML, /class="twii-trend-line twii-value-line"/);
 assert.match(app.els.twiiTrendChart.innerHTML, /估算現值 暫無資料/);
-const gap = app.twiiCapitalPath(dates.map(date => ({ date })), [100, null, 300, 200], 680, 250, padding, 324, false);
+const gap = app.twiiCapitalPath(dates.map(date => ({ date })), [100, null, 300, 200], 680, 250, padding, 84, 316, false);
 assert.equal((gap.match(/M/g) || []).length, 2, "missing values must break the line, not invent a collapse to zero");
-console.log("Portfolio value chart passed: historical snapshot values, one bounded query, shared scale, missing/zero safety, and joint toggle");
+
+const indexRows = dates.map((date, index) => ({ date, close: [100, 110, 90, 120][index], ma20: 100, ma60: 100 }));
+app.twiiPortfolioBaselineRow = null;
+app.twiiPortfolioInitialWindow = null;
+app.setPortfolioDailyCapital(indexRows.map(row => ({ date: row.date, invested: 1000000, value: row.close * 10000 })), "fresh-source");
+const projected = app.twiiPortfolioComparison(indexRows, indexRows, []);
+assert.equal(projected.invested, 1000000);
+assert.deepEqual(Array.from(projected.valuePoints), [100, 110, 90, 120]);
+assert.equal(app.twiiCapitalPath(indexRows, projected.valuePoints, 680, 250, padding, 60, 120, false),
+  app.twiiTrendPath(indexRows, "close", 680, 250, padding, 60, 120), "identical percentage changes must overlap exactly on a 60%-120% index domain");
+const panned = app.twiiPortfolioComparison(indexRows, indexRows.slice(2), []);
+assert.equal(panned.base.date, dates[0]);
+assert.deepEqual(Array.from(panned.valuePoints), [90, 120], "panning must not renormalize historical money values");
+app.twiiTrendMeta = { items: indexRows, endIndex: 4, visibleCount: 2, activeMonths: 2 };
+assert.equal(app.resetTwiiCompareBaseline(), true, "manual rebasing must work even without a selected comparison fund");
+const rebased = app.twiiPortfolioComparison(indexRows, indexRows.slice(2), []);
+assert.equal(rebased.base.date, dates[2]);
+assert.deepEqual(Array.from(rebased.capitalPoints), [90, 90]);
+assert.deepEqual(Array.from(rebased.valuePoints), [81, 108]);
+assert.equal(rebased.valuePoints[0] / rebased.base.close, 0.9, "existing losses must remain visible after a rebase; do not give value its own 100% denominator");
+const zeroEndRows = [{ date: dates[0], invested: 1000000, value: 1000000 }, { date: dates[1], invested: 0, value: 0 }];
+app.setPortfolioDailyCapital(zeroEndRows, "fresh-source");
+app.twiiPortfolioBaselineRow = indexRows[0];
+const zeroEnd = app.twiiPortfolioComparison(indexRows, indexRows.slice(0, 2), []);
+assert.equal(zeroEnd.valuePoints[1], 0, "a true zero remains a true zero when the baseline principal is valid");
+const beforePortfolio = { date: "1985-01-04", close: 100 };
+const noBasis = app.twiiPortfolioComparison([beforePortfolio, ...indexRows], indexRows.slice(0, 2), [beforePortfolio]);
+assert(noBasis.valuePoints.every(value => value === null), "do not invent a denominator for an index baseline before portfolio records begin");
+app.twiiCompareFund = { name: "Comparison fixture", history: indexRows.map(row => ({ date: row.date, nav: row.close })) };
+app.twiiCompareFundId = "FIXTURE";
+app.twiiCompareBaselineRows = [indexRows[1]];
+app.twiiTrendMeta = { items: indexRows, endIndex: 4, activeMonths: 2 };
+app.setPortfolioDailyCapital(indexRows.map(row => ({ date: row.date, invested: 1000000, value: 1000000 * row.close / indexRows[1].close })), "fresh-source");
+app.renderTwiiTrendChart();
+const mixed = app.els.twiiTrendChart.innerHTML;
+const moneyPath = mixed.match(/class="twii-trend-line twii-value-line" d="([^"]+)"/)[1];
+const indexPath = mixed.match(/class="twii-trend-line twii-close-line" d="([^"]+)"/)[1];
+const fundPath = mixed.match(/class="twii-trend-line twii-fund-line" d="([^"]+)"/)[1];
+assert.equal(moneyPath, indexPath);
+assert.equal(fundPath, indexPath, "selected fund, portfolio value, and index must use one date and one percentage scale");
+assert.match(app.els.twiiTrendStatus.textContent, /基準 2026\/11\/03/);
+console.log("Portfolio value chart passed: historical snapshots, one query, shared index percentage scale, fixed/rebased principal, missing/zero safety, and joint toggle");

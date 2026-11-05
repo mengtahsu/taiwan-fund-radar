@@ -95,6 +95,8 @@ const app = {
   monthlyNavMeta: { items: {} },
   twiiCompareFundId: "", twiiCompareFund: null, twiiCompareLoadToken: 0,
   twiiCompareBaselineRows: null, twiiCompareInitialWindow: null,
+  twiiPortfolioBaselineRow: null, twiiPortfolioInitialWindow: null,
+  dailyCapitalValuesForRows: () => [],
   twiiTrendMeta: { items: history.map(row => ({ date: row.date, close: row.nav })), activeMonths: 2, endIndex: null },
   twiiCompareHistoryCache: new Map(), twiiCompareCacheUserId: null,
   els: { twiiCompareFund: select },
@@ -209,4 +211,10 @@ assert.equal(app.resetTwiiCompareBaseline(), false);
 assert.equal(app.twiiCompareBaselineRows, rebased);
 app.twiiCompareFund = { history: [{ date: "1994-01-01", nav: 100 }] };
 assert.equal(app.resetTwiiCompareBaseline(), false, "no shared data must leave the existing baseline unchanged");
+app.twiiCompareFundId = "";
+storage.set("twiiCompareFundId", "");
+const moneyBase = { date: "1985-01-08", close: 120 };
+app.twiiPortfolioBaselineRow = moneyBase;
+app.renderTwiiCompareOptions();
+assert.equal(app.twiiPortfolioBaselineRow, moneyBase, "refreshing fund options without a selected fund must not reset the money baseline");
 console.log("Fund comparison tests passed: 1985 history, held-only authorization, on-demand cache, account/race safety, matched dates, fixed windows, and manual baseline reset");

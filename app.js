@@ -162,6 +162,8 @@ let twiiCompareFund = null;
 let twiiCompareLoadToken = 0;
 let twiiCompareBaselineRows = null;
 let twiiCompareInitialWindow = null;
+let twiiPortfolioBaselineRow = null;
+let twiiPortfolioInitialWindow = null;
 const twiiCompareHistoryCache = new Map();
 let twiiCompareCacheUserId = null;
 let monthlyNavMeta = {
@@ -2302,6 +2304,8 @@ function portfolioSnapshotSource() {
 }
 
 function resetPortfolioSnapshots() {
+  twiiPortfolioBaselineRow = null;
+  twiiPortfolioInitialWindow = null;
   portfolioPeriodSnapshots = {
     loaded: false,
     supported: true,
@@ -5381,17 +5385,22 @@ function twiiFundComparisonBaseline(rows, fundRows, visibleRows) {
 }
 
 function resetTwiiCompareBaseline() {
-  if (!twiiCompareFund || twiiCompareFund.unavailable) return false;
+  const fundRows = twiiCompareFund && !twiiCompareFund.unavailable ? twiiFundComparisonRows(twiiCompareFund) : [];
   const rows = (twiiTrendMeta.items || [])
     .filter((row) => row.date && Number(row.close) > 0)
     .sort((a, b) => String(a.date).localeCompare(String(b.date)));
   const end = Math.min(rows.length, twiiTrendMeta.endIndex || rows.length);
   const visible = rows.slice(Math.max(0, end - twiiTrendMeta.visibleCount), end);
-  const dates = new Set(twiiFundComparisonRows(twiiCompareFund).map((row) => row.date));
-  const first = visible.find((row) => dates.has(row.date));
+  const dates = new Set(fundRows.map((row) => row.date));
+  const capital = dailyCapitalValuesForRows(visible);
+  const hasCapital = capital.some((value) => value > 0);
+  if (!fundRows.length && !hasCapital) return false;
+  const first = visible.find((row, index) => (!fundRows.length || dates.has(row.date)) && (!hasCapital || capital[index] > 0));
   if (!first) return false;
-  twiiCompareBaselineRows = [first];
+  twiiCompareBaselineRows = fundRows.length ? [first] : null;
   twiiCompareInitialWindow = { startDate: visible[0].date, endDate: visible.at(-1).date };
+  twiiPortfolioBaselineRow = first;
+  twiiPortfolioInitialWindow = { ...twiiCompareInitialWindow };
   renderTwiiTrendChart();
   return true;
 }
@@ -5445,12 +5454,14 @@ function renderTwiiCompareOptions() {
   if (!select) return;
   const userId = currentUser?.id || null;
   const labels = ownedTwiiCompareFunds();
-  if (twiiCompareCacheUserId !== userId || !labels.has(twiiCompareFundId)) {
+  if (twiiCompareCacheUserId !== userId || (twiiCompareFundId && !labels.has(twiiCompareFundId))) {
     twiiCompareLoadToken += 1;
     twiiCompareFundId = "";
     twiiCompareFund = null;
     twiiCompareBaselineRows = null;
     twiiCompareInitialWindow = null;
+    twiiPortfolioBaselineRow = null;
+    twiiPortfolioInitialWindow = null;
   }
   if (twiiCompareCacheUserId !== userId) {
     twiiCompareHistoryCache.clear();
@@ -5476,6 +5487,8 @@ async function selectTwiiCompareFund(fundId) {
   const nextFundId = owned.has(fundId) ? fundId : "";
   if (nextFundId !== twiiCompareFundId || !nextFundId) {
     twiiCompareBaselineRows = null;
+    twiiPortfolioBaselineRow = null;
+    twiiPortfolioInitialWindow = null;
     const rows = twiiTrendMeta.items || [];
     const end = rows[Math.min(rows.length, twiiTrendMeta.endIndex || rows.length) - 1];
     twiiCompareInitialWindow = end ? {
@@ -5533,8 +5546,28 @@ function dailyCapitalValuesForRows(rows, field = "invested") {
   });
 }
 
-function twiiCapitalPath(rows, values, width, height, padding, maximum, stepped = true) {
-  if (rows.length < 2 || values.length !== rows.length || maximum <= 0) {
+function twiiPortfolioComparison(rows, visibleRows, baselineRows) {
+  const capital = dailyCapitalValuesForRows(visibleRows);
+  const value = dailyCapitalValuesForRows(visibleRows, "value");
+  if (!twiiPortfolioInitialWindow) {
+    twiiPortfolioInitialWindow = { startDate: visibleRows[0].date, endDate: visibleRows.at(-1).date };
+  }
+  if (!baselineRows.length && !twiiPortfolioBaselineRow && capital.length) {
+    const initial = twiiPortfolioInitialWindow;
+    const candidates = rows.filter((row) => row.date >= initial.startDate && row.date <= initial.endDate);
+    const balances = dailyCapitalValuesForRows(candidates);
+    twiiPortfolioBaselineRow = candidates.find((_row, index) => balances[index] > 0)
+      || visibleRows.find((_row, index) => capital[index] > 0) || null;
+  }
+  const base = baselineRows[0] || twiiPortfolioBaselineRow;
+  const invested = base ? dailyCapitalValuesForRows([base])[0] : null;
+  // Both money lines use baseline principal, so existing gains are not rebased away.
+  const project = (values) => values.map((amount) => invested > 0 && Number.isFinite(amount) ? base.close * amount / invested : null);
+  return { capital, value, base, invested, capitalPoints: project(capital), valuePoints: project(value) };
+}
+
+function twiiCapitalPath(rows, values, width, height, padding, minimum, maximum, stepped = true) {
+  if (rows.length < 2 || values.length !== rows.length || !(maximum > minimum)) {
     return "";
   }
   let drawing = false;
@@ -5546,7 +5579,7 @@ function twiiCapitalPath(rows, values, width, height, padding, maximum, stepped 
       }
       const x = padding.left + (index / Math.max(1, rows.length - 1)) * (width - padding.left - padding.right);
       const plotHeight = height - padding.top - padding.bottom;
-      const y = padding.top + (1 - value / maximum) * plotHeight;
+      const y = padding.top + (1 - (value - minimum) / (maximum - minimum)) * plotHeight;
       if (!drawing) {
         drawing = true;
         return `M${x.toFixed(1)} ${y.toFixed(1)}`;
@@ -5648,10 +5681,16 @@ function renderTwiiTrendChart() {
     : [];
   const comparisonBase = compareRows.length ? twiiFundComparisonBaseline(rows, compareRows, visibleRows) : [];
   const comparison = twiiFundComparisonValues(visibleRows, compareRows, comparisonBase);
-  if (els.twiiRebase) els.twiiRebase.disabled = !comparison;
+  const portfolio = twiiPortfolioComparison(rows, visibleRows, comparisonBase);
+  if (els.twiiRebase) els.twiiRebase.disabled = !comparison && !portfolio.capital.some((value) => value > 0);
+  const capitalValues = showTwiiCapital ? portfolio.capital : [];
+  const estimatedValues = showTwiiCapital ? portfolio.value : [];
+  const capitalPoints = showTwiiCapital ? portfolio.capitalPoints : [];
+  const estimatedPoints = showTwiiCapital ? portfolio.valuePoints : [];
   const values = [
     ...visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite)),
-    ...(comparison?.points || []).map((point) => point.value)
+    ...(comparison?.points || []).map((point) => point.value),
+    ...capitalPoints.filter(Number.isFinite), ...estimatedPoints.filter(Number.isFinite)
   ];
   const seriesMinimum = Math.min(...values);
   const seriesMaximum = Math.max(...values);
@@ -5661,19 +5700,17 @@ function renderTwiiTrendChart() {
   const width = 680;
   const height = 250;
   const padding = { top: 18, right: 18, bottom: 42, left: 18 };
+  const ratioBase = comparisonBase[0] || portfolio.base;
+  const showRatio = ratioBase && (comparison || capitalPoints.some(Number.isFinite) || estimatedPoints.some(Number.isFinite));
+  if (showRatio) padding.top = 34;
   const crisisMarkers = twiiVisibleCrisisMarkers(visibleRows, width, padding);
   if (crisisMarkers.length) padding.top = 46;
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
   const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
   const fundPath = twiiFundComparisonPath(comparison?.points, visibleRows, width, height, padding, chartMinimum, chartMaximum);
-  const capitalValues = showTwiiCapital ? dailyCapitalValuesForRows(visibleRows) : [];
-  const estimatedValues = showTwiiCapital ? dailyCapitalValuesForRows(visibleRows, "value") : [];
-  const numericCapitalValues = [...capitalValues, ...estimatedValues].filter(Number.isFinite);
-  const capitalMaximum = numericCapitalValues.length ? Math.max(...numericCapitalValues) : 0;
-  const capitalScaleMaximum = numericCapitalValues.length ? Math.max(capitalMaximum * 1.08, 1) : 0;
-  const capitalPath = twiiCapitalPath(visibleRows, capitalValues, width, height, padding, capitalScaleMaximum);
-  const estimatedValuePath = twiiCapitalPath(visibleRows, estimatedValues, width, height, padding, capitalScaleMaximum, false);
+  const capitalPath = twiiCapitalPath(visibleRows, capitalPoints, width, height, padding, chartMinimum, chartMaximum);
+  const estimatedValuePath = twiiCapitalPath(visibleRows, estimatedPoints, width, height, padding, chartMinimum, chartMaximum, false);
   const latest = visibleRows.at(-1);
   const latestCapital = capitalValues.length && Number.isFinite(capitalValues.at(-1)) ? capitalValues.at(-1) : null;
   const capitalVisible = showTwiiCapital && latestCapital !== null;
@@ -5690,7 +5727,7 @@ function renderTwiiTrendChart() {
       <path class="twii-trend-line twii-close-line" d="${closePath}"></path>
       ${capitalPath ? `<path class="twii-trend-line twii-capital-line" d="${capitalPath}"></path>` : ""}
       ${estimatedValuePath ? `<path class="twii-trend-line twii-value-line" d="${estimatedValuePath}"></path>` : ""}
-      ${capitalPath || estimatedValuePath ? `<text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top + 15}" text-anchor="end">金額 ${compactTwdWan(capitalMaximum)}</text>` : ""}
+      ${showRatio ? `<text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top - 12}" text-anchor="end">共同比例 ${(chartMinimum / ratioBase.close * 100).toFixed(1)}%～${(chartMaximum / ratioBase.close * 100).toFixed(1)}%</text>` : ""}
     </svg>
     ${crisisMarkers.length ? `<div class="twii-crisis-notes">${crisisMarkers.map((event) => `<span>${escapeHtml(`${event.date.replaceAll("-", "/")} ${event.name}（${event.milestone}）`)}</span>`).join("")}</div>` : ""}
     <div class="twii-trend-legend">
@@ -5704,12 +5741,16 @@ function renderTwiiTrendChart() {
     </div>
   `;
   if (els.twiiTrendStatus) {
-    const capitalNote = capitalVisible || estimatedValueVisible ? "；本金／現值共用金額刻度，與指數分開" : "";
+    const capitalNote = capitalVisible || estimatedValueVisible
+      ? portfolio.invested > 0
+        ? `；共同比例，基準 ${portfolio.base.date.replaceAll("-", "/")} 本金${compactTwdWan(portfolio.invested)}與指數各為100%`
+        : "；基準日無可用本金，請重新設為基準"
+      : "";
     const incompleteValueNote = estimatedValueVisible && portfolioDailyCapital.rows.some((row) =>
       row.date >= visibleRows[0].date && row.date <= latest.date && row.missing > 0
     ) ? "；部分日期淨值不全，現值為估算" : "";
     const compareNote = comparison
-      ? `；固定基準 ${comparison.startDate.replaceAll("-", "/")}，累計至 ${comparison.fundDate.replaceAll("-", "/")}，基金淨值未計配息`
+      ? `；${capitalNote && portfolio.invested > 0 ? "" : `固定基準 ${comparison.startDate.replaceAll("-", "/")}，`}累計至 ${comparison.fundDate.replaceAll("-", "/")}，基金淨值未計配息`
       : twiiCompareFundId
         ? (twiiCompareFund?.unavailable ? "；基金歷史淨值暫時無法讀取" : twiiCompareFund ? "；所選基金在此期間沒有足夠淨值" : "；基金淨值載入中")
         : "";
