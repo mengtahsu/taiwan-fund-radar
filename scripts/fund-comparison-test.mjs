@@ -96,6 +96,7 @@ const app = {
   twiiCompareFundId: "", twiiCompareFund: null, twiiCompareLoadToken: 0,
   twiiCompareBaselineRows: null, twiiCompareInitialWindow: null,
   twiiPortfolioBaselineRow: null, twiiPortfolioInitialWindow: null,
+  twiiScaleState: { base: null },
   dailyCapitalValuesForRows: () => [],
   twiiTrendMeta: { items: history.map(row => ({ date: row.date, close: row.nav })), activeMonths: 2, endIndex: null },
   twiiCompareHistoryCache: new Map(), twiiCompareCacheUserId: null,

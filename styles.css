@@ -377,6 +377,34 @@ body.portfolio-view .margin-section {
   accent-color: var(--accent);
 }
 
+.twii-scale-control {
+  display: grid;
+  grid-template-columns: auto minmax(80px, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.twii-scale-control input {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.twii-scale-control output {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .twii-range-tabs button {
   flex: 0 0 auto;
   min-width: 42px;
@@ -399,7 +427,6 @@ body.portfolio-view .margin-section {
 
 .twii-trend-chart {
   outline: none;
-  touch-action: pan-y;
   user-select: none;
   cursor: grab;
 }
@@ -418,6 +445,7 @@ body.portfolio-view .margin-section {
   width: 100%;
   height: auto;
   max-height: 440px;
+  touch-action: none;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfaf7;

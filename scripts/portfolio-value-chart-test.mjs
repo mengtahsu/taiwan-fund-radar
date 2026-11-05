@@ -20,11 +20,14 @@ function extract(name) {
 }
 
 const dates = ["2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05"];
+const storage = new Map();
 const app = {
   currentUser: { id: "test-user" },
   portfolioDailyCapital: { loaded: false, rows: [] },
   portfolioSnapshotSource: () => "fresh-source",
-  els: { twiiTrendChart: {}, twiiTrendStatus: {}, twiiRebase: {} },
+  els: { twiiTrendChart: {}, twiiTrendStatus: {}, twiiRebase: {}, twiiScale: {}, twiiScaleValue: {} },
+  twiiScaleState: { span: 50, minimum: null, base: null },
+  localStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) },
   document: { querySelectorAll: () => [], querySelector: () => null },
   twiiTrendMeta: { items: [], activeMonths: 2, endIndex: null },
   twiiCompareFund: null, twiiCompareFundId: "", showTwiiCapital: true,
@@ -37,7 +40,7 @@ vm.createContext(app);
 vm.runInContext([
   "setPortfolioDailyCapital", "dailyCapitalValuesForRows", "twiiPortfolioComparison", "twiiCapitalPath", "shiftIsoDateMonths", "resetTwiiCompareBaseline", "twiiFundComparisonRows",
   "twiiFundComparisonBaseline", "twiiFundComparisonValues", "twiiFundComparisonPath", "twiiTrendPath", "renderTwiiTrendChart",
-  "fetchPortfolioDailyCapitalRows"
+  "fetchPortfolioDailyCapitalRows", "readTwiiScalePercent", "twiiScaleDomain", "setTwiiScalePercent", "panTwiiScale"
 ].map(extract).join("\n"), app);
 
 app.setPortfolioDailyCapital([
@@ -84,20 +87,20 @@ assert.match(html, /twii-value-line/);
 assert.match(html, /估算現值 300/);
 assert.match(app.els.twiiTrendStatus.textContent, /共同比例/);
 assert.match(app.els.twiiTrendStatus.textContent, /部分日期淨值不全/);
-const padding = { top: 34, right: 18, bottom: 42, left: 18 };
-const expandedMaximum = 99 + (101 - 99) * 424 / 174;
+const padding = { top: 46, right: 18, bottom: 42, left: 18 };
+const expandedMaximum = 149;
 const capital = app.twiiCapitalPath(app.twiiTrendMeta.items, [100, 100], 680, 500, padding, 99, expandedMaximum);
 const value = app.twiiCapitalPath(app.twiiTrendMeta.items, [200, 300], 680, 500, padding, 99, expandedMaximum, false);
 assert(html.includes(`class="twii-trend-line twii-capital-line" d="${capital}"`));
 assert(html.includes(`class="twii-trend-line twii-value-line" d="${value}"`), "capital, value, and index must share the same ratio domain");
-assert.match(html, /共同比例 99.0%～103.9%/);
+assert.match(html, /共同比例 99.0%～149.0%/);
 assert.match(html, /viewBox="0 0 680 500"/);
 const svgStyles = fs.readFileSync("styles.css", "utf8").match(/\.twii-trend-svg\s*\{([^}]+)\}/)[1];
 assert.match(svgStyles, /\n\s*height: auto;/, "fit the SVG aspect ratio instead of adding mobile letterbox whitespace");
 assert.match(svgStyles, /max-height: 440px;/, "keep the desktop height bounded");
 assert.match(html, /clip-path="url\(#twiiOverlayClip\)"/);
-assert.match(html, /<rect x="18" y="34" width="644" height="424">/);
-assert.match(app.els.twiiTrendStatus.textContent, /超出指數範圍的比較線已裁切/);
+assert.match(html, /<rect x="18" y="46" width="644" height="412">/);
+assert.doesNotMatch(app.els.twiiTrendStatus.textContent, /已裁切/);
 assert.match(value, /L/);
 assert.match(capital, /H/);
 app.showTwiiCapital = false;
@@ -106,7 +109,7 @@ const chartPath = (markup, kind) => markup.match(new RegExp(`class="twii-trend-l
 for (const kind of ["close", "ma20", "ma60"]) {
   assert.equal(chartPath(app.els.twiiTrendChart.innerHTML, kind), chartPath(html, kind), "toggling overlays must not resize or rescale the index/moving averages");
 }
-assert.doesNotMatch(app.els.twiiTrendChart.innerHTML, /twii-capital-line|twii-value-line|估算現值|本金 100|共同比例/);
+assert.doesNotMatch(app.els.twiiTrendChart.innerHTML, /twii-capital-line|twii-value-line|估算現值|本金 100/);
 assert.doesNotMatch(app.els.twiiTrendStatus.textContent, /共同比例|部分日期淨值不全/);
 app.showTwiiCapital = true;
 app.setPortfolioDailyCapital([{ date: dates[0], invested: 0, value: 0 }, { date: dates[1], invested: 0, value: 0 }], "fresh-source");
@@ -122,22 +125,16 @@ const gap = app.twiiCapitalPath(dates.map(date => ({ date })), [100, null, 300, 
 assert.equal((gap.match(/M/g) || []).length, 2, "missing values must break the line, not invent a collapse to zero");
 
 const indexRows = dates.map((date, index) => ({ date, close: [100, 110, 90, 120][index], ma20: 100, ma60: 100 }));
+Object.assign(app.twiiScaleState, { span: 50, minimum: null, base: null });
 app.twiiTrendMeta = { items: indexRows, endIndex: 4, activeMonths: 2 };
 app.twiiPortfolioBaselineRow = indexRows[0];
 app.setPortfolioDailyCapital(indexRows.map(row => ({ date: row.date, invested: 1000000, value: 1300000 })), "fresh-source");
 app.renderTwiiTrendChart();
 const tallerHtml = app.els.twiiTrendChart.innerHTML;
-const originalIndexPath = app.twiiTrendPath(indexRows, "close", 680, 250, padding, 87.6, 122.4);
-const oldCoordinates = [...originalIndexPath.matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
-const newCoordinates = [...chartPath(tallerHtml, "close").matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
-assert.equal(newCoordinates.length, oldCoordinates.length);
-newCoordinates.forEach((point, index) => {
-  assert.equal(point[1], oldCoordinates[index][1], "horizontal geometry must not change");
-  assert(Math.abs(Number(point[2]) - Number(oldCoordinates[index][2]) - 250) < 0.11,
-    "added height must shift the index down, not stretch or flatten its percentage scale");
-});
+assert.equal(chartPath(tallerHtml, "close"), app.twiiTrendPath(indexRows, "close", 680, 500, padding, 87.6, 137.6),
+  "the default scale must show exactly 50 percentage points, not fit all visible curves");
 const valueCoordinates = [...chartPath(tallerHtml, "value").matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
-assert(valueCoordinates.every(point => Number(point[2]) >= 34 && Number(point[2]) <= 458),
+assert(valueCoordinates.every(point => Number(point[2]) >= 46 && Number(point[2]) <= 458),
   "a 130% portfolio value previously above the 122.4% ceiling must now fit in the added headroom");
 assert.doesNotMatch(app.els.twiiTrendStatus.textContent, /已裁切/);
 app.twiiPortfolioBaselineRow = null;
@@ -188,5 +185,65 @@ for (const kind of ["close", "ma20", "ma60"]) {
   assert.equal(chartPath(app.els.twiiTrendChart.innerHTML, kind), chartPath(mixed, kind), "even extreme capital, portfolio value, or selected-fund returns must not change the index domain");
 }
 assert.match(app.els.twiiTrendChart.innerHTML, /clip-path="url\(#twiiOverlayClip\)"/);
-assert.match(app.els.twiiTrendStatus.textContent, /超出指數範圍的比較線已裁切/);
-console.log("Portfolio value chart passed: index-only vertical range, clipped overlays, shared percentage scale, fixed baseline, missing/zero safety, and joint toggle");
+assert.doesNotMatch(app.els.twiiTrendStatus.textContent, /已裁切/);
+
+const withNoCrisis = chartPath(app.els.twiiTrendChart.innerHTML, "close");
+app.twiiVisibleCrisisMarkers = () => [{ x: 100, date: dates[0], name: "Test event", milestone: "Test" }];
+app.renderTwiiTrendChart();
+assert.equal(chartPath(app.els.twiiTrendChart.innerHTML, "close"), withNoCrisis,
+  "crisis annotations must not change the plot height or percentage scale");
+app.twiiVisibleCrisisMarkers = () => [];
+
+const initialScale = { ...app.twiiScaleState };
+app.twiiTrendMeta.activeMonths = 6;
+app.twiiTrendMeta.endIndex = 3;
+app.renderTwiiTrendChart();
+assert.equal(app.twiiScaleState.minimum, initialScale.minimum, "horizontal navigation must not move the vertical window");
+assert.equal(app.twiiScaleState.span, initialScale.span);
+app.setTwiiScalePercent(25);
+assert.equal(app.twiiScaleState.span, 25);
+assert.equal(app.twiiScaleState.minimum, initialScale.minimum, "the slider changes scale without silently moving the chosen lower bound");
+assert.equal(app.els.twiiScale.value, "25");
+assert.equal(app.els.twiiScaleValue.textContent, "25%");
+assert.equal(app.readTwiiScalePercent(), 25, "reloads restore the chosen scale");
+const scaledDomain = app.twiiScaleDomain(indexRows, indexRows[1]);
+assert(Math.abs((scaledDomain.maximum - scaledDomain.minimum) / scaledDomain.base.close * 100 - 25) < 1e-9);
+const beforePan = chartPath(app.els.twiiTrendChart.innerHTML, "close");
+const beforeMinimum = app.twiiScaleState.minimum;
+app.panTwiiScale(15);
+assert.equal(app.twiiScaleState.minimum, beforeMinimum + 15);
+assert.equal(app.twiiScaleState.span, 25, "vertical panning must not zoom");
+assert.equal(app.twiiCompareBaselineRows[0].date, dates[1], "vertical panning must not rebase returns");
+const beforePoints = [...beforePan.matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
+const afterPoints = [...chartPath(app.els.twiiTrendChart.innerHTML, "close").matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
+afterPoints.forEach((point, index) => {
+  assert.equal(point[1], beforePoints[index][1]);
+  assert(Math.abs(Number(point[2]) - Number(beforePoints[index][2]) - 412 * 15 / 25) < 0.11,
+    "panning must translate all points by the same pixel distance");
+});
+app.twiiCompareFund = null;
+app.twiiCompareFundId = "";
+app.twiiCompareBaselineRows = null;
+app.twiiPortfolioBaselineRow = indexRows[0];
+app.twiiTrendMeta.endIndex = 4;
+app.setPortfolioDailyCapital(indexRows.map(row => ({ date: row.date, invested: 1000000, value: 3000000 })), "fresh-source");
+app.setTwiiScalePercent(50);
+app.panTwiiScale(280 - app.twiiScaleState.minimum);
+const highValueCoordinates = [...chartPath(app.els.twiiTrendChart.innerHTML, "value").matchAll(/[ML]([\d.-]+) ([\d.-]+)/g)];
+assert(highValueCoordinates.every(point => Number(point[2]) >= 46 && Number(point[2]) <= 458),
+  "an offscreen 300% estimated value must be reachable by vertical panning, not discarded");
+assert.equal(queryCalls.filter(([kind]) => kind === "from").length, 1, "zooming and panning must not issue database queries");
+app.setTwiiScalePercent(-100);
+assert.equal(app.twiiScaleState.span, 5);
+app.setTwiiScalePercent(9999);
+assert.equal(app.twiiScaleState.span, 200);
+app.setTwiiScalePercent("invalid");
+assert.equal(app.twiiScaleState.span, 200);
+storage.set("twiiScalePercent", "corrupt");
+assert.equal(app.readTwiiScalePercent(), 50);
+const workingStorage = app.localStorage;
+app.localStorage = { getItem() { throw new Error("blocked"); }, setItem() { throw new Error("blocked"); } };
+assert.equal(app.readTwiiScalePercent(), 50);
+assert.doesNotThrow(() => app.setTwiiScalePercent(40));
+app.localStorage = workingStorage;
+console.log("Portfolio value chart passed: persistent manual scale, vertical panning, shared percentage scale, fixed baseline, missing/zero safety, and joint toggle");

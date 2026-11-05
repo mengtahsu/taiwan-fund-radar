@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20261105-5">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20261105-6">
   </head>
   <body>
     <header class="topbar">
@@ -97,9 +97,14 @@
                   <option value="">不比較基金</option>
                 </select>
               </label>
+              <label class="twii-scale-control" for="twiiScale">
+                <span>共同比例</span>
+                <input id="twiiScale" type="range" min="5" max="200" step="5" value="50" aria-label="垂直顯示範圍（百分點）">
+                <output id="twiiScaleValue" for="twiiScale">50%</output>
+              </label>
             </div>
           </div>
-          <div id="twiiTrendChart" class="twii-trend-chart" tabindex="0" aria-label="台股指數月線季線歷史走勢，可左右滑動"></div>
+          <div id="twiiTrendChart" class="twii-trend-chart" tabindex="0" aria-label="台股指數月線季線歷史走勢，左右查看歷史，上下移動比例範圍"></div>
           <p id="twiiTrendStatus" class="margin-status">台股均線資料載入中</p>
         </div>
       </section>
@@ -338,6 +343,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="fund-box.js?v=tw-funds-20260924-1"></script>
-    <script src="app.js?v=tw-funds-20261105-5"></script>
+    <script src="app.js?v=tw-funds-20261105-6"></script>
   </body>
 </html>

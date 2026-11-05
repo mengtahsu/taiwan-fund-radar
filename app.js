@@ -156,6 +156,7 @@ let twiiTrendMeta = {
   visibleCount: 44
 };
 let twiiTrendDrag = null;
+const twiiScaleState = { span: readTwiiScalePercent(), minimum: null, base: null };
 let showTwiiCapital = true;
 let twiiCompareFundId = localStorage.getItem("twiiCompareFundId") || "";
 let twiiCompareFund = null;
@@ -274,6 +275,8 @@ const els = {
   twiiCapitalToggle: document.querySelector("#twiiCapitalToggle"),
   twiiCompareFund: document.querySelector("#twiiCompareFund"),
   twiiRebase: document.querySelector("#twiiRebase"),
+  twiiScale: document.querySelector("#twiiScale"),
+  twiiScaleValue: document.querySelector("#twiiScaleValue"),
   reset: document.querySelector("#resetBtn"),
   authStatus: document.querySelector("#authStatus"),
   authForm: document.querySelector("#authForm"),
@@ -5401,6 +5404,7 @@ function resetTwiiCompareBaseline() {
   twiiCompareInitialWindow = { startDate: visible[0].date, endDate: visible.at(-1).date };
   twiiPortfolioBaselineRow = first;
   twiiPortfolioInitialWindow = { ...twiiCompareInitialWindow };
+  twiiScaleState.base = null;
   renderTwiiTrendChart();
   return true;
 }
@@ -5638,6 +5642,49 @@ function twiiVisibleCrisisMarkers(rows, width, padding) {
     });
 }
 
+function readTwiiScalePercent() {
+  try {
+    const value = Number(localStorage.getItem("twiiScalePercent"));
+    return Number.isFinite(value) && value >= 5 && value <= 200 ? Math.round(value / 5) * 5 : 50;
+  } catch (_error) {
+    return 50;
+  }
+}
+
+function twiiScaleDomain(visibleRows, ratioBase) {
+  const base = ratioBase || twiiScaleState.base || visibleRows[0];
+  if (!twiiScaleState.base || twiiScaleState.base.date !== base.date || twiiScaleState.base.close !== base.close) {
+    const values = visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite));
+    const minimum = Math.min(...values);
+    const maximum = Math.max(...values);
+    const padding = Math.max((maximum - minimum) * 0.08, maximum * 0.002, 1);
+    twiiScaleState.base = { date: base.date, close: base.close };
+    twiiScaleState.minimum = Math.max(0, (minimum - padding) / base.close * 100);
+  }
+  return {
+    base: twiiScaleState.base,
+    minimum: twiiScaleState.base.close * twiiScaleState.minimum / 100,
+    maximum: twiiScaleState.base.close * (twiiScaleState.minimum + twiiScaleState.span) / 100
+  };
+}
+
+function setTwiiScalePercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return;
+  const span = Math.max(5, Math.min(200, Math.round(number / 5) * 5));
+  twiiScaleState.span = span;
+  try { localStorage.setItem("twiiScalePercent", String(span)); } catch (_error) { /* Storage can be unavailable in private browsing. */ }
+  renderTwiiTrendChart();
+}
+
+function panTwiiScale(delta, startMinimum = twiiScaleState.minimum) {
+  if (startMinimum === null || !Number.isFinite(delta)) return;
+  const minimum = Math.max(0, startMinimum + delta);
+  if (minimum === twiiScaleState.minimum) return;
+  twiiScaleState.minimum = minimum;
+  renderTwiiTrendChart();
+}
+
 function renderTwiiTrendChart() {
   if (!els.twiiTrendChart) {
     return;
@@ -5687,24 +5734,16 @@ function renderTwiiTrendChart() {
   const estimatedValues = showTwiiCapital ? portfolio.value : [];
   const capitalPoints = showTwiiCapital ? portfolio.capitalPoints : [];
   const estimatedPoints = showTwiiCapital ? portfolio.valuePoints : [];
-  const values = visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite));
-  const seriesMinimum = Math.min(...values);
-  const seriesMaximum = Math.max(...values);
-  const domainPadding = Math.max((seriesMaximum - seriesMinimum) * 0.08, seriesMaximum * 0.002, 1);
-  const chartMinimum = seriesMinimum - domainPadding;
   const width = 680;
-  const originalHeight = 250;
-  const height = originalHeight * 2;
-  const padding = { top: 34, right: 18, bottom: 42, left: 18 };
-  const ratioBase = comparisonBase[0] || portfolio.base;
-  const showRatio = ratioBase && (comparison || capitalPoints.some(Number.isFinite) || estimatedPoints.some(Number.isFinite));
+  const height = 500;
+  const padding = { top: 46, right: 18, bottom: 42, left: 18 };
+  const scale = twiiScaleDomain(visibleRows, comparisonBase[0] || portfolio.base);
+  const ratioBase = scale.base;
+  const chartMinimum = scale.minimum;
+  const chartMaximum = scale.maximum;
+  if (els.twiiScale) els.twiiScale.value = String(twiiScaleState.span);
+  if (els.twiiScaleValue) els.twiiScaleValue.textContent = `${twiiScaleState.span}%`;
   const crisisMarkers = twiiVisibleCrisisMarkers(visibleRows, width, padding);
-  if (crisisMarkers.length) padding.top = 46;
-  // Add headroom without changing the existing distance per index point/percent.
-  const originalMaximum = seriesMaximum + domainPadding;
-  const originalPlotHeight = originalHeight - padding.top - padding.bottom;
-  const chartMaximum = chartMinimum + (originalMaximum - chartMinimum)
-    * (height - padding.top - padding.bottom) / originalPlotHeight;
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
   const ma20Path = twiiTrendPath(visibleRows, "ma20", width, height, padding, chartMinimum, chartMaximum);
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
@@ -5716,9 +5755,6 @@ function renderTwiiTrendChart() {
   const capitalVisible = showTwiiCapital && latestCapital !== null;
   const latestEstimatedValue = estimatedValues.length && Number.isFinite(estimatedValues.at(-1)) ? estimatedValues.at(-1) : null;
   const estimatedValueVisible = showTwiiCapital && estimatedValues.some(Number.isFinite);
-  const overlayClipped = [
-    ...(comparison?.points || []).map((point) => point.value), ...capitalPoints, ...estimatedPoints
-  ].some((value) => Number.isFinite(value) && (value < chartMinimum || value > chartMaximum));
 
   els.twiiTrendChart.innerHTML = `
     <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${comparison ? `與${escapeHtml(twiiCompareFund.name)}同期績效` : ""}${capitalVisible ? "與每日在場本金" : ""}${estimatedValueVisible ? "與持有基金估算現值" : ""}${crisisMarkers.length ? `；紅色三角：${crisisMarkers.map((event) => `${event.date} ${event.name}`).join("、")}` : ""}">
@@ -5733,7 +5769,7 @@ function renderTwiiTrendChart() {
       ${capitalPath ? `<path class="twii-trend-line twii-capital-line" d="${capitalPath}"></path>` : ""}
       ${estimatedValuePath ? `<path class="twii-trend-line twii-value-line" d="${estimatedValuePath}"></path>` : ""}
       </g>
-      ${showRatio ? `<text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top - 12}" text-anchor="end">共同比例 ${(chartMinimum / ratioBase.close * 100).toFixed(1)}%～${(chartMaximum / ratioBase.close * 100).toFixed(1)}%</text>` : ""}
+      <text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top - 12}" text-anchor="end">共同比例 ${(chartMinimum / ratioBase.close * 100).toFixed(1)}%～${(chartMaximum / ratioBase.close * 100).toFixed(1)}%</text>
     </svg>
     ${crisisMarkers.length ? `<div class="twii-crisis-notes">${crisisMarkers.map((event) => `<span>${escapeHtml(`${event.date.replaceAll("-", "/")} ${event.name}（${event.milestone}）`)}</span>`).join("")}</div>` : ""}
     <div class="twii-trend-legend">
@@ -5762,8 +5798,7 @@ function renderTwiiTrendChart() {
         : "";
     const coverageNote = twiiCompareFund?.history?.length
       ? `；基金可用歷史自 ${twiiCompareFund.history[0].date.replaceAll("-", "/")}` : "";
-    const clippingNote = overlayClipped ? "；超出指數範圍的比較線已裁切" : "";
-    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${incompleteValueNote}${compareNote}${coverageNote}${clippingNote}`;
+    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${incompleteValueNote}${compareNote}${coverageNote}`;
   }
 }
 
@@ -5802,9 +5837,16 @@ function initTwiiTrendInteraction() {
     if (event.pointerType === "mouse" && event.button !== 0) {
       return;
     }
+    const svg = event.target.closest?.(".twii-trend-svg");
+    if (!svg) return;
     twiiTrendDrag = {
       pointerId: event.pointerId,
       startX: event.clientX,
+      startY: event.clientY,
+      axis: null,
+      minimum: twiiScaleState.minimum,
+      span: twiiScaleState.span,
+      plotHeight: Math.max(1, svg.getScreenCTM().d * Number(svg.querySelector("#twiiOverlayClip rect").getAttribute("height"))),
       endIndex: Number(twiiTrendMeta.endIndex) || (twiiTrendMeta.items || []).length
     };
     els.twiiTrendChart.setPointerCapture(event.pointerId);
@@ -5813,13 +5855,21 @@ function initTwiiTrendInteraction() {
     if (!twiiTrendDrag || event.pointerId !== twiiTrendDrag.pointerId) {
       return;
     }
+    const dx = event.clientX - twiiTrendDrag.startX;
+    const dy = event.clientY - twiiTrendDrag.startY;
+    if (!twiiTrendDrag.axis) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 6) return;
+      twiiTrendDrag.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    }
+    event.preventDefault();
+    if (twiiTrendDrag.axis === "y") {
+      panTwiiScale(dy / twiiTrendDrag.plotHeight * twiiTrendDrag.span, twiiTrendDrag.minimum);
+      return;
+    }
     const width = Math.max(1, els.twiiTrendChart.clientWidth);
     const dayWidth = width / Math.max(1, (Number(twiiTrendMeta.visibleCount) || 2) - 1);
-    const dayDelta = Math.round((event.clientX - twiiTrendDrag.startX) / dayWidth);
-    if (dayDelta !== 0) {
-      event.preventDefault();
-      moveTwiiTrendWindow(twiiTrendDrag.endIndex - dayDelta);
-    }
+    const dayDelta = Math.round(dx / dayWidth);
+    moveTwiiTrendWindow(twiiTrendDrag.endIndex - dayDelta);
   });
   const endDrag = (event) => {
     if (twiiTrendDrag && event.pointerId === twiiTrendDrag.pointerId) {
@@ -5828,9 +5878,21 @@ function initTwiiTrendInteraction() {
   };
   els.twiiTrendChart.addEventListener("pointerup", endDrag);
   els.twiiTrendChart.addEventListener("pointercancel", endDrag);
+  els.twiiTrendChart.addEventListener("lostpointercapture", endDrag);
+  els.twiiTrendChart.addEventListener("wheel", (event) => {
+    const svg = event.target.closest?.(".twii-trend-svg");
+    if (!svg || event.ctrlKey) return;
+    event.preventDefault();
+    const plotHeight = Math.max(1, svg.getScreenCTM().d * Number(svg.querySelector("#twiiOverlayClip rect").getAttribute("height")));
+    const pixels = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? plotHeight : 1);
+    panTwiiScale(-pixels / plotHeight * twiiScaleState.span);
+  }, { passive: false });
   els.twiiTrendChart.addEventListener("keydown", (event) => {
     const moves = { ArrowLeft: -5, ArrowRight: 5, PageUp: -22, PageDown: 22 };
-    if (event.key === "Home") {
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      event.preventDefault();
+      panTwiiScale(twiiScaleState.span * (event.key === "ArrowUp" ? 0.1 : -0.1));
+    } else if (event.key === "Home") {
       event.preventDefault();
       moveTwiiTrendWindow(0);
     } else if (event.key === "End") {
@@ -5856,6 +5918,7 @@ function initTwiiTrendInteraction() {
     void selectTwiiCompareFund(event.target.value);
   });
   els.twiiRebase?.addEventListener("click", resetTwiiCompareBaseline);
+  els.twiiScale?.addEventListener("input", (event) => setTwiiScalePercent(event.target.value));
   document.querySelector("#twiiYearSelect")?.addEventListener("change", (event) => {
     selectTwiiTrendYear(event.target.value);
   });
