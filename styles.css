@@ -453,6 +453,11 @@ body.portfolio-view .margin-section {
   stroke-dasharray: 9 6;
 }
 
+.twii-value-line {
+  stroke: #dc2626;
+  stroke-width: 4;
+}
+
 .twii-month-line {
   stroke: var(--line);
   stroke-width: 1;
@@ -520,8 +525,12 @@ body.portfolio-view .margin-section {
   background: var(--accent);
 }
 
+.twii-value-dot {
+  background: #dc2626;
+}
+
 .twii-capital-scale {
-  fill: var(--accent-dark);
+  fill: var(--muted);
   font-size: 15px;
   font-weight: 900;
 }

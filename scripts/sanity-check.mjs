@@ -579,13 +579,16 @@ assert(!appSource.includes("<span>箱寬"), "selected box popovers should not re
 assert(styleSource.includes(".fund-box-segment-popover"), "Selected fund boxes should show a compact detail popover");
 assert(appSource.includes("twiiMonthLabels"), "TWII trend should label months and year boundaries");
 assert(!appSource.includes("function capitalAtDate"), "TWII trend must not recalculate capital with a separate buy/sell shortcut");
-assert(appSource.includes('DAILY_CAPITAL_SELECT = "period_key,period_date,invested,source_updated_at"'), "TWII trend should read the same invested field as daily profit");
+assert(appSource.includes('DAILY_CAPITAL_SELECT = "period_key,period_date,invested,value,missing,source_updated_at"'), "TWII trend should read invested capital and estimated value from the same daily-profit snapshot");
 assert(appSource.includes("fetchPortfolioDailyCapitalRows"), "TWII trend should load lightweight daily-profit capital snapshots");
 assert(appSource.includes("dailyCapitalValuesForRows"), "TWII trend should align daily-profit capital with TWII dates");
 assert(appSource.includes("portfolioDailyCapital.sourceUpdatedAt === portfolioSnapshotSource()"), "TWII trend should reject stale daily-capital snapshots");
 assert(!appSource.includes("!sourceMatches || portfolioSnapshotsDirty"), "fresh daily-profit calculations should remain drawable while snapshots are being saved");
 assert(appSource.includes("twiiCapitalPath"), "TWII trend should overlay the daily invested-capital series");
 assert(appSource.includes("twii-capital-line"), "TWII trend should render the invested-capital line");
+assert(appSource.includes('dailyCapitalValuesForRows(visibleRows, "value")'), "TWII trend should align historical estimated values, not today's value across history");
+assert(appSource.includes("twii-value-line"), "TWII trend should render the estimated-value line");
+assert(styleSource.includes(".twii-value-line {\n  stroke: #dc2626;"), "estimated value must use the requested red line");
 assert(appSource.includes("showTwiiCapital = true"), "TWII capital line should be visible by default");
 assert(appSource.includes('twiiCapitalToggle?.addEventListener("change"'), "TWII capital line should be user-toggleable");
 assert(appSource.includes("const capitalVisible = showTwiiCapital"), "TWII capital toggle should also control its legend and status note");

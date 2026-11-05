@@ -239,7 +239,7 @@ let portfolioPeriodsLoading = false;
 
 const SNAPSHOT_SELECT =
   "period_type,period_key,period_date,invested,value,profit,valued,missing,details,source_updated_at";
-const DAILY_CAPITAL_SELECT = "period_key,period_date,invested,source_updated_at";
+const DAILY_CAPITAL_SELECT = "period_key,period_date,invested,value,missing,source_updated_at";
 const DAILY_CAPITAL_CHART_LIMIT = 370;
 
 let portfolioDailyCapital = {
@@ -2377,7 +2377,10 @@ function setPortfolioDailyCapital(rows, sourceUpdatedAt) {
   const normalizedRows = rows
     .map((row) => ({
       date: String(row.period_date || row.date || row.period_key || row.key || "").slice(0, 10),
-      invested: Number(row.invested) || 0
+      invested: Number(row.invested) || 0,
+      value: row.value !== null && row.value !== undefined && row.value !== "" && Number.isFinite(Number(row.value))
+        ? Number(row.value) : null,
+      missing: Number(row.missing) || 0
     }))
     .filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(row.date))
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -5514,7 +5517,7 @@ async function selectTwiiCompareFund(fundId) {
   renderTwiiTrendChart();
 }
 
-function dailyCapitalValuesForRows(rows) {
+function dailyCapitalValuesForRows(rows, field = "invested") {
   const sourceMatches = portfolioDailyCapital.sourceUpdatedAt === portfolioSnapshotSource();
   if (!currentUser || !portfolioDailyCapital.loaded || !sourceMatches) {
     return [];
@@ -5525,11 +5528,12 @@ function dailyCapitalValuesForRows(rows) {
     while (capitalIndex + 1 < capitalRows.length && capitalRows[capitalIndex + 1].date <= row.date) {
       capitalIndex += 1;
     }
-    return capitalIndex >= 0 ? Number(capitalRows[capitalIndex].invested) || 0 : null;
+    const value = capitalIndex >= 0 ? capitalRows[capitalIndex][field] : null;
+    return value !== null && value !== undefined && Number.isFinite(Number(value)) ? Number(value) : null;
   });
 }
 
-function twiiCapitalPath(rows, values, width, height, padding, maximum) {
+function twiiCapitalPath(rows, values, width, height, padding, maximum, stepped = true) {
   if (rows.length < 2 || values.length !== rows.length || maximum <= 0) {
     return "";
   }
@@ -5547,7 +5551,7 @@ function twiiCapitalPath(rows, values, width, height, padding, maximum) {
         drawing = true;
         return `M${x.toFixed(1)} ${y.toFixed(1)}`;
       }
-      return `H${x.toFixed(1)} V${y.toFixed(1)}`;
+      return stepped ? `H${x.toFixed(1)} V${y.toFixed(1)}` : `L${x.toFixed(1)} ${y.toFixed(1)}`;
     })
     .filter(Boolean)
     .join(" ");
@@ -5664,16 +5668,20 @@ function renderTwiiTrendChart() {
   const ma60Path = twiiTrendPath(visibleRows, "ma60", width, height, padding, chartMinimum, chartMaximum);
   const fundPath = twiiFundComparisonPath(comparison?.points, visibleRows, width, height, padding, chartMinimum, chartMaximum);
   const capitalValues = showTwiiCapital ? dailyCapitalValuesForRows(visibleRows) : [];
-  const numericCapitalValues = capitalValues.filter(Number.isFinite);
+  const estimatedValues = showTwiiCapital ? dailyCapitalValuesForRows(visibleRows, "value") : [];
+  const numericCapitalValues = [...capitalValues, ...estimatedValues].filter(Number.isFinite);
   const capitalMaximum = numericCapitalValues.length ? Math.max(...numericCapitalValues) : 0;
-  const capitalScaleMaximum = capitalMaximum > 0 ? capitalMaximum * 1.08 : 0;
+  const capitalScaleMaximum = numericCapitalValues.length ? Math.max(capitalMaximum * 1.08, 1) : 0;
   const capitalPath = twiiCapitalPath(visibleRows, capitalValues, width, height, padding, capitalScaleMaximum);
+  const estimatedValuePath = twiiCapitalPath(visibleRows, estimatedValues, width, height, padding, capitalScaleMaximum, false);
   const latest = visibleRows.at(-1);
   const latestCapital = capitalValues.length && Number.isFinite(capitalValues.at(-1)) ? capitalValues.at(-1) : null;
   const capitalVisible = showTwiiCapital && latestCapital !== null;
+  const latestEstimatedValue = estimatedValues.length && Number.isFinite(estimatedValues.at(-1)) ? estimatedValues.at(-1) : null;
+  const estimatedValueVisible = showTwiiCapital && estimatedValues.some(Number.isFinite);
 
   els.twiiTrendChart.innerHTML = `
-    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${comparison ? `與${escapeHtml(twiiCompareFund.name)}同期績效` : ""}${capitalVisible ? "與每日在場本金" : ""}${crisisMarkers.length ? `；紅色三角：${crisisMarkers.map((event) => `${event.date} ${event.name}`).join("、")}` : ""}">
+    <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${comparison ? `與${escapeHtml(twiiCompareFund.name)}同期績效` : ""}${capitalVisible ? "與每日在場本金" : ""}${estimatedValueVisible ? "與持有基金估算現值" : ""}${crisisMarkers.length ? `；紅色三角：${crisisMarkers.map((event) => `${event.date} ${event.name}`).join("、")}` : ""}">
       ${twiiMonthLabels(visibleRows, width, height, padding)}
       ${crisisMarkers.map((event) => `<path class="twii-crisis-marker" d="M${(event.x - 10).toFixed(1)} 14 H${(event.x + 10).toFixed(1)} L${event.x.toFixed(1)} 32 Z"><title>${escapeHtml(`${event.date} ${event.name}（${event.milestone}）`)}</title></path>`).join("")}
       ${fundPath ? `<path class="twii-trend-line twii-fund-line" d="${fundPath}"></path>` : ""}
@@ -5681,7 +5689,8 @@ function renderTwiiTrendChart() {
       <path class="twii-trend-line twii-ma20-line" d="${ma20Path}"></path>
       <path class="twii-trend-line twii-close-line" d="${closePath}"></path>
       ${capitalPath ? `<path class="twii-trend-line twii-capital-line" d="${capitalPath}"></path>` : ""}
-      ${capitalPath ? `<text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top + 15}" text-anchor="end">本${compactTwdWan(capitalMaximum)}</text>` : ""}
+      ${estimatedValuePath ? `<path class="twii-trend-line twii-value-line" d="${estimatedValuePath}"></path>` : ""}
+      ${capitalPath || estimatedValuePath ? `<text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top + 15}" text-anchor="end">金額 ${compactTwdWan(capitalMaximum)}</text>` : ""}
     </svg>
     ${crisisMarkers.length ? `<div class="twii-crisis-notes">${crisisMarkers.map((event) => `<span>${escapeHtml(`${event.date.replaceAll("-", "/")} ${event.name}（${event.milestone}）`)}</span>`).join("")}</div>` : ""}
     <div class="twii-trend-legend">
@@ -5691,10 +5700,14 @@ function renderTwiiTrendChart() {
       ${comparison ? `<span><i class="twii-fund-dot"></i>${escapeHtml(twiiCompareFund.name)} ${formatPercent(comparison.fundReturn)}</span>` : ""}
       ${comparison ? `<span><i class="twii-close-dot"></i>台股累計 ${formatPercent(comparison.twiiReturn)}</span>` : ""}
       ${capitalVisible ? `<span><i class="twii-capital-dot"></i>本金 ${compactTwdWan(latestCapital)}</span>` : ""}
+      ${estimatedValueVisible || capitalVisible ? `<span><i class="twii-value-dot"></i>估算現值 ${latestEstimatedValue === null ? "暫無資料" : compactTwdWan(latestEstimatedValue)}</span>` : ""}
     </div>
   `;
   if (els.twiiTrendStatus) {
-    const capitalNote = capitalVisible ? "；本金使用獨立比例" : "";
+    const capitalNote = capitalVisible || estimatedValueVisible ? "；本金／現值共用金額刻度，與指數分開" : "";
+    const incompleteValueNote = estimatedValueVisible && portfolioDailyCapital.rows.some((row) =>
+      row.date >= visibleRows[0].date && row.date <= latest.date && row.missing > 0
+    ) ? "；部分日期淨值不全，現值為估算" : "";
     const compareNote = comparison
       ? `；固定基準 ${comparison.startDate.replaceAll("-", "/")}，累計至 ${comparison.fundDate.replaceAll("-", "/")}，基金淨值未計配息`
       : twiiCompareFundId
@@ -5702,7 +5715,7 @@ function renderTwiiTrendChart() {
         : "";
     const coverageNote = twiiCompareFund?.history?.length
       ? `；基金可用歷史自 ${twiiCompareFund.history[0].date.replaceAll("-", "/")}` : "";
-    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${compareNote}${coverageNote}`;
+    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${incompleteValueNote}${compareNote}${coverageNote}`;
   }
 }
 
