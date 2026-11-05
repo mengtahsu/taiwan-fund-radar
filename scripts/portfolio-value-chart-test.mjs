@@ -92,7 +92,9 @@ assert(html.includes(`class="twii-trend-line twii-capital-line" d="${capital}"`)
 assert(html.includes(`class="twii-trend-line twii-value-line" d="${value}"`), "capital, value, and index must share the same ratio domain");
 assert.match(html, /共同比例 99.0%～103.9%/);
 assert.match(html, /viewBox="0 0 680 500"/);
-assert.match(fs.readFileSync("styles.css", "utf8"), /\.twii-trend-svg\s*\{[^}]*height: 440px/);
+const svgStyles = fs.readFileSync("styles.css", "utf8").match(/\.twii-trend-svg\s*\{([^}]+)\}/)[1];
+assert.match(svgStyles, /\n\s*height: auto;/, "fit the SVG aspect ratio instead of adding mobile letterbox whitespace");
+assert.match(svgStyles, /max-height: 440px;/, "keep the desktop height bounded");
 assert.match(html, /clip-path="url\(#twiiOverlayClip\)"/);
 assert.match(html, /<rect x="18" y="34" width="644" height="424">/);
 assert.match(app.els.twiiTrendStatus.textContent, /超出指數範圍的比較線已裁切/);
