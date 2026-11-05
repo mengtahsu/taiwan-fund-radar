@@ -5687,11 +5687,7 @@ function renderTwiiTrendChart() {
   const estimatedValues = showTwiiCapital ? portfolio.value : [];
   const capitalPoints = showTwiiCapital ? portfolio.capitalPoints : [];
   const estimatedPoints = showTwiiCapital ? portfolio.valuePoints : [];
-  const values = [
-    ...visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite)),
-    ...(comparison?.points || []).map((point) => point.value),
-    ...capitalPoints.filter(Number.isFinite), ...estimatedPoints.filter(Number.isFinite)
-  ];
+  const values = visibleRows.flatMap((row) => [row.close, row.ma20, row.ma60].map(Number).filter(Number.isFinite));
   const seriesMinimum = Math.min(...values);
   const seriesMaximum = Math.max(...values);
   const domainPadding = Math.max((seriesMaximum - seriesMinimum) * 0.08, seriesMaximum * 0.002, 1);
@@ -5699,10 +5695,9 @@ function renderTwiiTrendChart() {
   const chartMaximum = seriesMaximum + domainPadding;
   const width = 680;
   const height = 250;
-  const padding = { top: 18, right: 18, bottom: 42, left: 18 };
+  const padding = { top: 34, right: 18, bottom: 42, left: 18 };
   const ratioBase = comparisonBase[0] || portfolio.base;
   const showRatio = ratioBase && (comparison || capitalPoints.some(Number.isFinite) || estimatedPoints.some(Number.isFinite));
-  if (showRatio) padding.top = 34;
   const crisisMarkers = twiiVisibleCrisisMarkers(visibleRows, width, padding);
   if (crisisMarkers.length) padding.top = 46;
   const closePath = twiiTrendPath(visibleRows, "close", width, height, padding, chartMinimum, chartMaximum);
@@ -5716,17 +5711,23 @@ function renderTwiiTrendChart() {
   const capitalVisible = showTwiiCapital && latestCapital !== null;
   const latestEstimatedValue = estimatedValues.length && Number.isFinite(estimatedValues.at(-1)) ? estimatedValues.at(-1) : null;
   const estimatedValueVisible = showTwiiCapital && estimatedValues.some(Number.isFinite);
+  const overlayClipped = [
+    ...(comparison?.points || []).map((point) => point.value), ...capitalPoints, ...estimatedPoints
+  ].some((value) => Number.isFinite(value) && (value < chartMinimum || value > chartMaximum));
 
   els.twiiTrendChart.innerHTML = `
     <svg class="twii-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${visibleRows[0].date} 到 ${latest.date} 的台股指數、20日月線、60日季線${comparison ? `與${escapeHtml(twiiCompareFund.name)}同期績效` : ""}${capitalVisible ? "與每日在場本金" : ""}${estimatedValueVisible ? "與持有基金估算現值" : ""}${crisisMarkers.length ? `；紅色三角：${crisisMarkers.map((event) => `${event.date} ${event.name}`).join("、")}` : ""}">
+      <defs><clipPath id="twiiOverlayClip"><rect x="${padding.left}" y="${padding.top}" width="${width - padding.left - padding.right}" height="${height - padding.top - padding.bottom}"></rect></clipPath></defs>
       ${twiiMonthLabels(visibleRows, width, height, padding)}
       ${crisisMarkers.map((event) => `<path class="twii-crisis-marker" d="M${(event.x - 10).toFixed(1)} 14 H${(event.x + 10).toFixed(1)} L${event.x.toFixed(1)} 32 Z"><title>${escapeHtml(`${event.date} ${event.name}（${event.milestone}）`)}</title></path>`).join("")}
+      <g class="twii-plot" clip-path="url(#twiiOverlayClip)">
       ${fundPath ? `<path class="twii-trend-line twii-fund-line" d="${fundPath}"></path>` : ""}
       <path class="twii-trend-line twii-ma60-line" d="${ma60Path}"></path>
       <path class="twii-trend-line twii-ma20-line" d="${ma20Path}"></path>
       <path class="twii-trend-line twii-close-line" d="${closePath}"></path>
       ${capitalPath ? `<path class="twii-trend-line twii-capital-line" d="${capitalPath}"></path>` : ""}
       ${estimatedValuePath ? `<path class="twii-trend-line twii-value-line" d="${estimatedValuePath}"></path>` : ""}
+      </g>
       ${showRatio ? `<text class="twii-capital-scale" x="${width - padding.right}" y="${padding.top - 12}" text-anchor="end">共同比例 ${(chartMinimum / ratioBase.close * 100).toFixed(1)}%～${(chartMaximum / ratioBase.close * 100).toFixed(1)}%</text>` : ""}
     </svg>
     ${crisisMarkers.length ? `<div class="twii-crisis-notes">${crisisMarkers.map((event) => `<span>${escapeHtml(`${event.date.replaceAll("-", "/")} ${event.name}（${event.milestone}）`)}</span>`).join("")}</div>` : ""}
@@ -5756,7 +5757,8 @@ function renderTwiiTrendChart() {
         : "";
     const coverageNote = twiiCompareFund?.history?.length
       ? `；基金可用歷史自 ${twiiCompareFund.history[0].date.replaceAll("-", "/")}` : "";
-    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${incompleteValueNote}${compareNote}${coverageNote}`;
+    const clippingNote = overlayClipped ? "；超出指數範圍的比較線已裁切" : "";
+    els.twiiTrendStatus.textContent = `${visibleRows[0].date.replaceAll("-", "/")} 到 ${latest.date.replaceAll("-", "/")}，左右滑動查看歷史${capitalNote}${incompleteValueNote}${compareNote}${coverageNote}${clippingNote}`;
   }
 }
 

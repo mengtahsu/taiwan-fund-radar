@@ -85,15 +85,22 @@ assert.match(html, /估算現值 300/);
 assert.match(app.els.twiiTrendStatus.textContent, /共同比例/);
 assert.match(app.els.twiiTrendStatus.textContent, /部分日期淨值不全/);
 const padding = { top: 34, right: 18, bottom: 42, left: 18 };
-const capital = app.twiiCapitalPath(app.twiiTrendMeta.items, [100, 100], 680, 250, padding, 84, 316);
-const value = app.twiiCapitalPath(app.twiiTrendMeta.items, [200, 300], 680, 250, padding, 84, 316, false);
+const capital = app.twiiCapitalPath(app.twiiTrendMeta.items, [100, 100], 680, 250, padding, 99, 101);
+const value = app.twiiCapitalPath(app.twiiTrendMeta.items, [200, 300], 680, 250, padding, 99, 101, false);
 assert(html.includes(`class="twii-trend-line twii-capital-line" d="${capital}"`));
 assert(html.includes(`class="twii-trend-line twii-value-line" d="${value}"`), "capital, value, and index must share the same ratio domain");
-assert.match(html, /共同比例 84.0%～316.0%/);
+assert.match(html, /共同比例 99.0%～101.0%/);
+assert.match(html, /clip-path="url\(#twiiOverlayClip\)"/);
+assert.match(html, /<rect x="18" y="34" width="644" height="174">/);
+assert.match(app.els.twiiTrendStatus.textContent, /超出指數範圍的比較線已裁切/);
 assert.match(value, /L/);
 assert.match(capital, /H/);
 app.showTwiiCapital = false;
 app.renderTwiiTrendChart();
+const chartPath = (markup, kind) => markup.match(new RegExp(`class="twii-trend-line twii-${kind}-line" d="([^"]+)"`))[1];
+for (const kind of ["close", "ma20", "ma60"]) {
+  assert.equal(chartPath(app.els.twiiTrendChart.innerHTML, kind), chartPath(html, kind), "toggling overlays must not resize or rescale the index/moving averages");
+}
 assert.doesNotMatch(app.els.twiiTrendChart.innerHTML, /twii-capital-line|twii-value-line|估算現值|本金 100|共同比例/);
 assert.doesNotMatch(app.els.twiiTrendStatus.textContent, /共同比例|部分日期淨值不全/);
 app.showTwiiCapital = true;
@@ -149,4 +156,14 @@ const fundPath = mixed.match(/class="twii-trend-line twii-fund-line" d="([^"]+)"
 assert.equal(moneyPath, indexPath);
 assert.equal(fundPath, indexPath, "selected fund, portfolio value, and index must use one date and one percentage scale");
 assert.match(app.els.twiiTrendStatus.textContent, /基準 2026\/11\/03/);
-console.log("Portfolio value chart passed: historical snapshots, one query, shared index percentage scale, fixed/rebased principal, missing/zero safety, and joint toggle");
+app.setPortfolioDailyCapital(indexRows.map((row, index) => ({
+  date: row.date, invested: index < 2 ? 1000000 : 1000000000, value: index < 2 ? 2000000 : 2000000000
+})), "fresh-source");
+app.twiiCompareFund.history = indexRows.map((row, index) => ({ date: row.date, nav: index < 2 ? 100 : 1000000 }));
+app.renderTwiiTrendChart();
+for (const kind of ["close", "ma20", "ma60"]) {
+  assert.equal(chartPath(app.els.twiiTrendChart.innerHTML, kind), chartPath(mixed, kind), "even extreme capital, portfolio value, or selected-fund returns must not change the index domain");
+}
+assert.match(app.els.twiiTrendChart.innerHTML, /clip-path="url\(#twiiOverlayClip\)"/);
+assert.match(app.els.twiiTrendStatus.textContent, /超出指數範圍的比較線已裁切/);
+console.log("Portfolio value chart passed: index-only vertical range, clipped overlays, shared percentage scale, fixed baseline, missing/zero safety, and joint toggle");
