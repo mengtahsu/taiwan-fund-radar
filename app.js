@@ -1141,77 +1141,91 @@ function isoDateFromShortNavDate(value) {
   return `${year}-${month}-${day}`;
 }
 
+function createFundBoxEntry(items, key, grouped = false) {
+  const item = [...items].sort(purchaseDateCompare).at(-1);
+  const fund = currentFundForPurchase(item);
+  const navItem = exactMonthlyNavForPurchase(item);
+  const distributing = isDistributingFund(fund, item);
+  const adjusted = navItem?.adjusted === true || navItem?.navType === "adjusted";
+  const trackingStartDate = String(item.buy_date || "");
+  // Daily rows are exact for the trailing high. Older weekly/monthly rows give
+  // existing holdings a conservative bootstrap until future highs are saved.
+  const navRows = [
+    ...(navItem?.months || []),
+    ...(navItem?.weeks || []),
+    ...(navItem?.days || [])
+  ];
+  const exactHistoryStartDate = [...(navItem?.days || [])]
+    .filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(String(row?.date || "")) && Number(row?.nav) > 0)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))[0]?.date || "";
+  const latestFundDate = isoDateFromShortNavDate(fund?.navDate);
+  if (latestFundDate && Number.isFinite(Number(fund?.nav)) && Number(fund.nav) > 0) {
+    navRows.push({ date: latestFundDate, nav: Number(fund.nav) });
+  }
+  const peakSeeds = items.flatMap((purchase) => {
+    const seeds = [{ date: purchase.buy_date, nav: purchase.nav }];
+    const saved = fundTrailingBoxes.get(fundBoxKeyForPurchase(purchase));
+    if (saved?.tracking_start_date === purchase.buy_date && saved.peak_nav && saved.peak_date) {
+      seeds.push({ date: saved.peak_date, nav: saved.peak_nav });
+    }
+    return seeds;
+  });
+  const analysis = window.FundBox
+    ? window.FundBox.analyzeFundBox(navRows, {
+        distributing,
+        adjusted,
+        fundId: moneyDjFundId(item.fund_id),
+        distributions: navItem?.distributions,
+        trackingStartDate,
+        peakSeeds
+      })
+    : {
+        version: "-",
+        rows: [],
+        segments: [],
+        events: [],
+        status: "insufficient",
+        tone: "muted",
+        latest: null
+      };
+  return {
+    key,
+    fund,
+    fundId: moneyDjFundId(item.fund_id),
+    name: item.fund_name || fund?.name || key,
+    navItem,
+    distributing,
+    adjusted: analysis.distributionAdjusted || adjusted,
+    trackingStartDate,
+    exactHistoryStartDate,
+    bootstrapLimited: Boolean(
+      trackingStartDate && exactHistoryStartDate && trackingStartDate < exactHistoryStartDate
+    ),
+    analysis,
+    purchases: items,
+    grouped
+  };
+}
+
 function buildFundBoxStore(activePurchases) {
   const nextStore = new Map();
   activePurchases.forEach((item) => {
     const key = fundBoxKeyForPurchase(item);
-    const fund = currentFundForPurchase(item);
-    const navItem = exactMonthlyNavForPurchase(item);
-    const distributing = isDistributingFund(fund, item);
-    const adjusted = navItem?.adjusted === true || navItem?.navType === "adjusted";
-    const trackingStartDate = String(item.buy_date || "");
-    const savedBox = fundTrailingBoxes.get(key);
-    const persisted = savedBox?.tracking_start_date === trackingStartDate ? savedBox : null;
-    // Daily rows are exact for the trailing high. Older weekly/monthly rows give
-    // existing holdings a conservative bootstrap until future highs are saved.
-    const navRows = [
-      ...(navItem?.months || []),
-      ...(navItem?.weeks || []),
-      ...(navItem?.days || [])
-    ];
-    const exactHistoryStartDate = [...(navItem?.days || [])]
-      .filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(String(row?.date || "")) && Number(row?.nav) > 0)
-      .sort((a, b) => String(a.date).localeCompare(String(b.date)))[0]?.date || "";
-    const latestFundDate = isoDateFromShortNavDate(fund?.navDate);
-    if (latestFundDate && Number.isFinite(Number(fund?.nav)) && Number(fund.nav) > 0) {
-      navRows.push({ date: latestFundDate, nav: Number(fund.nav) });
-    }
-    const peakSeeds = [{ date: item.buy_date, nav: item.nav }];
-    if (persisted?.peak_nav && persisted?.peak_date) {
-      peakSeeds.push({ date: persisted.peak_date, nav: persisted.peak_nav });
-    }
-    const analysis = window.FundBox
-      ? window.FundBox.analyzeFundBox(navRows, {
-          distributing,
-          adjusted,
-          fundId: moneyDjFundId(item.fund_id),
-          distributions: navItem?.distributions,
-          trackingStartDate,
-          peakSeeds
-        })
-      : {
-          version: "-",
-          rows: [],
-          segments: [],
-          events: [],
-          status: "insufficient",
-          tone: "muted",
-          latest: null
-        };
-    const entry = {
-      key,
-      fund,
-      fundId: moneyDjFundId(item.fund_id),
-      name: item.fund_name || fund?.name || key,
-      navItem,
-      distributing,
-      adjusted: analysis.distributionAdjusted || adjusted,
-      trackingStartDate,
-      exactHistoryStartDate,
-      bootstrapLimited: Boolean(
-        trackingStartDate && exactHistoryStartDate && trackingStartDate < exactHistoryStartDate
-      ),
-      analysis,
-      purchases: [item]
-    };
+    const entry = createFundBoxEntry([item], key);
     nextStore.set(key, entry);
     persistFundTrailingBox(entry);
+  });
+  groupActivePurchases(activePurchases).forEach((group) => {
+    if (!group._purchaseItems) return;
+    const key = `group:${group._purchaseGroupKey}`;
+    // Group peaks are reconstructed from the retained per-purchase peak records.
+    nextStore.set(key, createFundBoxEntry(group._purchaseItems, key, true));
   });
   fundBoxStore = nextStore;
 }
 
 function renderFundBoxTrigger(item) {
-  const key = fundBoxKeyForPurchase(item);
+  const key = item._purchaseItems ? `group:${item._purchaseGroupKey}` : fundBoxKeyForPurchase(item);
   const entry = fundBoxStore.get(key);
   if (!entry) {
     return "";
@@ -1291,11 +1305,8 @@ function purchaseProfitCompare(a, b) {
 }
 
 function purchaseBoxSortValue(item) {
-  if (item._purchaseItems) {
-    const positions = item._purchaseItems.map(purchaseBoxSortValue).filter((value) => value !== null);
-    return positions.length ? Math.min(...positions) : null;
-  }
-  const analysis = fundBoxStore.get(fundBoxKeyForPurchase(item))?.analysis;
+  const key = item._purchaseItems ? `group:${item._purchaseGroupKey}` : fundBoxKeyForPurchase(item);
+  const analysis = fundBoxStore.get(key)?.analysis;
   if (!analysis) {
     return null;
   }
@@ -3094,7 +3105,7 @@ function fundBoxCurrentCalculation(entry) {
   const { analysis } = entry;
   const lines = [];
   if (analysis.top && analysis.bottom) {
-    lines.push(`追蹤起點：${analysis.trackingStartDate || entry.trackingStartDate || "-"}；這筆買入紀錄使用自己的箱子。`);
+    lines.push(`追蹤起點：${analysis.trackingStartDate || entry.trackingStartDate || "-"}；${entry.grouped ? "這組目前持有的買入紀錄使用一套整體箱子。" : "這筆買入紀錄使用自己的箱子。"}`);
     lines.push(`箱頂採持有期間最高${entry.distributing && entry.adjusted ? "還原" : ""}淨值 ${moneyNumber(analysis.top)}（${analysis.peakDate || "-"}）。`);
     lines.push(`20%箱底：${moneyNumber(analysis.top)} × 80% = ${moneyNumber(analysis.bottom)}。`);
     if (analysis.liveStatus === "trailing_breakdown") {
@@ -3158,7 +3169,7 @@ function renderFundBoxDetail(entry) {
     ${entry.distributing && entry.adjusted ? '<p class="fund-box-notice">箱型圖使用配息還原淨值，已換算至最新淨值基準；箱頂、箱底可直接對照最新淨值。除息會調整歷史刻度，不代表虧損，也不會改動你的單位數或損益紀錄。</p>' : ""}
     <section class="fund-box-chart-section" aria-label="箱型圖"></section>
     <section class="fund-box-method">
-      <h4>這檔基金怎麼算</h4>
+      <h4>${entry.grouped ? "整體箱怎麼算" : "這檔基金怎麼算"}</h4>
       ${fundBoxCurrentCalculation(entry)}
     </section>
     <section class="fund-box-method">
@@ -3166,13 +3177,13 @@ function renderFundBoxDetail(entry) {
       <ol>
         <li>進場仍採「幾個月低點」參考：使用現有每日淨值尋找區間最低點。</li>
         <li>目前淨值回到期間低點上方 5% 內，而且低點後連續 3 個交易日不再破底，才顯示「低點區可分批」。</li>
-        <li>每筆買入紀錄各自使用一套20%移動箱；即使基金相同，也從各自的買入日期與買入淨值開始計算。</li>
+        <li>${entry.grouped ? "整體箱從這組目前仍持有的最早買入日開始，採期間最高淨值建立20%移動箱；單筆與定期定額分開計算。買入明細仍保留各筆自己的箱子。" : "每筆買入紀錄各自使用一套20%移動箱；即使基金相同，也從各自的買入日期與買入淨值開始計算。"}</li>
         <li>箱頂是這次持有週期開始後曾出現的最高淨值；淨值創新高時，箱頂立即上移，不等待三日確認。</li>
         <li>箱底永遠等於箱頂 × 80%，因此箱寬固定20%；同一還原基準下箱頂與箱底只能上升。除息換算刻度不是降低停損標準。</li>
         <li>基金上漲時不顯示停利，也不自動賣出再買回，讓資金持續留在原基金。</li>
         <li>最新淨值第一次等於或低於箱底就顯示「跌破箱底」；這只是醒目提醒，不會自動贖回或新增賣出紀錄。</li>
         <li>最高淨值與日期保存在你的帳號資料庫；重新整理或圖表只載入近期資料時，既有箱頂不會因此消失。</li>
-        <li>某筆紀錄賣出後只清除該筆箱子，不影響同基金的其他持有紀錄；日後新增買入會建立新箱子。</li>
+        <li>${entry.grouped ? "賣出後整體箱只納入仍持有的批次；最早買入批次改變時，改從剩餘最早買入日追蹤。各筆買入自己的箱子不受影響。" : "某筆紀錄賣出後只清除該筆箱子，不影響同基金的其他持有紀錄；日後新增買入會建立新箱子。"}</li>
         <li>資料超過7天未更新時暫停新的跌破判斷，但保留最後箱頂與箱底供查看。</li>
         <li>圖表可選2個月或4個月並左右移動；這些操作只改變畫面，不會重設最高淨值。</li>
         <li>配息型依確切基金代碼取得除息日與每單位息值；對除息日前的淨值乘以「除息日淨值 ÷（除息日淨值＋每單位配息）」，多次配息連乘。這是配息再投入的報酬比較基準，不表示你實際再投入。</li>
@@ -3825,22 +3836,6 @@ function renderPurchaseItem(item, showTitle = true) {
   `;
 }
 
-function purchaseGroupBoxText(items) {
-  const analyses = items.map((item) => fundBoxStore.get(fundBoxKeyForPurchase(item))?.analysis);
-  const positions = analyses.filter((analysis) => analysis?.status === "inside" && Number.isFinite(analysis.position))
-    .map((analysis) => Math.round(analysis.position * 100));
-  const broken = analyses.filter((analysis) => analysis?.status === "trailing_breakdown").length;
-  const parts = [];
-  if (positions.length) {
-    const minimum = Math.min(...positions), maximum = Math.max(...positions);
-    parts.push(`箱內${minimum === maximum ? `${minimum}%` : `${minimum}%～${maximum}%`}`);
-  }
-  if (broken) parts.push(`跌破箱底 ${broken} 筆`);
-  const unavailable = items.length - positions.length - broken;
-  if (unavailable) parts.push(`箱型待確認 ${unavailable} 筆`);
-  return parts.join(" / ");
-}
-
 function renderPurchaseGroup(groupItem) {
   const items = groupItem._purchaseItems;
   const valuation = purchaseGroupValuation(items);
@@ -3853,14 +3848,14 @@ function renderPurchaseGroup(groupItem) {
           <h4>${renderPurchaseFundName(groupItem, matchedFund)}</h4>
           ${renderPurchaseScore(matchedFund)}
         </div>
-        <span class="purchase-plan-tag">${groupItem.recurring_plan_id ? "定期定額" : "單筆"} · ${items.length} 筆${valuation.pendingCount ? ` · ${valuation.pendingCount} 筆待淨值` : ""}</span>
         <p>${escapeHtml(compactDate(items.at(-1).buy_date))}${items.length > 1 ? `～${escapeHtml(compactDate(items[0].buy_date))}` : ""} / 本金 ${wholeMoneyNumber(valuation.invested)}</p>
         <p>現值 ${valuation.currentValue === null ? "-" : wholeMoneyNumber(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
         <p>淨值 ${Number(matchedFund?.nav) > 0 ? moneyNumber(matchedFund.nav) : "-"}${matchedFund?.navDate ? ` / ${escapeHtml(compactDate(matchedFund.navDate))}` : ""}</p>
-        <p class="purchase-group-box">${escapeHtml(purchaseGroupBoxText(items))}</p>
+        ${valuation.pendingCount ? `<p>${valuation.pendingCount} 筆待淨值</p>` : ""}
+        ${renderFundBoxTrigger(groupItem)}
       </div>
       <div class="purchase-actions">
-        <button type="button" data-purchase-group="${escapeHtml(groupItem._purchaseGroupKey)}" aria-haspopup="dialog">買入明細</button>
+        <button type="button" data-purchase-group="${escapeHtml(groupItem._purchaseGroupKey)}" aria-haspopup="dialog">${groupItem.recurring_plan_id ? "定期定額明細" : "買入明細"}</button>
       </div>
     </article>
   `;

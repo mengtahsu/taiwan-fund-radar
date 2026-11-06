@@ -652,7 +652,7 @@ assert(appSource.includes("exactMonthlyNavForPurchase"), "owned-fund boxes shoul
 assert(appSource.includes('/(不配息|累積型|累積)/.test(name)'), "fund box distribution detection should prioritize accumulating class names");
 assert(appSource.includes("buildFundBoxStore(activePurchases)"), "active purchases should build trailing boxes");
 assert(appSource.includes("return `purchase:${purchaseId}`"), "each purchase record should have an independent trailing box key");
-assert(appSource.includes("savedBox?.tracking_start_date === trackingStartDate"), "editing a buy date should invalidate the old saved peak");
+assert(appSource.includes("saved?.tracking_start_date === purchase.buy_date"), "editing a buy date should invalidate the old saved peak");
 assert(appSource.includes("這筆買入紀錄使用自己的箱子"), "the box detail should identify its per-purchase scope");
 assert(appSource.includes("某筆紀錄賣出後只清除該筆箱子"), "selling one purchase should not reset another purchase of the same fund");
 assert(appSource.includes('from("fund_trailing_boxes")'), "saved trailing peaks should load from the authenticated database");
