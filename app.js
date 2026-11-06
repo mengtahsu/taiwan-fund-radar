@@ -838,7 +838,7 @@ function displayFundName(name) {
 
 function renderPurchaseFundName(item, matchedFund) {
   const name = escapeHtml(item.fund_name || "");
-  const url = moneyDjFundUrl(matchedFund?.fundId || item.fund_id);
+  const url = isCashSource(item) ? "" : moneyDjFundUrl(matchedFund?.fundId || item.fund_id);
   if (!url) {
     return name;
   }
@@ -3309,6 +3309,181 @@ function hideSellModal() {
   }
 }
 
+function cashLedgerRows(item) {
+  const rows = [{ id: `opening:${item.id}`, date: item.buy_date, delta: Number(item.amount) || 0, note: "期初餘額" }];
+  cashAdjustments.filter((row) => row.cash_purchase_id === item.id).forEach((row) => {
+    rows.push({ id: row.id, date: row.effective_date, delta: Number(row.delta), note: row.note || (Number(row.delta) > 0 ? "存入" : "支出") });
+  });
+  cashDeductionsForSource(item).forEach((purchase) => {
+    rows.push({ id: purchase.id, date: cashDeductionDate(purchase), delta: -(Number(purchase.amount) || 0), note: `定期定額：${purchase.fund_name}` });
+  });
+  return rows.map((row) => ({ ...row, balance: cashBalanceAt(item, row.date) }))
+    .sort((a, b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
+}
+
+function hideCashLedgerModal() {
+  const modal = document.querySelector("#cashLedgerModal");
+  if (modal) {
+    modal.hidden = true;
+    if (modal._opener?.isConnected) modal._opener.focus();
+    modal._opener = null;
+  }
+}
+
+function renderCashLedger() {
+  const modal = document.querySelector("#cashLedgerModal");
+  if (!modal || modal.hidden) return;
+  const item = currentUser?.id === modal.dataset.userId
+    ? purchases.find((purchase) => purchase.id === modal.dataset.purchaseId && isCashSource(purchase)) : null;
+  if (!item) { hideCashLedgerModal(); return; }
+  modal.querySelector("#cashLedgerTitle").textContent = item.fund_name;
+  modal.querySelector(".cash-ledger-balance").textContent = `餘額 ${wholeMoneyNumber(cashBalanceAt(item))}`;
+  const rows = cashLedgerRows(item);
+  const limit = Number(modal.dataset.limit) || 20;
+  modal.querySelector(".cash-ledger-list").innerHTML = rows.slice(0, limit).map((row) => `
+    <div class="cash-ledger-row">
+      <div><time>${escapeHtml(row.date)}</time><span>${escapeHtml(row.note)}</span></div>
+      <div><strong class="${row.delta >= 0 ? "up" : "down"}">${row.delta > 0 ? "+" : ""}${wholeMoneyNumber(row.delta)}</strong><span>日終 ${wholeMoneyNumber(row.balance)}</span></div>
+    </div>
+  `).join("");
+  modal.querySelector(".cash-ledger-more").hidden = rows.length <= limit;
+}
+
+function ensureCashLedgerModal() {
+  let modal = document.querySelector("#cashLedgerModal");
+  if (modal) return modal;
+  modal = document.createElement("div");
+  modal.id = "cashLedgerModal";
+  modal.className = "period-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div class="period-modal-panel cash-ledger-panel" role="dialog" aria-modal="true" aria-labelledby="cashLedgerTitle">
+      <button class="period-modal-close" type="button" aria-label="關閉">×</button>
+      <h3 id="cashLedgerTitle"></h3><p class="cash-ledger-balance"></p>
+      <form class="cash-flow-form">
+        <label>日期<input class="cash-flow-date" type="date" required></label>
+        <div class="cash-flow-direction" role="group" aria-label="收支方向">
+          <button type="button" data-cash-direction="1" aria-pressed="true">存入</button>
+          <button type="button" data-cash-direction="-1" aria-pressed="false">支出</button>
+        </div>
+        <label>金額<input class="cash-flow-amount" type="number" min="1" step="1" inputmode="numeric" required></label>
+        <label>備註<input class="cash-flow-note" type="text" maxlength="300"></label>
+        <button class="primary" type="submit">記錄收支</button>
+        <p class="cash-flow-message form-message" role="status"></p>
+      </form>
+      <div class="cash-ledger-list"></div>
+      <button class="cash-ledger-more" type="button">再顯示20筆</button>
+    </div>
+  `;
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.closest(".period-modal-close")) { hideCashLedgerModal(); return; }
+    const direction = event.target.closest("[data-cash-direction]");
+    if (direction) {
+      modal.dataset.direction = direction.dataset.cashDirection;
+      modal.querySelectorAll("[data-cash-direction]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button === direction));
+      });
+    }
+    if (event.target.closest(".cash-ledger-more")) {
+      modal.dataset.limit = String((Number(modal.dataset.limit) || 20) + 20);
+      renderCashLedger();
+    }
+  });
+  modal.querySelector("form").addEventListener("submit", submitCashFlow);
+  modal.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") return;
+    const fields = [...modal.querySelectorAll("button, input")].filter((node) => !node.disabled && node.getClientRects().length);
+    if (event.shiftKey && event.target === fields[0]) { event.preventDefault(); fields.at(-1).focus(); }
+    if (!event.shiftKey && event.target === fields.at(-1)) { event.preventDefault(); fields[0].focus(); }
+  });
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function showCashLedgerModal(id) {
+  if (!currentUser) return;
+  const item = purchases.find((purchase) => purchase.id === id && isCashSource(purchase) && !purchase.sell_date);
+  if (!item) return;
+  const modal = ensureCashLedgerModal();
+  modal._opener = document.activeElement;
+  modal.dataset.purchaseId = id;
+  modal.dataset.userId = currentUser.id;
+  modal.dataset.limit = "20";
+  modal.dataset.direction = "1";
+  modal.querySelectorAll("[data-cash-direction]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.cashDirection === "1"));
+  });
+  const date = modal.querySelector(".cash-flow-date");
+  date.value = todayInputValue(); date.min = item.buy_date; date.max = todayInputValue();
+  modal.querySelector(".cash-flow-amount").value = "";
+  modal.querySelector(".cash-flow-note").value = "";
+  modal.querySelector(".cash-flow-message").textContent = "";
+  modal.hidden = false;
+  renderCashLedger();
+  modal.querySelector(".period-modal-close").focus();
+}
+
+async function submitCashFlow(event) {
+  event.preventDefault();
+  const modal = document.querySelector("#cashLedgerModal");
+  if (!db || !currentUser || modal?.dataset.userId !== currentUser.id) return;
+  const userId = currentUser.id;
+  const item = purchases.find((purchase) => purchase.id === modal.dataset.purchaseId && isCashSource(purchase));
+  if (!item || item.sell_date) return;
+  const amount = Number(modal.querySelector(".cash-flow-amount").value);
+  const date = modal.querySelector(".cash-flow-date").value;
+  const direction = Number(modal.dataset.direction);
+  const note = modal.querySelector(".cash-flow-note").value.trim();
+  const message = modal.querySelector(".cash-flow-message");
+  if (!Number.isSafeInteger(amount) || amount <= 0 || ![1, -1].includes(direction) || note.length > 300 ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(date) || date < item.buy_date || date > todayInputValue()) {
+    setMessage(message, "請確認日期及正整數金額；日期需介於期初日期與今天。", true); return;
+  }
+  const payload = { p_cash_purchase_id: item.id, p_effective_date: date, p_delta: amount * direction, p_note: note };
+  const fingerprint = JSON.stringify(payload);
+  if (modal.dataset.requestFingerprint !== fingerprint) {
+    modal.dataset.requestFingerprint = fingerprint;
+    modal.dataset.requestId = crypto.randomUUID();
+  }
+  const requestId = modal.dataset.requestId;
+  const button = modal.querySelector('button[type="submit"]');
+  if (button.disabled) return;
+  button.disabled = true;
+  let recorded = false;
+  setMessage(message, "儲存中…");
+  try {
+    const { error } = await db.rpc("record_cash_flow", { ...payload, p_request_id: requestId });
+    if (currentUser?.id !== userId) return;
+    if (error) {
+      setMessage(message, /Insufficient recorded cash balance/.test(error.message || "")
+        ? "這筆支出會使某一天的餘額不足，請核對日期與金額。" : `儲存失敗：${error.message}`, true);
+      return;
+    }
+    recorded = true;
+    if (modal.dataset.requestId === requestId) {
+      delete modal.dataset.requestFingerprint;
+      delete modal.dataset.requestId;
+    }
+    const status = `已記錄 ${date} ${direction > 0 ? "存入" : "支出"} ${wholeMoneyNumber(amount)}。`;
+    if (modal.dataset.purchaseId === item.id) {
+      modal.querySelector(".cash-flow-amount").value = "";
+      modal.querySelector(".cash-flow-note").value = "";
+      setMessage(message, status);
+    }
+    setMessage(els.purchaseMessage, status);
+    markPortfolioSnapshotsDirty();
+    await loadPurchases({ requestNavHistory: false });
+    if (currentUser?.id !== userId) return;
+    renderCashLedger();
+    await rebuildPortfolioSnapshots();
+  } catch (_error) {
+    if (currentUser?.id === userId) setMessage(modal.dataset.purchaseId === item.id ? message : els.purchaseMessage,
+      recorded ? "收支已儲存，但畫面更新失敗，請重新整理。" : "連線失敗，重試同一筆不會重複記錄。", true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function ensureCashAdjustmentModal() {
   let modal = document.querySelector("#cashAdjustmentModal");
   if (modal) return modal;
@@ -3818,19 +3993,20 @@ function renderPurchaseItem(item, showTitle = true) {
           <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
           ${renderPurchaseScore(matchedFund)}
         </div>` : ""}
+        ${isCashSource(item) ? `<p>餘額 ${wholeMoneyNumber(cashBalanceAt(item))}</p>` : `
         ${item.recurring_plan_id ? `<span class="purchase-plan-tag">${isPending ? "定期定額待淨值" : item.cash_source_id ? "定期定額估算" : "定期定額"}</span>` : ""}
         <p title="${escapeHtml(item.buy_date)}">${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${isPending ? "待公布" : moneyNumber(item.nav)}</p>
         <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
-        ${isCashSource(item) && !valuation.isSold ? `<p>目前餘額 ${wholeMoneyNumber(cashBalanceAt(item))}</p>` : ""}
-        ${valuation.isSold || isPending ? "" : renderFundBoxTrigger(item)}
+        ${valuation.isSold || isPending ? "" : renderFundBoxTrigger(item)}`}
         ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
       </div>
       <div class="purchase-actions">
-        ${isCashSource(item) && !valuation.isSold ? `<button class="primary" type="button" data-adjust-cash="${escapeHtml(item.id)}">調整資金</button>` : ""}
-        <button type="button" data-edit-purchase="${escapeHtml(item.id)}">${isCashSource(item) ? cashAdjustments.some((row) => row.cash_purchase_id === item.id) ? "編輯備註" : "編輯原始" : "編輯"}</button>
-        ${isPending || (isCashSource(item) && cashAdjustments.some((row) => row.cash_purchase_id === item.id)) ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>`}
+        ${isCashSource(item) && !valuation.isSold ? `<button class="primary" type="button" data-cash-ledger="${escapeHtml(item.id)}">收支明細</button>` : ""}
+        ${isCashSource(item) && !valuation.isSold ? `<button type="button" data-rename-cash="${escapeHtml(item.id)}">改名稱</button>` : ""}
+        <button type="button" data-edit-purchase="${escapeHtml(item.id)}">${isCashSource(item) ? "備註" : "編輯"}</button>
+        ${isPending || isCashSource(item) ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>`}
         ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
-        <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+        ${isCashSource(item) ? "" : `<button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>`}
       </div>
     </article>
   `;
@@ -3866,6 +4042,8 @@ function bindPurchaseItemActions(container) {
     "delete-purchase": deletePurchase,
     "edit-purchase": editPurchase,
     "adjust-cash": showCashAdjustmentModal,
+    "rename-cash": renameCashSource,
+    "cash-ledger": showCashLedgerModal,
     "sell-purchase": (id) => { hidePurchaseDetailModal(); markPurchaseSold(id); },
     "clear-sale": clearPurchaseSale,
     "fund-box": (id) => { hidePurchaseDetailModal(); showFundBoxModal(id); }
@@ -4008,6 +4186,7 @@ function renderPurchases(options = {}) {
 
 async function loadPurchases(options = {}) {
   if (!db || !currentUser) {
+    hideCashLedgerModal();
     purchases = [];
     cashAdjustments = [];
     recurringPlans = [];
@@ -4061,12 +4240,13 @@ async function loadPurchases(options = {}) {
   const adjustments = [];
   for (let offset = 0; ; offset += 1000) {
     const result = await db.from("cash_balance_adjustments")
-      .select("id,cash_purchase_id,effective_date,delta")
+      .select("id,cash_purchase_id,effective_date,delta,note,created_at")
       .eq("user_id", currentUser.id)
       .order("effective_date", { ascending: true })
       .order("id", { ascending: true })
       .range(offset, offset + 999);
     if (result.error) {
+      hideCashLedgerModal();
       purchases = [];
       cashAdjustments = [];
       renderTwiiCompareOptions();
@@ -4083,6 +4263,7 @@ async function loadPurchases(options = {}) {
   }
   cashAdjustments = adjustments;
   purchases = data || [];
+  renderCashLedger();
   renderTwiiCompareOptions();
   renderRecurringFundOptions();
   renderRecurringCashSources();
@@ -5014,6 +5195,39 @@ async function deletePurchase(id) {
   await rebuildPortfolioSnapshots();
 }
 
+async function renameCashSource(id) {
+  if (!db || !currentUser) return;
+  const item = purchases.find((purchase) => purchase.id === id && isCashSource(purchase) && !purchase.sell_date);
+  if (!item) return;
+  const entered = window.prompt("資金名稱", item.fund_name);
+  if (entered === null) return;
+  const name = entered.trim();
+  if (!/^資金/.test(name) || [...name].length > 120) {
+    setMessage(els.purchaseMessage, "名稱需以「資金」開頭，最多120字。", true);
+    return;
+  }
+  if (name === item.fund_name) return;
+  const userId = currentUser.id;
+  try {
+    const { data, error } = await db.rpc("rename_cash_source", { p_cash_purchase_id: id, p_name: name });
+    if (currentUser?.id !== userId) return;
+    if (error || data !== id) {
+      setMessage(els.purchaseMessage, `改名失敗：${error?.message || "請重新整理後再試。"}`, true);
+      return;
+    }
+    const current = purchases.find((purchase) => purchase.id === id);
+    if (!current) return;
+    current.fund_name = name;
+    renderPurchases({ includeStats: false });
+    renderRecurringCashSources();
+    renderRecurringPlans();
+    renderCashLedger();
+    setMessage(els.purchaseMessage, "名稱已更新；餘額、歷史本金及扣款紀錄不變。");
+  } catch (_error) {
+    if (currentUser?.id === userId) setMessage(els.purchaseMessage, "改名失敗，請稍後再試。", true);
+  }
+}
+
 async function editPurchase(id) {
   if (!db || !currentUser || !id) {
     return;
@@ -5022,7 +5236,7 @@ async function editPurchase(id) {
   if (!item) {
     return;
   }
-  if (isCashSource(item) && cashAdjustments.some((row) => row.cash_purchase_id === id)) {
+  if (isCashSource(item)) {
     const note = window.prompt("備註，可留空", item.note || "");
     if (note === null) return;
     const { error } = await db.from("fund_purchases").update({ note: note.trim() || null }).eq("id", id);
@@ -6149,6 +6363,7 @@ function resetFilters() {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    hideCashLedgerModal();
     hidePurchaseDetailModal();
     hideRecordChoiceModal();
     hidePeriodDetailModal();

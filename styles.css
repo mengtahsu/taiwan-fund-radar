@@ -1565,6 +1565,93 @@ textarea {
   color: var(--accent-dark);
 }
 
+.cash-ledger-panel {
+  min-width: 0;
+}
+
+.cash-ledger-balance {
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.cash-flow-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cash-flow-form label {
+  min-width: 0;
+  margin: 0;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.cash-flow-form input {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cash-flow-form input[type="date"] {
+  display: block;
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+
+.cash-flow-direction {
+  display: flex;
+  gap: 4px;
+}
+
+.cash-flow-direction button {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 4px;
+}
+
+.cash-flow-direction button[aria-pressed="true"] {
+  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.cash-flow-form > button,
+.cash-flow-message {
+  grid-column: 1 / -1;
+}
+
+.cash-flow-message {
+  margin: 0;
+}
+
+.cash-ledger-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.cash-ledger-row > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cash-ledger-row > div:last-child { text-align: right; }
+.cash-ledger-row span { color: var(--muted); font-size: 12px; }
+.cash-ledger-row .up { color: var(--accent-dark); }
+.cash-ledger-row .down { color: var(--danger); }
+.cash-ledger-more { margin-top: 10px; }
+
 .period-modal-close {
   position: absolute;
   top: 10px;

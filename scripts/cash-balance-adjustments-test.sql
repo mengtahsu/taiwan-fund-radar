@@ -62,13 +62,16 @@ begin
     raise exception 'Deposits and spending were counted incorrectly';
   end if;
 
+  -- The historical-amount trigger replaces an arbitrary supplied amount with
+  -- the plan's 10000. Test real overspending against a remaining balance of 9000.
+  perform public.set_cash_balance(cash_id, 9000);
   begin
     insert into public.fund_purchases (
       user_id, fund_id, fund_name, buy_date, amount, nav,
       recurring_plan_id, cash_source_id, scheduled_date
     ) values (
       test_user, 'test:cash-ledger-' || cash_id::text, '測試基金', today_taiwan,
-      290001, 100, plan_id, cash_id, today_taiwan
+      10000, 100, plan_id, cash_id, today_taiwan
     );
     raise exception 'Overspending was accepted';
   exception when others then
