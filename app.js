@@ -220,6 +220,9 @@ let recordChoiceFund = null;
 let pendingRecurringFund = null;
 let selectedRecurringFund = null;
 let purchaseSortMode = "profit";
+let purchaseDetailGroupKey = null;
+let purchaseDetailOpener = null;
+let purchaseDetailUserId = null;
 let portfolioPeriodSnapshots = {
   loaded: false,
   supported: true,
@@ -1229,29 +1232,35 @@ function purchaseDateCompare(a, b) {
   return String(b.created_at || "").localeCompare(String(a.created_at || ""));
 }
 
-function groupActiveRecurringPurchases(items) {
-  const recurringByFund = new Map();
+function purchaseGroupKey(item) {
+  const id = String(item.fund_id || "").trim();
+  if (!id || id.startsWith("manual:")) return null;
+  return JSON.stringify([id, item.recurring_plan_id ? "recurring" : "single"]);
+}
+
+function groupActivePurchases(items) {
+  const byFund = new Map();
   items.forEach((item) => {
-    if (!item.recurring_plan_id || !item.fund_id) return;
-    const key = String(item.fund_id || "");
-    const group = recurringByFund.get(key) || [];
+    if (item.sell_date) return;
+    const key = purchaseGroupKey(item);
+    if (!key) return;
+    const group = byFund.get(key) || [];
     group.push(item);
-    recurringByFund.set(key, group);
+    byFund.set(key, group);
   });
   const seen = new Set();
   return items.flatMap((item) => {
-    if (!item.recurring_plan_id || !item.fund_id) return [item];
-    const key = String(item.fund_id || "");
-    const group = recurringByFund.get(key);
-    if (group.length < 2) return [item];
+    if (item.sell_date) return [];
+    const key = purchaseGroupKey(item);
+    if (!key) return [item];
     if (seen.has(key)) return [];
     seen.add(key);
-    const sorted = [...group].sort(purchaseDateCompare);
-    return [{ ...sorted[0], _recurringItems: sorted }];
+    const sorted = [...byFund.get(key)].sort(purchaseDateCompare);
+    return [{ ...sorted[0], _purchaseItems: sorted, _purchaseGroupKey: key }];
   });
 }
 
-function recurringGroupValuation(items) {
+function purchaseGroupValuation(items) {
   const invested = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   const values = items.map((item) => purchaseValuation(item).currentValue);
   const currentValue = values.some((value) => value === null)
@@ -1266,8 +1275,8 @@ function recurringGroupValuation(items) {
 }
 
 function purchaseProfitCompare(a, b) {
-  const aProfit = a._recurringItems ? recurringGroupValuation(a._recurringItems).profitPercent : purchaseValuation(a).profitPercent;
-  const bProfit = b._recurringItems ? recurringGroupValuation(b._recurringItems).profitPercent : purchaseValuation(b).profitPercent;
+  const aProfit = a._purchaseItems ? purchaseGroupValuation(a._purchaseItems).profitPercent : purchaseValuation(a).profitPercent;
+  const bProfit = b._purchaseItems ? purchaseGroupValuation(b._purchaseItems).profitPercent : purchaseValuation(b).profitPercent;
   if (aProfit === null && bProfit === null) {
     return purchaseDateCompare(a, b);
   }
@@ -1282,8 +1291,8 @@ function purchaseProfitCompare(a, b) {
 }
 
 function purchaseBoxSortValue(item) {
-  if (item._recurringItems) {
-    const positions = item._recurringItems.map(purchaseBoxSortValue).filter((value) => value !== null);
+  if (item._purchaseItems) {
+    const positions = item._purchaseItems.map(purchaseBoxSortValue).filter((value) => value !== null);
     return positions.length ? Math.min(...positions) : null;
   }
   const analysis = fundBoxStore.get(fundBoxKeyForPurchase(item))?.analysis;
@@ -3778,10 +3787,170 @@ async function loadPortfolioPeriodsInBackground(options = {}) {
   }
 }
 
+function renderPurchaseItem(item, showTitle = true) {
+  const valuation = purchaseValuation(item);
+  const isPending = Boolean(item.cash_source_id && item.recurring_plan_id && !(Number(item.nav) > 0));
+  const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
+  const matchedFund = valuation.fund;
+  const currentDate = valuation.isSold ? item.sell_date : isPending ? item.scheduled_date : isCashSource(item) ? todayInputValue() : matchedFund?.navDate;
+  const currentNavText = valuation.currentNav ? moneyNumber(valuation.currentNav) : "-";
+  const currentAmountText = valuation.currentValue === null ? "-" : wholeMoneyNumber(valuation.currentValue);
+  const valueLine = isPending
+    ? `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 待淨值 / 損益`
+    : valuation.isSold
+    ? `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 淨值 ${currentNavText} / 賺賠`
+    : `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 淨值 ${currentNavText} / 損益`;
+  return `
+    <article class="purchase-item${valuation.isSold ? " sold" : ""}">
+      <div>
+        ${showTitle ? `<div class="purchase-title">
+          <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
+          ${renderPurchaseScore(matchedFund)}
+        </div>` : ""}
+        ${item.recurring_plan_id ? `<span class="purchase-plan-tag">${isPending ? "定期定額待淨值" : item.cash_source_id ? "定期定額估算" : "定期定額"}</span>` : ""}
+        <p title="${escapeHtml(item.buy_date)}">${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${isPending ? "待公布" : moneyNumber(item.nav)}</p>
+        <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
+        ${isCashSource(item) && !valuation.isSold ? `<p>目前餘額 ${wholeMoneyNumber(cashBalanceAt(item))}</p>` : ""}
+        ${valuation.isSold || isPending ? "" : renderFundBoxTrigger(item)}
+        ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
+      </div>
+      <div class="purchase-actions">
+        ${isCashSource(item) && !valuation.isSold ? `<button class="primary" type="button" data-adjust-cash="${escapeHtml(item.id)}">調整資金</button>` : ""}
+        <button type="button" data-edit-purchase="${escapeHtml(item.id)}">${isCashSource(item) ? cashAdjustments.some((row) => row.cash_purchase_id === item.id) ? "編輯備註" : "編輯原始" : "編輯"}</button>
+        ${isPending || (isCashSource(item) && cashAdjustments.some((row) => row.cash_purchase_id === item.id)) ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>`}
+        ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
+        <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
+      </div>
+    </article>
+  `;
+}
+
+function purchaseGroupBoxText(items) {
+  const analyses = items.map((item) => fundBoxStore.get(fundBoxKeyForPurchase(item))?.analysis);
+  const positions = analyses.filter((analysis) => analysis?.status === "inside" && Number.isFinite(analysis.position))
+    .map((analysis) => Math.round(analysis.position * 100));
+  const broken = analyses.filter((analysis) => analysis?.status === "trailing_breakdown").length;
+  const parts = [];
+  if (positions.length) {
+    const minimum = Math.min(...positions), maximum = Math.max(...positions);
+    parts.push(`箱內${minimum === maximum ? `${minimum}%` : `${minimum}%～${maximum}%`}`);
+  }
+  if (broken) parts.push(`跌破箱底 ${broken} 筆`);
+  const unavailable = items.length - positions.length - broken;
+  if (unavailable) parts.push(`箱型待確認 ${unavailable} 筆`);
+  return parts.join(" / ");
+}
+
+function renderPurchaseGroup(groupItem) {
+  const items = groupItem._purchaseItems;
+  const valuation = purchaseGroupValuation(items);
+  const matchedFund = purchaseValuation(groupItem).fund;
+  const profitClass = valuation.profitPercent === null || valuation.profitPercent >= 0 ? "up" : "down";
+  return `
+    <article class="purchase-item purchase-group">
+      <div>
+        <div class="purchase-title">
+          <h4>${renderPurchaseFundName(groupItem, matchedFund)}</h4>
+          ${renderPurchaseScore(matchedFund)}
+        </div>
+        <span class="purchase-plan-tag">${groupItem.recurring_plan_id ? "定期定額" : "單筆"} · ${items.length} 筆${valuation.pendingCount ? ` · ${valuation.pendingCount} 筆待淨值` : ""}</span>
+        <p>${escapeHtml(compactDate(items.at(-1).buy_date))}${items.length > 1 ? `～${escapeHtml(compactDate(items[0].buy_date))}` : ""} / 本金 ${wholeMoneyNumber(valuation.invested)}</p>
+        <p>現值 ${valuation.currentValue === null ? "-" : wholeMoneyNumber(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
+        <p>淨值 ${Number(matchedFund?.nav) > 0 ? moneyNumber(matchedFund.nav) : "-"}${matchedFund?.navDate ? ` / ${escapeHtml(compactDate(matchedFund.navDate))}` : ""}</p>
+        <p class="purchase-group-box">${escapeHtml(purchaseGroupBoxText(items))}</p>
+      </div>
+      <div class="purchase-actions">
+        <button type="button" data-purchase-group="${escapeHtml(groupItem._purchaseGroupKey)}" aria-haspopup="dialog">買入明細</button>
+      </div>
+    </article>
+  `;
+}
+
+function bindPurchaseItemActions(container) {
+  const actions = {
+    "delete-purchase": deletePurchase,
+    "edit-purchase": editPurchase,
+    "adjust-cash": showCashAdjustmentModal,
+    "sell-purchase": (id) => { hidePurchaseDetailModal(); markPurchaseSold(id); },
+    "clear-sale": clearPurchaseSale,
+    "fund-box": (id) => { hidePurchaseDetailModal(); showFundBoxModal(id); }
+  };
+  Object.entries(actions).forEach(([attribute, action]) => {
+    container.querySelectorAll(`[data-${attribute}]`).forEach((button) => {
+      button.addEventListener("click", () => action(button.getAttribute(`data-${attribute}`)));
+    });
+  });
+}
+
+function hidePurchaseDetailModal() {
+  const modal = document.querySelector("#purchaseDetailModal");
+  if (modal) modal.hidden = true;
+  purchaseDetailGroupKey = null;
+  purchaseDetailUserId = null;
+  if (purchaseDetailOpener?.isConnected) purchaseDetailOpener.focus();
+  purchaseDetailOpener = null;
+}
+
+function refreshPurchaseDetailModal() {
+  const modal = document.querySelector("#purchaseDetailModal");
+  if (!modal || modal.hidden || !purchaseDetailGroupKey) return;
+  if (currentUser?.id !== purchaseDetailUserId) {
+    hidePurchaseDetailModal();
+    return;
+  }
+  const items = currentUser ? purchases.filter((item) => !item.sell_date && purchaseGroupKey(item) === purchaseDetailGroupKey).sort(purchaseDateCompare) : [];
+  if (!items.length || !fundDataLoaded) {
+    hidePurchaseDetailModal();
+    return;
+  }
+  modal.querySelector("#purchaseDetailTitle").textContent = items[0].fund_name;
+  modal.querySelector(".purchase-detail-caption").textContent = `${items[0].recurring_plan_id ? "定期定額" : "單筆"} · ${items.length} 筆買入`;
+  const body = modal.querySelector(".period-modal-body");
+  body.innerHTML = items.map((item) => renderPurchaseItem(item, false)).join("");
+  bindPurchaseItemActions(body);
+}
+
+function showPurchaseDetailModal(key, opener) {
+  if (!currentUser || !purchases.some((item) => !item.sell_date && purchaseGroupKey(item) === key)) return;
+  let modal = document.querySelector("#purchaseDetailModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "purchaseDetailModal";
+    modal.className = "period-modal purchase-detail-modal";
+    modal.hidden = true;
+    modal.innerHTML = `
+      <div class="period-modal-panel" role="dialog" aria-modal="true" aria-labelledby="purchaseDetailTitle">
+        <button class="period-modal-close" type="button" aria-label="關閉">×</button>
+        <h3 id="purchaseDetailTitle"></h3>
+        <p class="purchase-detail-caption"></p>
+        <div class="period-modal-body"></div>
+      </div>
+    `;
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal || event.target.closest(".period-modal-close")) hidePurchaseDetailModal();
+    });
+    modal.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab") return;
+      const buttons = [...modal.querySelectorAll("button, a[href], [tabindex='0']")];
+      const first = buttons[0], last = buttons.at(-1);
+      if (event.shiftKey && event.target === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && event.target === last) { event.preventDefault(); first.focus(); }
+    });
+    document.body.appendChild(modal);
+  }
+  purchaseDetailGroupKey = key;
+  purchaseDetailUserId = currentUser.id;
+  purchaseDetailOpener = opener || document.activeElement;
+  modal.hidden = false;
+  refreshPurchaseDetailModal();
+  modal.querySelector(".period-modal-close").focus();
+}
+
 function renderPurchases(options = {}) {
   if (!els.purchaseList) {
     return;
   }
+  if (!currentUser || !purchases.length || !fundDataLoaded) hidePurchaseDetailModal();
   if (!currentUser) {
     updatePurchaseSortControl(0);
     if (els.portfolioStats) {
@@ -3817,122 +3986,29 @@ function renderPurchases(options = {}) {
     }
     return String(b.buy_date || "").localeCompare(String(a.buy_date || ""));
   });
-  const renderPurchaseItem = (item) => {
-    const valuation = purchaseValuation(item);
-    const isPending = Boolean(item.cash_source_id && item.recurring_plan_id && !(Number(item.nav) > 0));
-    const profitClass = (valuation.profit || 0) >= 0 ? "up" : "down";
-    const matchedFund = valuation.fund;
-    const currentDate = valuation.isSold ? item.sell_date : isPending ? item.scheduled_date : isCashSource(item) ? todayInputValue() : matchedFund?.navDate;
-    const currentNavText = valuation.currentNav ? moneyNumber(valuation.currentNav) : "-";
-    const currentAmountText = valuation.currentValue === null ? "-" : wholeMoneyNumber(valuation.currentValue);
-    const valueLine = isPending
-      ? `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 待淨值 / 損益`
-      : valuation.isSold
-      ? `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 淨值 ${currentNavText} / 賺賠`
-      : `${escapeHtml(compactDate(currentDate))} / 金額 ${currentAmountText} / 淨值 ${currentNavText} / 損益`;
-    return `
-      <article class="purchase-item${valuation.isSold ? " sold" : ""}">
-        <div>
-          <div class="purchase-title">
-            <h4>${renderPurchaseFundName(item, matchedFund)}</h4>
-            ${renderPurchaseScore(matchedFund)}
-          </div>
-          ${item.recurring_plan_id ? `<span class="purchase-plan-tag">${isPending ? "定期定額待淨值" : item.cash_source_id ? "定期定額估算" : "定期定額"}</span>` : ""}
-          <p>${escapeHtml(compactDate(item.buy_date))} / 金額 ${wholeMoneyNumber(item.amount)} / 淨值 ${isPending ? "待公布" : moneyNumber(item.nav)}</p>
-          <p>${valueLine} <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
-          ${isCashSource(item) && !valuation.isSold ? `<p>目前餘額 ${wholeMoneyNumber(cashBalanceAt(item))}</p>` : ""}
-          ${valuation.isSold || isPending ? "" : renderFundBoxTrigger(item)}
-          ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
-        </div>
-        <div class="purchase-actions">
-          ${isCashSource(item) && !valuation.isSold ? `<button class="primary" type="button" data-adjust-cash="${escapeHtml(item.id)}">調整資金</button>` : ""}
-          <button type="button" data-edit-purchase="${escapeHtml(item.id)}">${isCashSource(item) ? cashAdjustments.some((row) => row.cash_purchase_id === item.id) ? "編輯備註" : "編輯原始" : "編輯"}</button>
-          ${isPending || (isCashSource(item) && cashAdjustments.some((row) => row.cash_purchase_id === item.id)) ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">${valuation.isSold ? "改賣出" : "賣出"}</button>`}
-          ${valuation.isSold ? `<button type="button" data-clear-sale="${escapeHtml(item.id)}">取消賣出</button>` : ""}
-          <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
-        </div>
-      </article>
-    `;
-  };
-  const renderRecurringGroup = (groupItem) => {
-    const items = groupItem._recurringItems;
-    const valuation = recurringGroupValuation(items);
-    const firstDate = items.at(-1).buy_date;
-    const matchedFund = currentFundForPurchase(groupItem);
-    const profitClass = valuation.profitPercent === null || valuation.profitPercent >= 0 ? "up" : "down";
-    const detailRows = items.map((item) => {
-      const detail = purchaseValuation(item);
-      const isPending = !(Number(item.nav) > 0);
-      const currentDate = isPending ? item.scheduled_date || item.buy_date : detail.fund?.navDate;
-      const detailClass = detail.profitPercent === null || detail.profitPercent >= 0 ? "up" : "down";
-      return `
-        <div class="recurring-purchase-row">
-          <p>${escapeHtml(compactDate(item.buy_date))} / 本金 ${wholeMoneyNumber(item.amount)} / 淨值 ${isPending ? "待公布" : moneyNumber(item.nav)}</p>
-          <p>${currentDate ? `${escapeHtml(compactDate(currentDate))} / ` : ""}現值 ${detail.currentValue === null ? "-" : wholeMoneyNumber(detail.currentValue)} / 損益 <strong class="${detailClass}">${detail.profitPercent === null ? "-" : formatPercent(detail.profitPercent)}</strong></p>
-          ${isPending ? "" : renderFundBoxTrigger(item)}
-          ${item.note ? `<p>${escapeHtml(item.note)}</p>` : ""}
-          <div class="purchase-actions">
-            <button type="button" data-edit-purchase="${escapeHtml(item.id)}">編輯</button>
-            ${isPending ? "" : `<button type="button" data-sell-purchase="${escapeHtml(item.id)}">賣出</button>`}
-            <button class="delete-purchase" type="button" data-delete-purchase="${escapeHtml(item.id)}">刪除</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-    return `
-      <article class="purchase-item recurring-group">
-        <div>
-          <div class="purchase-title">
-            <h4>${renderPurchaseFundName(groupItem, matchedFund)}</h4>
-            ${renderPurchaseScore(matchedFund)}
-          </div>
-          <span class="purchase-plan-tag">定期定額 · 累積 ${items.length} 筆${valuation.pendingCount ? ` · ${valuation.pendingCount} 筆待淨值` : ""}</span>
-          <p>自 ${escapeHtml(firstDate)} / 本金 ${wholeMoneyNumber(valuation.invested)}</p>
-          <p>現值 ${valuation.currentValue === null ? "-" : wholeMoneyNumber(valuation.currentValue)} / 損益 <strong class="${profitClass}">${valuation.profitPercent === null ? "-" : formatPercent(valuation.profitPercent)}</strong></p>
-          <details class="recurring-group-details">
-            <summary>查看扣款明細</summary>
-            <div class="recurring-group-list">${detailRows}</div>
-          </details>
-        </div>
-      </article>
-    `;
-  };
   const activePurchaseItems = purchases.filter((item) => !item.sell_date);
   buildFundBoxStore(activePurchaseItems.filter((item) => !item.cash_source_id || Number(item.nav) > 0));
-  const activePurchases = sortActivePurchases(groupActiveRecurringPurchases(activePurchaseItems));
+  const activePurchases = sortActivePurchases(groupActivePurchases(activePurchaseItems));
   const soldPurchases = sortSoldByDate(purchases.filter((item) => item.sell_date));
   updatePurchaseSortControl(activePurchases.length);
   els.purchaseList.innerHTML = `
-    ${activePurchases.length ? activePurchases.map((item) => item._recurringItems ? renderRecurringGroup(item) : renderPurchaseItem(item)).join("") : '<div class="empty">目前沒有持有中的基金。</div>'}
+    ${activePurchases.length ? activePurchases.map((item) => item._purchaseItems ? renderPurchaseGroup(item) : renderPurchaseItem(item)).join("") : '<div class="empty">目前沒有持有中的基金。</div>'}
     ${
       soldPurchases.length
         ? `
           <details class="sold-purchases">
             <summary>已賣出 ${soldPurchases.length} 筆</summary>
-            ${soldPurchases.map(renderPurchaseItem).join("")}
+            ${soldPurchases.map((item) => renderPurchaseItem(item)).join("")}
           </details>
         `
         : ""
     }
   `;
-  document.querySelectorAll("[data-delete-purchase]").forEach((button) => {
-    button.addEventListener("click", () => deletePurchase(button.dataset.deletePurchase));
+  bindPurchaseItemActions(els.purchaseList);
+  els.purchaseList.querySelectorAll("[data-purchase-group]").forEach((button) => {
+    button.addEventListener("click", () => showPurchaseDetailModal(button.dataset.purchaseGroup, button));
   });
-  document.querySelectorAll("[data-edit-purchase]").forEach((button) => {
-    button.addEventListener("click", () => editPurchase(button.dataset.editPurchase));
-  });
-  document.querySelectorAll("[data-adjust-cash]").forEach((button) => {
-    button.addEventListener("click", () => showCashAdjustmentModal(button.dataset.adjustCash));
-  });
-  document.querySelectorAll("[data-sell-purchase]").forEach((button) => {
-    button.addEventListener("click", () => markPurchaseSold(button.dataset.sellPurchase));
-  });
-  document.querySelectorAll("[data-clear-sale]").forEach((button) => {
-    button.addEventListener("click", () => clearPurchaseSale(button.dataset.clearSale));
-  });
-  document.querySelectorAll("[data-fund-box]").forEach((button) => {
-    button.addEventListener("click", () => showFundBoxModal(button.dataset.fundBox));
-  });
+  refreshPurchaseDetailModal();
 }
 
 async function loadPurchases(options = {}) {
@@ -6078,6 +6154,7 @@ function resetFilters() {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    hidePurchaseDetailModal();
     hideRecordChoiceModal();
     hidePeriodDetailModal();
     hideSellModal();
