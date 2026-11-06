@@ -306,6 +306,7 @@ const els = {
   recurringFundName: document.querySelector("#recurringFundName"),
   recurringFundOptions: document.querySelector("#recurringFundOptions"),
   recurringCashSource: document.querySelector("#recurringCashSource"),
+  recurringSourceHint: document.querySelector("#recurringSourceHint"),
   recurringAmount: document.querySelector("#recurringAmount"),
   recurringDay: document.querySelector("#recurringDay"),
   recurringStartDate: document.querySelector("#recurringStartDate"),
@@ -4686,6 +4687,7 @@ function firstPublishedNavForDebit(plan, scheduledDate, today = todayInputValue(
 }
 
 function recurringRecordCoversDue(item, scheduledDate) {
+  if (item.scheduled_date) return String(item.scheduled_date).slice(0, 7) === scheduledDate.slice(0, 7);
   const lastAllowed = new Date(`${scheduledDate}T00:00:00Z`);
   lastAllowed.setUTCDate(lastAllowed.getUTCDate() + 7);
   const date = String(item.buy_date || "");
@@ -4757,7 +4759,7 @@ function renderRecurringPlans() {
         <div>
           <strong>${escapeHtml(plan.fund_name)}</strong>
           <p>每月 ${escapeHtml(String(plan.debit_day))} 日 · ${twd(plan.monthly_amount)}${plan.paused ? " · 已暫停" : nextDate ? ` · 下次預定 ${escapeHtml(compactDate(nextDate))}` : ""}</p>
-          <p>${automatic ? `自動從 ${escapeHtml(cashSource?.fund_name || "資金")} 扣 · 餘額 ${wholeMoneyNumber(cashSource ? cashBalanceAt(cashSource) : 0)}` : "尚未設定自動扣款資金"}${awaitingNav ? ` · ${awaitingNav} 筆待淨值` : ""}${pending ? ` · ${pending} 期待扣款` : ""}</p>
+          <p>${automatic ? `${plan.cash_source_effective_date > today ? `${escapeHtml(plan.cash_source_effective_date)}起從` : "自動從"} ${escapeHtml(cashSource?.fund_name || "資金")} 扣 · 餘額 ${wholeMoneyNumber(cashSource ? cashBalanceAt(cashSource) : 0)}` : "尚未設定自動扣款資金"}${awaitingNav ? ` · ${awaitingNav} 筆待淨值` : ""}${pending ? ` · ${pending} 期待扣款` : ""}</p>
           <p>已記錄 ${records.length} 筆${latestRecord ? ` · 最近 ${escapeHtml(compactDate(latestRecord))}` : ""}</p>
         </div>
         <div class="recurring-plan-actions">
@@ -4788,9 +4790,9 @@ async function loadRecurringPlans(options = {}) {
   }
   const userId = currentUser.id;
   let { data, error } = await db.from("recurring_investment_plans")
-    .select("id,user_id,fund_id,fund_name,monthly_amount,debit_day,start_date,paused,cash_source_id,auto_start_date")
+    .select("id,user_id,fund_id,fund_name,monthly_amount,debit_day,start_date,paused,cash_source_id,auto_start_date,cash_source_effective_date")
     .eq("user_id", userId);
-  if (error && /cash_source_id|auto_start_date/i.test(error.message || "")) {
+  if (error && /cash_source_|auto_start_date/i.test(error.message || "")) {
     recurringAutoSupported = false;
     ({ data, error } = await db.from("recurring_investment_plans")
       .select("id,user_id,fund_id,fund_name,monthly_amount,debit_day,start_date,paused")
@@ -4974,12 +4976,31 @@ function openRecurringPlanForm(planId = "", selectedFund = null) {
   els.recurringFundName.readOnly = Boolean(selectedRecurringFund);
   const availableCash = purchases.filter((item) => isCashSource(item) && !item.sell_date && cashBalanceAt(item) > 0);
   renderRecurringCashSources(plan?.cash_source_id || (availableCash.length === 1 ? availableCash[0].id : ""));
-  els.recurringCashSource.disabled = Boolean(plan && purchases.some((item) => item.cash_source_id === plan.cash_source_id && item.recurring_plan_id === plan.id));
+  els.recurringCashSource.disabled = false;
   els.recurringAmount.value = plan?.monthly_amount || "";
   els.recurringDay.value = plan?.debit_day || "";
   els.recurringStartDate.value = plan?.start_date || todayInputValue();
+  syncRecurringSourceHint();
   setMessage(els.recurringMessage, "");
   els.recurringFundName.disabled || selectedRecurringFund ? els.recurringAmount.focus() : els.recurringFundName.focus();
+}
+
+function recurringCashSourceEffectiveDate(startDate, cashDate, today = todayInputValue()) {
+  const tomorrow = new Date(Date.parse(`${today}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
+  return [startDate, cashDate, tomorrow].filter(Boolean).sort().at(-1);
+}
+
+function syncRecurringSourceHint() {
+  if (!els.recurringSourceHint) return;
+  const plan = recurringPlans.find((item) => item.id === els.recurringPlanId.value);
+  const source = purchases.find((item) => item.id === els.recurringCashSource.value && isCashSource(item) && !item.sell_date);
+  const changed = plan?.cash_source_id && source && plan.cash_source_id !== source.id;
+  const effectiveDate = changed
+    ? recurringCashSourceEffectiveDate(els.recurringStartDate.value, source.buy_date)
+    : plan?.cash_source_effective_date;
+  els.recurringSourceHint.hidden = !changed && !(effectiveDate > todayInputValue());
+  els.recurringSourceHint.textContent = els.recurringSourceHint.hidden ? ""
+    : `${effectiveDate} 起使用此資金；已扣款及待淨值紀錄保留原來源。`;
 }
 
 async function saveRecurringPlan(event) {
@@ -5000,6 +5021,7 @@ async function saveRecurringPlan(event) {
   const startDate = els.recurringStartDate.value;
   const cashSourceId = els.recurringCashSource.value;
   const cashSource = purchases.find((item) => item.id === cashSourceId && isCashSource(item) && !item.sell_date);
+  const sourceChanged = Boolean(existing?.cash_source_id && existing.cash_source_id !== cashSourceId);
   if (!fund || !moneyDjFundId(fund.fundId)) {
     setMessage(els.recurringMessage, "請從基金候選清單選擇正確的基金。", true);
     return;
@@ -5010,10 +5032,6 @@ async function saveRecurringPlan(event) {
   }
   if (!cashSource) {
     setMessage(els.recurringMessage, "請選擇要扣款的「資金」紀錄；沒有資金時請先新增一筆。", true);
-    return;
-  }
-  if (existing && existing.cash_source_id !== cashSourceId && purchases.some((item) => item.recurring_plan_id === existing.id && item.cash_source_id)) {
-    setMessage(els.recurringMessage, "已有自動扣款的計畫不能換資金，請另建計畫。", true);
     return;
   }
   if (existing && purchases.some((item) => item.recurring_plan_id === existing.id) && fund.fundId !== existing.fund_id) {
@@ -5031,21 +5049,28 @@ async function saveRecurringPlan(event) {
     debit_day: day,
     start_date: startDate,
     cash_source_id: cashSourceId,
-    auto_start_date: existing?.cash_source_id === cashSourceId && existing.auto_start_date
-      ? existing.auto_start_date : todayInputValue(),
+    auto_start_date: existing?.cash_source_id && existing.auto_start_date ? existing.auto_start_date : todayInputValue(),
     updated_at: new Date().toISOString()
   };
+  const userId = currentUser.id;
   const query = existing
-    ? db.from("recurring_investment_plans").update(values).eq("id", existing.id).eq("user_id", currentUser.id)
-    : db.from("recurring_investment_plans").insert({ ...values, user_id: currentUser.id });
-  const { error } = await query;
+    ? db.from("recurring_investment_plans").update(values).eq("id", existing.id).eq("user_id", userId)
+    : db.from("recurring_investment_plans").insert({ ...values, user_id: userId });
+  const { data: saved, error } = sourceChanged
+    ? await query.select("cash_source_effective_date").single()
+    : await query;
+  if (currentUser?.id !== userId) return;
   if (error) {
     setMessage(els.recurringMessage, `儲存失敗：${error.message}`, true);
     return;
   }
   closeRecurringPlanForm();
   setMessage(els.recurringMessage, existing
-    ? amountChanged
+    ? sourceChanged
+      ? saved?.cash_source_effective_date
+        ? `計畫已更新；${saved.cash_source_effective_date} 起使用新資金，舊扣款及待淨值紀錄不變。${amountChanged ? `新金額自 ${recurringCashSourceEffectiveDate(startDate, "")} 起生效。` : ""}`
+        : "計畫已儲存，但無法確認資金生效日，請重新整理。"
+      : amountChanged
       ? "計畫已更新；新金額適用於台灣時間明天起的扣款，過去扣款金額不變。"
       : "計畫已更新；到期且淨值公布後會自動入帳。"
     : "計畫已建立；從今天起到期且淨值公布後自動入帳。");
@@ -6401,6 +6426,8 @@ els.purchaseFundName?.addEventListener("input", () => {
 els.addRecurringPlan?.addEventListener("click", () => openRecurringPlanForm());
 els.cancelRecurringPlan?.addEventListener("click", closeRecurringPlanForm);
 els.recurringPlanForm?.addEventListener("submit", saveRecurringPlan);
+els.recurringCashSource?.addEventListener("change", syncRecurringSourceHint);
+els.recurringStartDate?.addEventListener("input", syncRecurringSourceHint);
 els.recurringPlanList?.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-record-plan], button[data-sync-plan], button[data-edit-plan], button[data-toggle-plan], button[data-delete-plan]");
   if (!button) {

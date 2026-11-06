@@ -76,6 +76,8 @@ vm.runInContext([
   extractFunction("recurringFundLabel"),
   extractFunction("applyPendingPurchaseFund"),
   extractFunction("openPendingRecurringFund"),
+  extractFunction("recurringCashSourceEffectiveDate"),
+  extractFunction("syncRecurringSourceHint"),
   extractFunction("openRecurringPlanForm"),
   source.slice(source.indexOf("async function saveRecurringPlan("), source.indexOf("\nfunction recordRecurringPurchase(", source.indexOf("async function saveRecurringPlan(")))
 ].join("\n"), context);

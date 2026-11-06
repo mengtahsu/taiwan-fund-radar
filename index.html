@@ -15,7 +15,7 @@
     <meta property="og:description" content="篩選台灣基金，快速比較績效、風險與近期是否勝過台股大盤。">
     <meta property="og:url" content="https://mengtahsu.github.io/taiwan-fund-radar/">
     <link rel="canonical" href="https://mengtahsu.github.io/taiwan-fund-radar/">
-    <link rel="stylesheet" href="styles.css?v=tw-funds-20261106-3">
+    <link rel="stylesheet" href="styles.css?v=tw-funds-20261106-4">
   </head>
   <body>
     <header class="topbar">
@@ -289,8 +289,9 @@
             </label>
               <label>
                 扣款資金
-                <select id="recurringCashSource" required></select>
+                <select id="recurringCashSource" aria-describedby="recurringSourceHint" required></select>
               </label>
+            <p id="recurringSourceHint" class="recurring-note" hidden></p>
             <div class="recurring-form-grid">
               <label>
                 每月金額
@@ -343,6 +344,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="fund-box.js?v=tw-funds-20260924-1"></script>
-    <script src="app.js?v=tw-funds-20261106-3"></script>
+    <script src="app.js?v=tw-funds-20261106-4"></script>
   </body>
 </html>

@@ -75,6 +75,10 @@ context.monthlyNavMeta = { items: { ACJS06: { days: [
 assert.equal(context.firstPublishedNavForDebit(plan, "2026-10-31", "2026-11-02")?.date, "2026-11-02");
 assert.equal(context.firstPublishedNavForDebit(plan, "2026-10-31", "2026-11-01"), null, "do not use stale NAV before a weekend debit");
 assert.equal(context.recurringRecordCoversDue({ buy_date: "2026-11-02" }, "2026-10-31"), true, "next-month settlement must count for the scheduled month");
+assert.equal(context.recurringRecordCoversDue({ buy_date: "2026-11-02", scheduled_date: "2026-10-31" }, "2026-11-30"), false,
+  "an old debit settling after a source change must not cover the new month's debit");
+assert.equal(context.recurringRecordCoversDue({ buy_date: "2026-11-06", scheduled_date: "2026-11-06" }, "2026-11-10"), true,
+  "changing the debit day must not create a second automatic debit in an already-paid month");
 
 const event = { preventDefault() {} };
 elements.purchaseNav.value = "";

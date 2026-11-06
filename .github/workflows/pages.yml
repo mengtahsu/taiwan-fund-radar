@@ -182,6 +182,7 @@ jobs:
           node scripts/fund-comparison-test.mjs || exit $?
           node scripts/portfolio-value-chart-test.mjs || exit $?
           node scripts/cash-ledger-test.mjs || exit $?
+          node scripts/recurring-source-history-test.mjs || exit $?
           sanity_output=$(python3 scripts/test_distributions.py 2>&1 && node scripts/fund-box-test.mjs 2>&1 && node scripts/portfolio-period-test.mjs 2>&1 && node scripts/recurring-plan-test.mjs 2>&1 && node scripts/recurring-group-test.mjs 2>&1 && node scripts/recurring-amount-history-test.mjs 2>&1 && node scripts/record-choice-test.mjs 2>&1 && node scripts/nav-history-test.mjs 2>&1 && node scripts/nav-refresh-history-test.mjs 2>&1 && node scripts/sanity-check.mjs 2>&1)
           sanity_status=$?
           echo "$sanity_output"
