@@ -32,7 +32,7 @@ const names = [
   "manualProfitRowsForPurchase", "periodIndex",
   "periodsAreContinuous", "periodProfitRowsForPurchase", "monthlyProfitRowsForPurchase",
   "weeklyProfitRowsForPurchase", "dailyProfitRowsForPurchase", "annualProfitMapFromMonths",
-  "monthlyNavForPurchase", "purchaseValuation", "portfolioSummary",
+  "monthlyNavForPurchase", "valuationFundForPurchase", "purchaseValuation", "portfolioSummary", "upsertPeriodNav",
   "portfolioPurchaseFingerprint", "portfolioNavFingerprint", "portfolioSnapshotSource", "snapshotRowsFromSummary",
   "recentPeriodMapFromSummaryMap", "setPortfolioDailyCapital",
   "savePortfolioPeriodSnapshots", "rebuildPortfolioSnapshots"
@@ -67,6 +67,7 @@ const context = {
   currentFundForPurchase: () => ({ nav: 243.42, navDate: "10/13" }),
   moneyDjFundId: (value) => value,
   navDateComparableValue: (value) => Date.parse((String(value).length === 5 ? `2026-${String(value).replace("/", "-")}` : value) + "T00:00:00Z"),
+  isoDateFromShortNavDate: (value) => /^\d{2}\/\d{2}$/.test(value || "") ? `2026-${value.replace("/", "-")}` : "",
   currentUser: { id: "test-user" },
   todayInputValue: () => "2026-10-25",
   portfolioPeriodSnapshots: { supported: true },
@@ -178,7 +179,7 @@ context.purchases = [
 ];
 context.currentFundForPurchase = (item) => item.fund_id.startsWith("manual:") ? null : originalFundLookup(item);
 const cashReplacement = context.portfolioSummary();
-assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v5\|daily-nav:v3\|nav:[a-z0-9]+$/);
+assert.match(context.portfolioSnapshotSource(), /\|manual-buy:v5\|daily-nav:v3\|valuation:v2\|nav:[a-z0-9]+$/);
 const replacementDay = cashReplacement.days.get("2026-10-14");
 assert.equal(replacementDay?.invested, 1014000);
 assert.equal(replacementDay?.details.find((detail) => detail.name === "資金1014")?.invested, 1014000);
@@ -321,6 +322,70 @@ context.monthlyNavMeta = originalNavMeta;
 context.monthlyNavIndex = originalNavIndex;
 context.currentFundForPurchase = originalFundLookup;
 
+// Quotes and history are published independently. Neither side may value the
+// same holding at a different endpoint, nor reuse snapshots after a quote moves.
+const closeTo = (actual, expected, message) => assert(Math.abs(actual - expected) < 0.000001, message);
+context.todayInputValue = () => "2026-11-11";
+context.purchases = [{ ...purchase, buy_date: "2026-10-08", amount: 1000, nav: 100 }];
+context.monthlyNavMeta = { updatedAt: "same-history-version", items: { ACJS06: {
+  days: [{ day: "2026-10-30", date: "2026-10-30", nav: 110 }, { day: "2026-11-10", date: "2026-11-10", nav: 120 }],
+  weeks: [{ week: "2026-W44", date: "2026-10-30", nav: 110 }, { week: "2026-W45", date: "2026-11-06", nav: 115 }, { week: "2026-W46", date: "2026-11-10", nav: 120 }],
+  months: [{ month: "2026-10", date: "2026-10-30", nav: 110 }, { month: "2026-11", date: "2026-11-10", nav: 120 }]
+} } };
+context.monthlyNavIndex = null;
+context.currentFundForPurchase = () => ({ nav: 110, navDate: "10/30" });
+const newerHistory = context.portfolioSummary();
+assert.equal(newerHistory.currentValue, 1200, "one-off holdings must use newer history too, not only recurring buys");
+closeTo(newerHistory.unrealizedProfit, newerHistory.years.get("2026").profit, "this year's only holding must reconcile");
+const historyFingerprint = context.portfolioSnapshotSource();
+context.currentFundForPurchase = () => ({ nav: 130, navDate: "11/11" });
+assert.notEqual(context.portfolioSnapshotSource(), historyFingerprint, "a new card quote invalidates snapshots without a history update");
+const newerQuote = context.portfolioSummary();
+assert.equal(newerQuote.currentValue, 1300);
+assert.equal(newerQuote.months.get("2026-11").details[0].endNav, 130);
+assert.equal(newerQuote.weeks.get("2026-W46").details[0].endNav, 130);
+assert.equal(newerQuote.days.get("2026-11-11").details[0].endNav, 130);
+closeTo(newerQuote.unrealizedProfit, newerQuote.years.get("2026").profit, "newer quote feeds both total and annual profit");
+const quoteFingerprint = context.portfolioSnapshotSource();
+context.currentFundForPurchase = () => ({ nav: 131, navDate: "11/11" });
+assert.notEqual(context.portfolioSnapshotSource(), quoteFingerprint, "same-date quote corrections invalidate snapshots");
+const correctedQuote = context.portfolioSummary();
+closeTo(correctedQuote.unrealizedProfit, correctedQuote.years.get("2026").profit);
+const stableFingerprint = context.portfolioSnapshotSource();
+assert.equal(context.portfolioSnapshotSource(), stableFingerprint, "unchanged quotes keep snapshots reusable");
+assert.equal(context.monthlyNavMeta.items.ACJS06.months.at(-1).nav, 120, "valuation must not mutate published history");
+context.purchases.push({ id: "cash-quote", fund_id: "manual:cash", fund_name: "資金", buy_date: "2026-10-08", amount: 500, nav: 100 });
+const withCash = context.portfolioSummary();
+assert.equal(withCash.days.get("2026-11-11").invested, 1500, "cash follows the newer quote date even before history is published");
+context.cashAdjustments = [{ id: "spend-after-quote", cash_purchase_id: "cash-quote", effective_date: "2026-11-12", delta: -10 }];
+context.todayInputValue = () => "2026-11-12";
+const afterQuoteCashFlow = context.portfolioSummary();
+assert.equal(afterQuoteCashFlow.days.get("2026-11-12").value, 1800, "a cash flow must not roll the held fund back to stale history");
+assert.equal(afterQuoteCashFlow.days.get("2026-11-12").profit, 0, "spending after a quote is not an investment loss");
+context.purchases.pop();
+context.cashAdjustments = [];
+context.todayInputValue = () => "2026-11-11";
+
+context.purchases.push({ ...purchase, id: "sold-lot", buy_date: "2026-10-08", amount: 1000, nav: 100, sell_date: "2026-11-05", sell_nav: 115 });
+const withSale = context.portfolioSummary();
+closeTo(withSale.unrealizedProfit + withSale.realizedProfit, withSale.years.get("2026").profit, "realized and unrealized profit reconcile together");
+context.purchases = [{ ...purchase, buy_date: "2025-12-01", amount: 1000, nav: 100 }];
+context.monthlyNavMeta.items.ACJS06 = {
+  days: [{ date: "2025-12-31", nav: 110 }, { date: "2026-01-30", nav: 120 }],
+  weeks: [],
+  months: [{ month: "2025-12", date: "2025-12-31", nav: 110 }, { month: "2026-01", date: "2026-01-30", nav: 120 }]
+};
+context.currentFundForPurchase = () => ({ nav: 120, navDate: "2026-01-30", navFullDate: "2026-01-30" });
+const acrossYears = context.portfolioSummary();
+closeTo(acrossYears.unrealizedProfit, 200);
+closeTo(acrossYears.years.get("2026").profit, 100, "this year excludes profit earned last year");
+closeTo([...acrossYears.years.values()].reduce((sum, year) => sum + year.profit, 0), 200);
+context.purchases = originalPurchases;
+context.monthlyNavMeta = originalNavMeta;
+context.monthlyNavIndex = originalNavIndex;
+context.currentFundForPurchase = originalFundLookup;
+context.todayInputValue = () => "2026-10-25";
+
 navItem.days.shift();
 const delayedFirstNav = context.dailyProfitRowsForPurchase(purchase, []);
 assert.equal(delayedFirstNav.rows.find((row) => row.date === "2026-10-08")?.invested, 200000);
@@ -361,4 +426,4 @@ assert.equal(savedRows.find((row) => row.period_type === "day" && row.period_key
 assert.equal(savedRows.find((row) => row.period_type === "week" && row.period_key === "2026-W41")?.invested, 250000);
 assert.equal(context.portfolioSnapshotsDirty, false);
 
-console.log("Portfolio period test passed: backdated trades and queued snapshot writes");
+console.log("Portfolio period test passed: total/annual NAV reconciliation, quote-only corrections, cash flows, backdated trades, and queued snapshot writes");

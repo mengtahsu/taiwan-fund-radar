@@ -456,7 +456,7 @@ assert(appSource.includes("PERIOD_DISPLAY_LIMIT = 6"), "monthly and weekly profi
 assert(appSource.includes("每年賺賠"), "portfolio stats should render annual profit");
 assert(appSource.includes('pushRows("year", summary.years)'), "annual profit should be persisted as snapshots");
 assert(portfolioSnapshotSqlSource.includes("'year', 'month', 'week', 'day'"), "snapshot constraint should allow year, month, week, and day rows");
-assert(appSource.includes('return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}|daily-nav:v3|nav:${portfolioNavFingerprint()}`'), "portfolio snapshot version should include daily history changes");
+assert(appSource.includes('return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}|daily-nav:v3|valuation:v2|nav:${portfolioNavFingerprint()}`'), "portfolio snapshot version should include daily history and shared valuation changes");
 assert(updateFundsSource.includes("parse_moneydj_mobile_latest_nav"), "update_funds.py should parse MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes("fetch_moneydj_mobile_latest_nav(fund_id)"), "recent NAV refresh should check MoneyDJ mobile latest NAV");
 assert(updateFundsSource.includes('latest_source = "MoneyDJ mobile"'), "recent NAV refresh should mark MoneyDJ mobile NAV source");

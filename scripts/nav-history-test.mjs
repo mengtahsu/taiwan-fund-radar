@@ -46,6 +46,8 @@ try {
     fundDataLoaded: false,
     moneyDjFundId: (value) => String(value || "").match(/[A-Z]{2,}\d{2,}/)?.[0] || "",
     currentFundForPurchase: (item) => ({ fundId: item.fund_id }),
+    valuationFundForPurchase: (item) => ({ fundId: item.fund_id }),
+    isoDateFromShortNavDate: () => "",
     renderTwiiTrendChart: () => {},
     renderTwiiCompareOptions: () => {},
     renderPurchases: () => {},

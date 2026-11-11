@@ -1488,6 +1488,11 @@ function portfolioPeriodCalendar(periodType) {
   Object.values(monthlyNavMeta.items || {}).forEach((navItem) => {
     (navItem?.[sourceKey] || []).forEach(addDate);
   });
+  purchases.filter((item) => !item.sell_date && !String(item.fund_id || "").startsWith("manual:")).forEach((item) => {
+    const fund = valuationFundForPurchase(item);
+    const date = fund?.navFullDate || isoDateFromShortNavDate(fund?.navDate);
+    if (date && date <= todayInputValue() && Number(fund?.nav) > 0) addDate({ date });
+  });
   return withAdjustmentDates([...rowsByPeriod.values()].sort((a, b) => a.date.localeCompare(b.date)));
 }
 
@@ -1651,7 +1656,14 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
   const periodKey = periodType === "day" ? "day" : periodType === "week" ? "week" : "month";
   const periodFromDate = periodType === "day" ? dayKeyFromDate : periodType === "week" ? weekKeyFromDate : monthKeyFromDate;
   const sellPeriod = isSold ? periodFromDate(sellDate) : "";
-  const sourceRows = periodType === "day" ? navItem?.days || [] : periodType === "week" ? navItem?.weeks || [] : navItem?.months || [];
+  let sourceRows = periodType === "day" ? navItem?.days || [] : periodType === "week" ? navItem?.weeks || [] : navItem?.months || [];
+  if (!isSold) {
+    const fund = valuationFundForPurchase(item);
+    const date = fund?.navFullDate || isoDateFromShortNavDate(fund?.navDate);
+    if (date >= buyDate && date <= todayInputValue() && Number(fund?.nav) > 0) {
+      sourceRows = upsertPeriodNav(sourceRows, periodKey, periodFromDate(date), date, Number(fund.nav));
+    }
+  }
   let points = sourceRows
     .filter((row) => row?.date && Number(row.nav) > 0)
     .filter((row) => row.date >= buyDate && (!isSold || row.date < sellDate))
@@ -1662,7 +1674,7 @@ function periodProfitRowsForPurchase(item, periodType, calendarRows = []) {
     }));
 
   if (cashAdjustments.length) {
-    const navDays = [...(navItem?.days || [])]
+    const navDays = [...(navItem?.days || []), ...sourceRows]
       .filter((row) => Number(row.nav) > 0 && row.date >= buyDate)
       .sort((a, b) => a.date.localeCompare(b.date));
     const adjustmentDates = cashAdjustmentCarryDates(periodType);
@@ -1924,6 +1936,25 @@ function annualProfitMapFromMonths(months) {
   return years;
 }
 
+function valuationFundForPurchase(item) {
+  const fund = currentFundForPurchase(item);
+  if (String(item.fund_id || "").startsWith("manual:")) return fund;
+  const days = monthlyNavForPurchase(item)?.days || [];
+  const today = todayInputValue();
+  const latest = days.reduce((best, row) => /^\d{4}-\d{2}-\d{2}$/.test(row.date || "") &&
+    row.date <= today && row.date > (best?.date || "") && Number.isFinite(Number(row.nav)) && Number(row.nav) > 0 ? row : best, null);
+  if (latest && navDateComparableValue(latest.date) >=
+      (navDateComparableValue(fund?.navFullDate || fund?.navDate) ?? -Infinity)) {
+    return {
+      ...fund,
+      nav: Number(latest.nav),
+      navDate: latest.date.slice(5).replace("-", "/"),
+      navFullDate: latest.date
+    };
+  }
+  return fund;
+}
+
 function purchaseValuation(item) {
   const amount = Number(item.amount) || 0;
   const buyNav = Number(item.nav) || 0;
@@ -1939,17 +1970,9 @@ function purchaseValuation(item) {
       profitPercent: 0
     };
   }
-  let fund = currentFundForPurchase(item);
+  let fund = valuationFundForPurchase(item);
   if (item.cash_source_id && item.recurring_plan_id) {
-    const days = monthlyNavMeta.items?.[moneyDjFundId(item.fund_id)]?.days || [];
-    const latest = days.reduce((best, row) => row.date > (best?.date || "") && Number(row.nav) > 0 ? row : best, null);
-    if (latest && (navDateComparableValue(latest.date) >= (navDateComparableValue(fund?.navDate) ?? -Infinity))) {
-      fund = {
-        ...fund,
-        nav: Number(latest.nav),
-        navDate: latest.date.slice(5).replace("-", "/")
-      };
-    } else if (!fund && buyNav > 0) {
+    if (!fund && buyNav > 0) {
       fund = { nav: buyNav, navDate: String(item.buy_date || "").slice(5).replace("-", "/") };
     }
   }
@@ -2316,6 +2339,17 @@ function portfolioNavFingerprint() {
       hash = Math.imul(hash, 16777619);
     }
   });
+  // A fund quote can advance before the separately published history does.
+  const activeFunds = new Map(purchases.filter((item) => !item.sell_date && moneyDjFundId(item.fund_id))
+    .map((item) => [moneyDjFundId(item.fund_id), item]));
+  [...activeFunds.entries()].sort(([a], [b]) => a.localeCompare(b)).forEach(([id, item]) => {
+    const fund = valuationFundForPurchase(item);
+    const source = `${id}:${fund?.navFullDate || fund?.navDate || ""}:${fund?.nav ?? ""};`;
+    for (let index = 0; index < source.length; index += 1) {
+      hash ^= source.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+  });
   return (hash >>> 0).toString(36);
 }
 
@@ -2324,7 +2358,7 @@ function portfolioSnapshotSource() {
   const manualVersion = purchases.some((item) => String(item.fund_id || "").startsWith("manual:"))
     ? "|manual-buy:v5"
     : "";
-  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}|daily-nav:v3|nav:${portfolioNavFingerprint()}`;
+  return `${dataSource}|portfolio:${portfolioPurchaseFingerprint()}${manualVersion}|daily-nav:v3|valuation:v2|nav:${portfolioNavFingerprint()}`;
 }
 
 function resetPortfolioSnapshots() {

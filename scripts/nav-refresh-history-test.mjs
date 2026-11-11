@@ -79,11 +79,13 @@ const app = {
   window: { localStorage: { getItem: (key) => storage.get(key), setItem: (key, value) => storage.set(key, value) } },
   markPortfolioSnapshotsDirty: () => { dirtyCount += 1; },
   moneyDjFundId: (value) => String(value || "").startsWith("manual:") ? "" : value,
+  currentFundForPurchase: (item) => app.funds.find((fund) => fund.fundId === item.fund_id),
+  todayInputValue: () => "2026-10-31",
   monthlyNavForPurchase: (item) => app.monthlyNavMeta.items[item.fund_id]
 };
 vm.createContext(app);
 vm.runInContext([
-  "sourceDateForNavAge", "parseShortNavDate", "navDateComparableValue", "isOverrideFresh",
+  "sourceDateForNavAge", "parseShortNavDate", "navDateComparableValue", "isoDateFromShortNavDate", "valuationFundForPurchase", "isOverrideFresh",
   "loadLocalNavOverrides", "saveLocalNavOverrides", "persistLatestNavItems", "shouldApplyNavOverride",
   "applyLocalNavOverridesToFunds", "applyLatestNavItems", "refreshOwnedFundNavFromFunction", "navHistoryRows", "upsertPeriodNav", "applyLatestNavToPeriodData",
   "monthKeyFromDate", "weekKeyFromDate", "dayKeyFromDate", "periodIndex", "periodsAreContinuous",
